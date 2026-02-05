@@ -28,23 +28,33 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
 
     final history = context.read<PortfolioService>().topMoverHistory;
     final allSymbols =
-        history.expand((scan) => scan.topMovers.map((m) => m.symbol)).toSet();
+        history.expand((scan) => scan.topMovers.map((m) => m.symbol)).toSet().toList();
 
-    for (final symbol in allSymbols) {
-      try {
-        final price = await _dataService.fetchRegularMarketPrice(symbol);
-        if (mounted) {
-          setState(() {
-            _currentPrices[symbol] = price;
-          });
+    // Alle Symbole laden, aber in Batches um Threading-Fehler zu vermeiden
+    const batchSize = 5;
+    Map<String, double?> newPrices = {};
+
+    for (int i = 0; i < allSymbols.length; i += batchSize) {
+      final batch = allSymbols.sublist(i, i + batchSize > allSymbols.length ? allSymbols.length : i + batchSize);
+      
+      await Future.wait(batch.map((symbol) async {
+        try {
+          final price = await _dataService.fetchRegularMarketPrice(symbol);
+          newPrices[symbol] = price;
+        } catch (e) {
+          debugPrint("Could not fetch price for $symbol: $e");
         }
-      } catch (e) {
-        debugPrint("Could not fetch price for $symbol: $e");
-      }
+      }));
+
+      // Kurze Pause zwischen Batches, um die UI atmen zu lassen
+      await Future.delayed(const Duration(milliseconds: 100));
     }
 
     if (mounted) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _currentPrices.addAll(newPrices);
+        _isLoading = false;
+      });
     }
   }
 
@@ -73,20 +83,20 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
               itemCount: history.length,
               itemBuilder: (context, index) {
                 final scanResult = history[index];
-                return _buildScanResultCard(scanResult);
+                return _buildScanResultCard(scanResult, index);
               },
             ),
     );
   }
 
-  Widget _buildScanResultCard(TopMoverScanResult result) {
+  Widget _buildScanResultCard(TopMoverScanResult result, int index) {
     return Card(
       margin: const EdgeInsets.all(12),
       child: ExpansionTile(
         title: Text(
             "Scan vom ${result.scanDate.day}.${result.scanDate.month}.${result.scanDate.year} ${result.scanDate.hour}:${result.scanDate.minute.toString().padLeft(2, '0')}"),
         subtitle: Text("Intervall: ${result.timeFrame.label}"),
-        initiallyExpanded: true,
+        initiallyExpanded: index == 0,
         children: result.topMovers.map((mover) {
           final currentPrice = _currentPrices[mover.symbol];
           double? change;
@@ -113,12 +123,12 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
             ),
             title: Text(mover.symbol, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text("Kurs damals: ${mover.priceAtScan.toStringAsFixed(2)}"),
-            trailing: change == null
+            trailing: _isLoading && change == null
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : Text(
-                    "${change > 0 ? '+' : ''}${change.toStringAsFixed(1)}%",
+                    change != null ? "${change > 0 ? '+' : ''}${change.toStringAsFixed(1)}%" : "-",
                     style: TextStyle(
-                      color: isSuccess ? Colors.green : Colors.red,
+                      color: change != null ? (isSuccess ? Colors.green : Colors.red) : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
