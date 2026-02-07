@@ -20,9 +20,9 @@ module.exports = async ({ github, context, core }) => {
   console.log("🟢 AI ist aktiviert. Starte Analyse...");
 
   // Gedächtnis laden
+  // Standard-Fallback ist immer der vorletzte Commit (HEAD~1), falls keine Historie existiert.
   let lastHash = "HEAD~1";
   const stateFile = '.github/ai_state.json';
-  let isInitialRun = false;
   
   if (fs.existsSync(stateFile)) {
     try {
@@ -31,51 +31,45 @@ module.exports = async ({ github, context, core }) => {
         lastHash = state.last_ai_commit;
         console.log(`📜 Letzter AI-Stand war: ${lastHash}`);
       } else {
-        // Wenn Datei da ist, aber leer oder ohne Commit -> Initial Run
-        console.log("🆕 State-File existiert, ist aber leer. Initial Release Modus.");
-        isInitialRun = true;
+        console.log("ℹ️ State-File existiert, aber kein valider Hash. Nutze HEAD~1.");
       }
     } catch (e) {
-      console.log("⚠️ Konnte State-File nicht lesen/parsen. Initial Release Modus.");
-      isInitialRun = true;
+      console.log("⚠️ Konnte State-File nicht lesen/parsen. Nutze Fallback HEAD~1.");
     }
   } else {
-    console.log("🆕 Kein State-File gefunden. Dies ist der erste öffentliche Run (Initial Release).");
-    isInitialRun = true;
+    console.log("ℹ️ Kein State-File gefunden. Nutze Fallback HEAD~1.");
   }
 
   // Diff holen (Von letztem AI-Stand bis HEUTE)
   let diff = "";
-  if (isInitialRun) {
-    diff = "INITIAL_RELEASE_START";
-  } else {
+  try {
+    // Checken, ob der alte Hash überhaupt noch existiert (Fetch-Depth Problem)
+    // Wenn nicht, fallback auf HEAD~1
     try {
-      // Checken, ob der alte Hash überhaupt noch existiert (Fetch-Depth Problem)
-      // Wenn nicht, fallback auf HEAD~1
-      try {
-         execSync(`git cat-file -t ${lastHash}`);
-         console.log(`🔍 Vergleiche ${lastHash} bis HEAD`);
-         diff = execSync(`git diff ${lastHash} HEAD -- . ":(exclude)pubspec.lock" ":(exclude)*.png"`).toString();
-      } catch (e) {
-         console.log("⚠️ Alter Hash nicht gefunden (zu alt?), vergleiche nur letzten Commit.");
-         diff = execSync(`git diff HEAD~1 HEAD -- . ":(exclude)pubspec.lock"`).toString();
-      }
-    } catch (error) {
-      diff = "Fehler beim Diff";
+       // Versuch: Diff vom gespeicherten Hash bis heute
+       execSync(`git cat-file -t ${lastHash}`);
+       console.log(`🔍 Vergleiche ${lastHash} bis HEAD`);
+       diff = execSync(`git diff ${lastHash} HEAD -- . ":(exclude)pubspec.lock" ":(exclude)*.png"`).toString();
+    } catch (e) {
+       console.log("⚠️ Alter Hash nicht gefunden (zu alt oder Git-History unvollständig?), vergleiche nur letzten Commit (HEAD~1).");
+       diff = execSync(`git diff HEAD~1 HEAD -- . ":(exclude)pubspec.lock"`).toString();
     }
+  } catch (error) {
+    console.error("❌ Fehler beim Erstellen des Diffs:", error.message);
+    diff = "Konnte keine Änderungen auslesen (Git Fehler).";
   }
 
   if (diff.length > 50000) diff = diff.substring(0, 50000) + "\n... (truncated)";
 
-  // Prompt mit Anweisung zur Zusammenfassung
+  // Prompt mit Anweisung zur Zusammenfassung (Initial Run Logic entfernt)
   const systemInstruction = `
   Du bist Release-Manager für "TechAna".
   
   SITUATION:
-  ${isInitialRun ? "Dies ist das allererste öffentliche Release (v1.0.0) dieses Projekts. Es gibt noch keine Historie." : "Wir analysieren alle Änderungen seit dem letzten KI-Bericht."}
+  Wir analysieren alle technischen Änderungen seit dem letzten KI-Bericht für ein Update.
   
   AUFGABE:
-  ${isInitialRun ? "Erstelle eine freundliche Begrüßung und kündige den Start von TechAna an. Erwähne kurz die Hauptfeatures (Trading, Analyse, Bot) als 'Basis Release'." : "Erstelle deutsche Release Notes basierend auf dem Diff."}
+  Erstelle deutsche Release Notes basierend auf dem folgenden Code-Diff.
   
   FORMAT (WICHTIG! Nutze genau dieses Trennzeichen):
   
