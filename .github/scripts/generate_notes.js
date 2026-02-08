@@ -24,6 +24,7 @@ module.exports = async ({ github, context, core }) => {
   // Gedächtnis laden
   // Standard-Fallback ist immer der vorletzte Commit (HEAD~1), falls keine Historie existiert.
   let lastHash = "HEAD~1";
+  let isInitialRun = false;
   const stateFile = '.github/ai_state.json';
   
   if (fs.existsSync(stateFile)) {
