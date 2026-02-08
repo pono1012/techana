@@ -14,6 +14,12 @@ on:
 permissions:
   contents: write # WICHTIG: Erlaubt dem Bot, Releases zu erstellen & README zu pushen
 
+env:
+  # HIER DAS ZIEL-REPO FÜR RELEASES ANPASSEN
+  # Leer lassen, um das aktuelle Repo zu verwenden
+  RELEASE_OWNER: '' # z.B. pono1012
+  RELEASE_REPO: ''  # z.B. techana
+
 jobs:
   # --- JOB 1: KI ANALYSE ---
   analyze_changes:
@@ -23,6 +29,7 @@ jobs:
       full_notes: ${{ steps.generate_notes.outputs.full_notes || '⚠️ KI-Analyse momentan nicht verfügbar.' }}
       summary: ${{ steps.generate_notes.outputs.summary || 'Update' }}
       run_status: ${{ steps.generate_notes.outputs.run_status || 'skipped' }}
+      update_type: ${{ steps.generate_notes.outputs.update_type || 'patch' }}
       install_text: ${{ steps.read_install.outputs.content }}
     steps:
       - uses: actions/checkout@v3
@@ -66,30 +73,45 @@ jobs:
         if: steps.generate_notes.outputs.run_status == 'success'
         env:
           FULL_NOTES: ${{ steps.generate_notes.outputs.full_notes }}
+          UPDATE_TYPE: ${{ steps.generate_notes.outputs.update_type }}
         run: |
           # Wenn CHANGELOG.md noch nicht existiert, erstellen
           touch CHANGELOG.md
           
           DATE=$(date +'%Y-%m-%d')
           
-          # Neuen Eintrag erstellen (sicherer gegen Injection)
-          {
-            echo "### $DATE - Update"
-            echo ""
-            echo "$FULL_NOTES"
-            echo ""
-            echo "---"
-            echo ""
-          } > new_entry.md
-          
-          # Vorne anfügen
-          cat new_entry.md CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
-          rm new_entry.md
+          # LOGIK: Release = Neuer Eintrag oben. Patch = Unten anhängen.
+          if [ "$UPDATE_TYPE" == "patch" ]; then
+             # PATCH: Wir hängen den neuen Punkt einfach an die Datei an (oder unter den letzten Header)
+             # Da wir es einfach halten wollen: Wir fügen eine Trennlinie ein, falls noch keine da ist, oder hängen direkt an.
+             
+             # Prüfen ob "### Patches" schon existiert im letzten Block? 
+             # Einfachste Lösung: Einfach unten an CHANGELOG.md anhängen.
+             # Aber wir wollen es sauber. Wir fügen es oben unter den aktuellen Eintrag ein? 
+             # Nein, User wollte "einfach unten dran hängen".
+             
+             echo "" >> CHANGELOG.md
+             echo "$FULL_NOTES" >> CHANGELOG.md
+             
+          else
+             # RELEASE: Neuer Eintrag ganz oben
+             {
+               echo "### $DATE - Update"
+               echo ""
+               echo "$FULL_NOTES"
+               echo ""
+               echo "---"
+               echo ""
+             } > new_entry.md
+             cat new_entry.md CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+             rm new_entry.md
+          fi
 
           # State File committen (wird im nächsten Job gepusht oder hier)
           git config --global user.name "TechAna Bot"
           git config --global user.email "bot@techana.app"
-          git add CHANGELOG.md .github/ai_state.json
+          # WICHTIG: Auch die Patch-Notes Datei adden
+          git add CHANGELOG.md .github/ai_state.json .github/current_patch_notes.md
           git commit -m "docs: Update Changelog & AI State [skip ci]" || echo "No changes"
           git push
 
@@ -264,11 +286,92 @@ jobs:
             
             ${{ needs.analyze_changes.outputs.install_text }}
 
-  # --- JOB 3: README ASSEMBLER ---
-  update_readme:
+  # --- JOB 3: UPDATE RELEASE ON PATCH ---
+  update_release_on_patch:
+    name: 📝 Update Release on Patch
     needs: [analyze_changes, build]
-    # Läuft immer, wenn der Build erfolgreich war (auch bei Patches)
-    if: success()
+    if: success() && needs.analyze_changes.outputs.update_type == 'patch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3 # Lädt den Code-Stand, der den Workflow gestartet hat
+
+      - name: 🔄 Sync with remote changes from analysis job
+        run: git pull origin ${{ github.ref_name }}
+        shell: bash
+
+      - name: 📄 Read Patch Notes
+        id: read_patch_notes
+        run: |
+          if [ -f .github/current_patch_notes.md ]; then
+            content=$(cat .github/current_patch_notes.md)
+          else
+            content="Keine Patch-Notes gefunden."
+          fi
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$content" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Update Latest Release Body
+        uses: actions/github-script@v6
+        env:
+          PATCH_NOTES: ${{ steps.read_patch_notes.outputs.content }}
+          INSTALL_NOTES: ${{ needs.analyze_changes.outputs.install_text }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = process.env.RELEASE_OWNER || context.repo.owner;
+            const repo = process.env.RELEASE_REPO || context.repo.repo;
+            
+            // 1. Get the latest release
+            const { data: latestRelease } = await github.rest.repos.getLatestRelease({
+              owner,
+              repo,
+            });
+ 
+            if (!latestRelease) {
+              core.setFailed("Kein Release gefunden zum Aktualisieren.");
+              return;
+            }
+
+            console.log(`Aktualisiere Release: ${latestRelease.name} (ID: ${latestRelease.id})`);
+
+            // 2. Lade die neuen und alten Inhalte
+            const patchNotes = process.env.PATCH_NOTES;
+            const installNotes = process.env.INSTALL_NOTES;
+            const originalBody = latestRelease.body;
+
+            // 3. Zerlege den Body in seine Teile: Basis-Notes, alte Patches, Installation
+            const separator = "---";
+            const installHeader = "### 🛠 Installation & Downloads";
+            const patchHeader = "### 🩹 Patch vom";
+
+            // Finde die Installations-Sektion. Alles danach wird ignoriert.
+            const installSectionIndex = originalBody.indexOf(installHeader);
+            const topPart = installSectionIndex !== -1 ? originalBody.substring(0, installSectionIndex).trim() : originalBody.trim();
+
+            // Entferne den Separator am Ende des oberen Teils, falls vorhanden
+            const cleanTopPart = topPart.endsWith(separator) ? topPart.substring(0, topPart.length - separator.length).trim() : topPart;
+
+            // Finde den Start der alten Patch-Sektion im oberen Teil
+            const firstPatchIndex = cleanTopPart.indexOf(patchHeader);
+
+            // Die "Basis-Notes" sind alles vor dem ersten Patch.
+            const baseNotes = firstPatchIndex !== -1 ? cleanTopPart.substring(0, firstPatchIndex).trim() : cleanTopPart;
+
+            // Die Installations-Sektion kommt direkt aus dem Template (inkl. Header).
+            const installSection = installNotes.trim();
+
+            // 4. Baue den neuen Body in der gewünschten Reihenfolge zusammen: Basis + Installation + Patches
+            const newBody = `${baseNotes}\n\n${separator}\n\n${installSection}\n\n${patchNotes.trim()}`;
+
+            // 5. Update the release
+            await github.rest.repos.updateRelease({ owner, repo, release_id: latestRelease.id, body: newBody });
+            console.log("✅ Release Body wurde erfolgreich mit Patch-Informationen aktualisiert.");
+
+  update_readme_on_release:
+    name: 📚 Update README on Release
+    needs: [analyze_changes]
+    if: success() && needs.analyze_changes.outputs.update_type == 'release'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
