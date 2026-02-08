@@ -22,9 +22,9 @@ module.exports = async ({ github, context, core }) => {
   console.log("🟢 AI ist aktiviert. Starte Analyse...");
 
   // Gedächtnis laden
+  // Standard-Fallback ist immer der vorletzte Commit (HEAD~1), falls keine Historie existiert.
   let lastHash = "HEAD~1";
   const stateFile = '.github/ai_state.json';
-  let isInitialRun = false;
   
   if (fs.existsSync(stateFile)) {
     try {
@@ -33,17 +33,13 @@ module.exports = async ({ github, context, core }) => {
         lastHash = state.last_ai_commit;
         console.log(`📜 Letzter AI-Stand war: ${lastHash}`);
       } else {
-        // Wenn Datei da ist, aber leer oder ohne Commit -> Initial Run
-        console.log("🆕 State-File existiert, ist aber leer. Initial Release Modus.");
-        isInitialRun = true;
+        console.log("ℹ️ State-File existiert, aber kein valider Hash. Nutze HEAD~1.");
       }
     } catch (e) {
-      console.log("⚠️ Konnte State-File nicht lesen/parsen. Initial Release Modus.");
-      isInitialRun = true;
+      console.log("⚠️ Konnte State-File nicht lesen/parsen. Nutze Fallback HEAD~1.");
     }
   } else {
-    console.log("🆕 Kein State-File gefunden. Dies ist der erste öffentliche Run (Initial Release).");
-    isInitialRun = true;
+    console.log("ℹ️ Kein State-File gefunden. Nutze Fallback HEAD~1.");
   }
 
   // Diff holen (Von letztem AI-Stand bis HEUTE)
@@ -140,7 +136,7 @@ module.exports = async ({ github, context, core }) => {
   Du bist Release-Manager für "TechAna".
   
   SITUATION:
-  ${isInitialRun ? "Dies ist das allererste öffentliche Release (v1.0.0) dieses Projekts. Es gibt noch keine Historie." : "Wir analysieren alle Änderungen seit dem letzten KI-Bericht."}
+  Wir analysieren alle technischen Änderungen seit dem letzten KI-Bericht für ein Update.
   
   AUFGABE:
   ${isInitialRun ? "Erstelle eine freundliche Begrüßung und kündige den Start von TechAna an." : "Erstelle professionelle, ausführliche Release Notes."}
