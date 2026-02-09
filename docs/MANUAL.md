@@ -1,59 +1,97 @@
-# 📘 TechAna Bedienungsanleitung
+# 📘 TechAna Benutzerhandbuch
 
-Willkommen im Benutzerhandbuch von **TechAna**. Hier erfährst du, wie du die App optimal für deine Trading-Analysen nutzt.
-
----
-
-## 🚀 Erste Schritte
-
-### Dashboard Übersicht
-Nach dem Start landest du auf dem **Dashboard**. Hier siehst du:
-* **Marktüberblick:** Die aktuellen Top-Movers und Trends.
-* **Schnellzugriff:** Buttons zu den wichtigsten Modulen wie *News*, *Portfolio* und *Bot*.
-* **Status:** Aktuelle Verbindungsanzeige zu den Datenquellen.
+Willkommen bei **TechAna**. Dieses Handbuch führt dich durch alle Funktionen der App, von der ersten Marktanalyse bis zum automatisierten Trading-Bot.
 
 ---
 
-## 📊 Analyse-Module
+## 🧭 Navigation & Dashboard
 
-### 1. Technische Analyse & Indikatoren
-TechAna berechnet diverse Indikatoren in Echtzeit. Gehe auf ein Asset, um Details zu sehen:
-* **RSI (Relative Strength Index):** Erkennt überkaufte/überverkaufte Bereiche.
-* **MACD:** Zeigt Trendumkehrungen an.
-* **Bollinger Bands:** Misst die Volatilität.
-* **SMA/EMA:** Gleitende Durchschnitte zur Trendbestimmung.
+Nach dem Start landest du auf dem **Dashboard** (`DashboardScreen`). Es ist deine Kommandozentrale.
 
-> **Tipp:** Du kannst die Perioden der Indikatoren in den [Einstellungen](../lib/ui/analysis_settings_dialog.dart) anpassen.
+### Hauptbereiche
+1.  **Marktüberblick:** Oben siehst du eine Zusammenfassung der wichtigsten Indizes (z.B. BTC, ETH, S&P 500).
+2.  **Top Movers:** Ein Swipe nach rechts bringt dich zu den Gewinnern und Verlierern des Tages (basiert auf 24h-Änderung).
+3.  **Schnellzugriff:** Navigiere direkt zu:
+    * 📰 **News:** Aktuelle Marktnachrichten.
+    * 💼 **Portfolio:** Deine gehaltenen Assets.
+    * 🤖 **Bot:** Automatisierter Handel.
 
-### 2. Fundamentalanalyse
-Im Bereich **Fundamental Analysis** findest du Kennzahlen zur Bewertung der finanziellen Gesundheit eines Unternehmens (z.B. P/E Ratio, Earnings, Market Cap).
-
-### 3. Mustererkennung (Pattern Recognition)
-Die App scannt Charts automatisch nach bekannten Mustern:
-* *Head & Shoulders*
-* *Double Top / Double Bottom*
-* *Triangles (Ascending/Descending)*
-
-Wenn ein Muster erkannt wird, erhältst du eine Benachrichtigung mit einer Wahrscheinlichkeits-Score (TechAna Score).
+> **Tipp:** Ziehe die Liste nach unten ("Pull-to-Refresh"), um die Kurse manuell zu aktualisieren.
 
 ---
 
-## 🤖 Trading Bot Dashboard
-*(Beta Feature)*
+## 📊 Detail-Analyse (Deep Dive)
 
-Im **Bot Dashboard** kannst du automatisierte Strategien verwalten:
-* **Status:** Starten/Stoppen des Bots.
-* **Logs:** Einsicht in die letzten Aktionen des Bots.
-* **Konfiguration:** Risikomanagement und Strategie-Auswahl.
+Tippe auf ein beliebiges Asset (z.B. "Bitcoin"), um in den **Analyse-Modus** zu gelangen.
+
+### 1. Chart & Interaktion
+* **Zoom:** Nutze "Pinch-to-Zoom", um den Zeitrahmen der Candles zu ändern.
+* **Fadenkreuz:** Tippe und halte auf den Chart, um genaue Preise (Open, High, Low, Close) zu sehen.
+
+### 2. Technische Indikatoren (`AnalysisStatsScreen`)
+TechAna berechnet Signale in Echtzeit. Hier lernst du, wie du sie liest:
+
+* **RSI (Relative Strength Index):**
+    * *Wert > 70:* Asset ist **überkauft** (Mögliche Korrektur nach unten).
+    * *Wert < 30:* Asset ist **überverkauft** (Mögliche Chance zum Einstieg).
+* **MACD (Moving Average Convergence Divergence):**
+    * Achte auf Kreuzungen der Signallinie. Ein Kreuzen von unten nach oben ist oft ein **Bullish Signal**.
+* **Bollinger Bands:**
+    * Wenn der Preis das obere Band durchbricht, gilt das Asset oft als überdehnt.
+* **TechAna Score (0-100):**
+    * Unser KI-Score fasst alle Indikatoren zusammen.
+    * 🟢 **80-100:** Strong Buy
+    * 🔴 **0-20:** Strong Sell
+
+### 3. Mustererkennung
+Die App scannt Charts nach geometrischen Mustern.
+* **Erkannte Muster:** Werden direkt im Chart markiert (z.B. ein Dreieck).
+* **Zuverlässigkeit:** Jedes Muster hat einen "Confidence Score". Handle nur Muster mit hoher Wahrscheinlichkeit (> 70%).
 
 ---
 
-## ⚙️ Einstellungen
-Im Einstellungsmenü kannst du:
-* Das Farbschema (Dark/Light Mode) ändern.
-* API-Schlüssel für Datenquellen hinterlegen.
-* Benachrichtigungspräferenzen anpassen.
+## 🤖 Trading Bot (Beta)
+
+Der Bot (`BotDashboardScreen`) kann basierend auf deinen Regeln automatisch handeln.
+
+### Bot Konfigurieren (`BotSettingsScreen`)
+Bevor du den Bot startest, musst du Strategien festlegen:
+1.  **Indikator-Trigger:** Wähle z.B. *"Kaufe wenn RSI < 30"*.
+2.  **Stop-Loss / Take-Profit:** Lege fest, bei wie viel % Verlust/Gewinn automatisch verkauft wird.
+3.  **Asset-Allokation:** Bestimme, wie viel % deines Portfolios der Bot nutzen darf.
+
+### Überwachung
+* **Logs:** Im Tab "Logs" siehst du jede Entscheidung des Bots im Klartext (z.B. *"Bought BTC at 45.000 because RSI was 28"*).
+* **Not-Aus:** Mit dem großen roten Button im Dashboard kannst du alle Bot-Aktivitäten sofort stoppen.
 
 ---
 
-*Benötigst du weitere Hilfe? Erstelle ein [Issue](../../issues) auf GitHub.*
+## 💼 Portfolio Management
+
+Verfolge deine Performance im **Portfolio-Tab**.
+
+* **Balance:** Dein Gesamtwert in USD/EUR.
+* **Allocation:** Ein Tortendiagramm zeigt dir deine Risikoverteilung (z.B. 60% Krypto, 40% Aktien).
+* **Transaktionshistorie:** Eine Liste aller vergangenen Trades (manuell oder durch Bot).
+
+---
+
+## 📰 News & Sentiment
+
+TechAna aggregiert Nachrichten von verschiedenen Finanzquellen.
+* **Sentiment-Analyse:** Neben jeder Schlagzeile siehst du einen Indikator:
+    * 🟢 Positiv (Bullish News)
+    * 🔴 Negativ (Bearish News)
+* **Filter:** Filtere Nachrichten nach Krypto, Aktien oder Forex.
+
+---
+
+## ⚙️ Einstellungen & Daten
+
+* **API-Keys:** Hinterlege hier deine Schlüssel für AlphaVantage oder Binance, um Live-Daten zu erhalten.
+* **Theme:** Wechsle zwischen "Dark Mode" (empfohlen für Trader) und "Light Mode".
+* **Updates:** Tippe auf "Nach Updates suchen", um via Shorebird die neueste Version zu laden.
+
+---
+
+**Haftungsausschluss:** *Trading birgt Risiken. Die Analysen von TechAna sind Hilfsmittel und keine Anlageberatung.*

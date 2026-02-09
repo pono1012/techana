@@ -59,7 +59,7 @@ module.exports = async ({ github, context, core }) => {
 
          // --- Patch-Erkennung ---
          const rawFileList = execSync(`git diff ${lastHash} HEAD --name-only`).toString();
-         const filesToExclude = ['.github/ai_state.json', '.github/current_patch_notes.md', 'CHANGELOG.md'];
+         const filesToExclude = ['.github/ai_state.json', '.github/current_patch_notes.md', 'CHANGELOG.md', 'README.md'];
          const fileList = rawFileList.split('\n').filter(line => {
             const trimmedLine = line.trim();
             return trimmedLine !== '' && !filesToExclude.includes(trimmedLine);
@@ -86,7 +86,7 @@ module.exports = async ({ github, context, core }) => {
 
          // --- Führe die Logik erneut aus mit dem Fallback-Hash ---
          const rawFileList = execSync(`git diff ${lastHash} HEAD --name-only`).toString();
-         const filesToExclude = ['.github/ai_state.json', '.github/current_patch_notes.md', 'CHANGELOG.md'];
+         const filesToExclude = ['.github/ai_state.json', '.github/current_patch_notes.md', 'CHANGELOG.md', 'README.md'];
          const fileList = rawFileList.split('\n').filter(line => {
             const trimmedLine = line.trim();
             return trimmedLine !== '' && !filesToExclude.includes(trimmedLine);
