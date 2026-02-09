@@ -139,7 +139,6 @@ Du willst tiefer einsteigen? Hier findest du detaillierte Anleitungen:
 * [🛠 **API Dokumentation**](docs/API.md) - Für Entwickler, die eigene Datenquellen anbinden wollen.
 * [🐛 **Issue Tracker**](../../issues) - Fehler melden oder Features wünschen.
 
----
 
 ## 🤝 Contributing
 
@@ -148,16 +147,6 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 * Übersetzungen (i18n)
 * UI/UX Verbesserungen für Tablet-Layouts
 
----
-
-<div align="center">
-
-**TechAna** – Trade Smarter, Not Harder.
-
-[Website](https://techana.app) • [Twitter](https://twitter.com/techana) • [Discord](https://discord.gg/techana)
-
-</div>
----
 
 ## 🚀 Neuestes Update (09.02.2026)
 
