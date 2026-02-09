@@ -9,11 +9,12 @@
 [![License](https://img.shields.io/badge/license-MIT-purple?style=for-the-badge)](LICENSE)
 
 </div>
+
 ---
 
 **TechAna** ist die ultimative **All-in-One-Lösung** für Trader, die nichts dem Zufall überlassen wollen. Wir kombinieren professionelle technische Analyse, KI-gestützte Mustererkennung und automatisierte Trading-Bots in einer einzigen, leistungsstarken App – nativ entwickelt mit Flutter für maximale Performance auf jedem Gerät.
 
-![TechAna Banner](../assets/banner.svg)
+![TechAna Banner](/lib/assets/banner.svg)
 
 ---
 
@@ -154,9 +155,9 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 **TechAna** – Trade Smarter, Not Harder.
 
-[Website](https://techana.app) • [Twitter](https://twitter.com/techana) • [Discord](https://discord.gg/techana)
 
 </div>
+
 ---
 
 ## 🚀 Neuestes Update (09.02.2026)
