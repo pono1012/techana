@@ -58,62 +58,291 @@ class PortfolioService extends ChangeNotifier {
   static const Map<String, List<String>> _defaultWatchlistByCategory = {
     // DAX 40 (Auswahl)
     "Germany (DAX & MDAX)": [
-      "SAP.DE", "SIE.DE", "ALV.DE", "DTE.DE", "BMW.DE", "VOW3.DE", "AIR.DE",
-      "BAS.DE", "MUV2.DE", "IFX.DE", "MBG.DE", "DB1.DE", "DHL.DE", "RWE.DE",
-      "BAYN.DE", "ADS.DE", "BEI.DE", "EOAN.DE", "HNR1.DE", "DBK.DE", "VNA.DE",
-      "SY1.DE", "FRE.DE", "HEI.DE", "MTX.DE", "CBK.DE", "PUM.DE", "ZAL.DE",
-      "QIA.DE", "BNR.DE", "SHL.DE", "DTG.DE", "ENR.DE", "HEN3.DE",
-      "MRK.DE", "P911.DE", "RHM.DE", "SAT.DE", "SRT3.DE", "1COV.DE", "NEM.DE",
-      "AI.DE", "BOSS.DE", "EVT.DE", "FRA.DE", "LEG.DE", "LHAG.DE", "SIEGn.DE"
+      "SAP.DE",
+      "SIE.DE",
+      "ALV.DE",
+      "DTE.DE",
+      "BMW.DE",
+      "VOW3.DE",
+      "AIR.DE",
+      "BAS.DE",
+      "MUV2.DE",
+      "IFX.DE",
+      "MBG.DE",
+      "DB1.DE",
+      "DHL.DE",
+      "RWE.DE",
+      "BAYN.DE",
+      "ADS.DE",
+      "BEI.DE",
+      "EOAN.DE",
+      "HNR1.DE",
+      "DBK.DE",
+      "VNA.DE",
+      "SY1.DE",
+      "FRE.DE",
+      "HEI.DE",
+      "MTX.DE",
+      "CBK.DE",
+      "PUM.DE",
+      "ZAL.DE",
+      "QIA.DE",
+      "BNR.DE",
+      "SHL.DE",
+      "DTG.DE",
+      "ENR.DE",
+      "HEN3.DE",
+      "MRK.DE",
+      "P911.DE",
+      "RHM.DE",
+      "SAT.DE",
+      "SRT3.DE",
+      "1COV.DE",
+      "NEM.DE",
+      "AI.DE",
+      "BOSS.DE",
+      "EVT.DE",
+      "FRA.DE",
+      "LEG.DE",
+      "LHAG.DE",
+      "SIEGn.DE",
     ],
     // US Tech (Nasdaq 100 Auswahl)
     "US Tech (Nasdaq)": [
-      "AAPL.US", "MSFT.US", "GOOGL.US", "AMZN.US", "NVDA.US", "TSLA.US",
-      "META.US", "NFLX.US", "AMD.US", "INTC.US", "CSCO.US", "CMCSA.US",
-      "PEP.US", "ADBE.US", "AVGO.US", "TXN.US", "QCOM.US", "TMUS.US",
-      "COST.US", "SBUX.US", "AMGN.US", "CHTR.US", "GILD.US", "INTU.US",
-      "PYPL.US", "FISV.US", "BKNG.US", "MDLZ.US", "ADP.US", "ISRG.US",
-      "ZM.US", "CRWD.US", "SNOW.US", "MRNA.US", "LRCX.US", "MU.US", "KLAC.US",
-      "ASML.US", "ADI.US", "EXC.US", "KDP.US", "MAR.US", "MELI.US", "PANW.US",
-      "ROST.US", "SIRI.US", "VRSK.US", "WBA.US", "WDAY.US", "XEL.US", "UBER.US",
-      "SQ.US", "PLTR.US", "SHOP.US", "RIVN.US"
+      "AAPL.US",
+      "MSFT.US",
+      "GOOGL.US",
+      "AMZN.US",
+      "NVDA.US",
+      "TSLA.US",
+      "META.US",
+      "NFLX.US",
+      "AMD.US",
+      "INTC.US",
+      "CSCO.US",
+      "CMCSA.US",
+      "PEP.US",
+      "ADBE.US",
+      "AVGO.US",
+      "TXN.US",
+      "QCOM.US",
+      "TMUS.US",
+      "COST.US",
+      "SBUX.US",
+      "AMGN.US",
+      "CHTR.US",
+      "GILD.US",
+      "INTU.US",
+      "PYPL.US",
+      "FISV.US",
+      "BKNG.US",
+      "MDLZ.US",
+      "ADP.US",
+      "ISRG.US",
+      "ZM.US",
+      "CRWD.US",
+      "SNOW.US",
+      "MRNA.US",
+      "LRCX.US",
+      "MU.US",
+      "KLAC.US",
+      "ASML.US",
+      "ADI.US",
+      "EXC.US",
+      "KDP.US",
+      "MAR.US",
+      "MELI.US",
+      "PANW.US",
+      "ROST.US",
+      "SIRI.US",
+      "VRSK.US",
+      "WBA.US",
+      "WDAY.US",
+      "XEL.US",
+      "UBER.US",
+      "SQ.US",
+      "PLTR.US",
+      "SHOP.US",
+      "RIVN.US",
     ],
     // US Dow / S&P (Auswahl)
     "US Blue Chips (S&P 500)": [
-      "JPM.US", "JNJ.US", "V.US", "PG.US", "UNH.US", "HD.US", "MA.US", "DIS.US",
-      "BAC.US", "XOM.US", "KO.US", "VZ.US", "CVX.US", "MRK.US", "PFE.US",
-      "WMT.US", "T.US", "BA.US", "MCD.US", "NKE.US", "IBM.US", "MMM.US",
-      "GE.US", "CAT.US", "GS.US", "AXP.US", "RTX.US", "HON.US", "C.US", "WFC.US",
-      "LLY.US", "BRK-B", "DELL.US", "ORCL.US", "CRM.US", "ABT.US", "ACN.US",
-      "BLK.US", "BMY.US", "COP.US", "DUK.US", "F.US", "GM.US", "LOW.US", "NEE.US",
-      "PM.US", "SRE.US", "SO.US", "TGT.US", "UPS.US"
+      "JPM.US",
+      "JNJ.US",
+      "V.US",
+      "PG.US",
+      "UNH.US",
+      "HD.US",
+      "MA.US",
+      "DIS.US",
+      "BAC.US",
+      "XOM.US",
+      "KO.US",
+      "VZ.US",
+      "CVX.US",
+      "MRK.US",
+      "PFE.US",
+      "WMT.US",
+      "T.US",
+      "BA.US",
+      "MCD.US",
+      "NKE.US",
+      "IBM.US",
+      "MMM.US",
+      "GE.US",
+      "CAT.US",
+      "GS.US",
+      "AXP.US",
+      "RTX.US",
+      "HON.US",
+      "C.US",
+      "WFC.US",
+      "LLY.US",
+      "BRK-B",
+      "DELL.US",
+      "ORCL.US",
+      "CRM.US",
+      "ABT.US",
+      "ACN.US",
+      "BLK.US",
+      "BMY.US",
+      "COP.US",
+      "DUK.US",
+      "F.US",
+      "GM.US",
+      "LOW.US",
+      "NEE.US",
+      "PM.US",
+      "SRE.US",
+      "SO.US",
+      "TGT.US",
+      "UPS.US",
     ],
     // Europe
     "Europe (ex-DE)": [
-      "MC.PA", "OR.PA", "ASML.AS", "PROX.BR", "ABI.BR", "SAN.MC", "ITX.MC",
-      "ENEL.MI", "ISP.MI", "NESN.SW", "NOVN.SW", "ROG.SW", "UBSG.SW", "SHEL.L",
-      "AZN.L", "HSBA.L", "ULVR.L", "DGE.L", "BATS.L", "GSK.L", "BP.L", "RIO.L",
-      "REL.L", "PRU.L", "VOD.L", "BARC.L", "LLOY.L", "TTE.PA", "BNP.PA",
-      "KER.PA", "DG.PA", "ACA.PA", "RACE.MI", "ENI.MI", "UCG.MI", "IBE.MC",
-      "REP.MC", "PHIA.AS", "INGA.AS", "DSV.CO", "MAERSK-B.CO", "NOVO-B.CO",
-      "EQNR.OL", "VOLV-B.ST", "HM-B.ST", "ERIC-B.ST", "NDA-SE.ST"
+      "MC.PA",
+      "OR.PA",
+      "ASML.AS",
+      "PROX.BR",
+      "ABI.BR",
+      "SAN.MC",
+      "ITX.MC",
+      "ENEL.MI",
+      "ISP.MI",
+      "NESN.SW",
+      "NOVN.SW",
+      "ROG.SW",
+      "UBSG.SW",
+      "SHEL.L",
+      "AZN.L",
+      "HSBA.L",
+      "ULVR.L",
+      "DGE.L",
+      "BATS.L",
+      "GSK.L",
+      "BP.L",
+      "RIO.L",
+      "REL.L",
+      "PRU.L",
+      "VOD.L",
+      "BARC.L",
+      "LLOY.L",
+      "TTE.PA",
+      "BNP.PA",
+      "KER.PA",
+      "DG.PA",
+      "ACA.PA",
+      "RACE.MI",
+      "ENI.MI",
+      "UCG.MI",
+      "IBE.MC",
+      "REP.MC",
+      "PHIA.AS",
+      "INGA.AS",
+      "DSV.CO",
+      "MAERSK-B.CO",
+      "NOVO-B.CO",
+      "EQNR.OL",
+      "VOLV-B.ST",
+      "HM-B.ST",
+      "ERIC-B.ST",
+      "NDA-SE.ST",
     ],
     // Japan (Nikkei 225 Auswahl)
     "Japan (Nikkei 225)": [
-      "7203.T", "9984.T", "6758.T", "9432.T", "8058.T", "6861.T", "4063.T",
-      "8306.T", "6954.T", "7974.T", "6501.T", "9983.T", "8031.T", "4502.T",
-      "8001.T", "6367.T", "8766.T", "2914.T", "7267.T", "4901.T", "3382.T",
-      "6273.T", "6702.T", "7751.T", "8411.T", "4568.T", "9020.T", "9022.T",
-      "5108.T", "8801.T", "8802.T", "7201.T", "7270.T", "6902.T", "6981.T",
-      "7202.T", "8053.T", "8316.T", "9201.T", "9735.T"
+      "7203.T",
+      "9984.T",
+      "6758.T",
+      "9432.T",
+      "8058.T",
+      "6861.T",
+      "4063.T",
+      "8306.T",
+      "6954.T",
+      "7974.T",
+      "6501.T",
+      "9983.T",
+      "8031.T",
+      "4502.T",
+      "8001.T",
+      "6367.T",
+      "8766.T",
+      "2914.T",
+      "7267.T",
+      "4901.T",
+      "3382.T",
+      "6273.T",
+      "6702.T",
+      "7751.T",
+      "8411.T",
+      "4568.T",
+      "9020.T",
+      "9022.T",
+      "5108.T",
+      "8801.T",
+      "8802.T",
+      "7201.T",
+      "7270.T",
+      "6902.T",
+      "6981.T",
+      "7202.T",
+      "8053.T",
+      "8316.T",
+      "9201.T",
+      "9735.T",
     ],
     // Crypto
     "Crypto": [
-      "BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "ADA-USD", "AVAX-USD",
-      "DOGE-USD", "DOT-USD", "LINK-USD", "MATIC-USD", "LTC-USD", "BCH-USD",
-      "TRX-USD", "SHIB-USD", "LEO-USD", "ATOM-USD", "UNI-USD", "OKB-USD",
-      "ETC-USD", "XLM-USD", "XMR-USD", "NEAR-USD", "ALGO-USD", "VET-USD",
-      "ICP-USD", "FIL-USD", "HBAR-USD", "CRO-USD", "EOS-USD", "AAVE-USD"
+      "BTC-USD",
+      "ETH-USD",
+      "SOL-USD",
+      "XRP-USD",
+      "ADA-USD",
+      "AVAX-USD",
+      "DOGE-USD",
+      "DOT-USD",
+      "LINK-USD",
+      "MATIC-USD",
+      "LTC-USD",
+      "BCH-USD",
+      "TRX-USD",
+      "SHIB-USD",
+      "LEO-USD",
+      "ATOM-USD",
+      "UNI-USD",
+      "OKB-USD",
+      "ETC-USD",
+      "XLM-USD",
+      "XMR-USD",
+      "NEAR-USD",
+      "ALGO-USD",
+      "VET-USD",
+      "ICP-USD",
+      "FIL-USD",
+      "HBAR-USD",
+      "CRO-USD",
+      "EOS-USD",
+      "AAVE-USD",
     ],
   };
 
@@ -126,7 +355,7 @@ class PortfolioService extends ChangeNotifier {
   String _scanStatus = "";
   bool _cancelRequested = false; // Flag to stop the loop
   String get scanStatus => _scanStatus;
-  
+
   // NEU: Progress Tracking
   int _scanCurrent = 0;
   int _scanTotal = 0;
@@ -140,7 +369,8 @@ class PortfolioService extends ChangeNotifier {
   // Cache: Wann wurde ein Symbol zuletzt im "Scan New" Modus analysiert?
   final Map<String, DateTime> _lastAnalysisTime = {};
 
-  Map<String, List<String>> get defaultWatchlistByCategory => _defaultWatchlistByCategory;
+  Map<String, List<String>> get defaultWatchlistByCategory =>
+      _defaultWatchlistByCategory;
 
   double get botBaseInvest => _botBaseInvest;
   int get maxOpenPositions => _maxOpenPositions;
@@ -254,7 +484,7 @@ class PortfolioService extends ChangeNotifier {
     _autoIntervalMinutes = 60;
     _trailingMult = 1.5;
     _dynamicSizing = true;
-    
+
     _savePortfolio();
     notifyListeners();
   }
@@ -269,8 +499,9 @@ class PortfolioService extends ChangeNotifier {
     _autoTimer?.cancel();
     if (_autoRun) {
       runDailyRoutine(); // Sofort einmal ausführen
-      _autoTimer =
-          Timer.periodic(Duration(minutes: _autoIntervalMinutes), (timer) {
+      _autoTimer = Timer.periodic(Duration(minutes: _autoIntervalMinutes), (
+        timer,
+      ) {
         runDailyRoutine();
       });
     }
@@ -324,7 +555,10 @@ class PortfolioService extends ChangeNotifier {
   }
 
   // Helper: Fetch Data in Parallel (Smart Loading)
-  Future<Map<String, dynamic>> _fetchDataForSymbol(String symbol, {DateTime? lastScanDate}) async {
+  Future<Map<String, dynamic>> _fetchDataForSymbol(
+    String symbol, {
+    DateTime? lastScanDate,
+  }) async {
     try {
       // Optimierung: Historie (Stooq) nur laden, wenn der letzte Scan länger als 48h her ist.
       // Sonst reicht der Live-Preis (Yahoo).
@@ -350,7 +584,7 @@ class PortfolioService extends ChangeNotifier {
       return {
         'bars': results[0] as List<PriceBar>,
         'livePrice': results[1] as double?,
-        'error': null
+        'error': null,
       };
     } catch (e) {
       return {'bars': <PriceBar>[], 'livePrice': null, 'error': e};
@@ -359,8 +593,9 @@ class PortfolioService extends ChangeNotifier {
 
   // Prüft, ob Pending Orders ausgeführt werden können (Limit-Verhalten)
   Future<void> _checkPendingOrders() async {
-    final pendingTrades =
-        _trades.where((t) => t.status == TradeStatus.pending).toList();
+    final pendingTrades = _trades
+        .where((t) => t.status == TradeStatus.pending)
+        .toList();
     if (pendingTrades.isEmpty) return;
 
     _scanTotal = pendingTrades.length;
@@ -372,257 +607,281 @@ class PortfolioService extends ChangeNotifier {
     const int chunkSize = 5;
     for (var i = 0; i < pendingTrades.length; i += chunkSize) {
       if (_cancelRequested) break;
-      final end = (i + chunkSize < pendingTrades.length) ? i + chunkSize : pendingTrades.length;
+      final end = (i + chunkSize < pendingTrades.length)
+          ? i + chunkSize
+          : pendingTrades.length;
       final batch = pendingTrades.sublist(i, end);
 
       // Parallel Fetching
-      final dataResults = await Future.wait(batch.map((t) => _fetchDataForSymbol(t.symbol, lastScanDate: t.lastScanDate)));
+      final dataResults = await Future.wait(
+        batch.map(
+          (t) => _fetchDataForSymbol(t.symbol, lastScanDate: t.lastScanDate),
+        ),
+      );
 
       for (var j = 0; j < batch.length; j++) {
         final trade = batch[j];
         final data = dataResults[j];
-        
+
         _scanCurrent++;
-        _scanStatus = "Prüfe Pending: ${trade.symbol} ($_scanCurrent/$_scanTotal)";
+        _scanStatus =
+            "Prüfe Pending: ${trade.symbol} ($_scanCurrent/$_scanTotal)";
         notifyListeners();
 
-      try {
-        if (data['error'] != null) throw data['error'];
+        try {
+          if (data['error'] != null) throw data['error'];
 
-        final bars = data['bars'] as List<PriceBar>;
-        final livePrice = data['livePrice'] as double?;
-        // Startdatum bestimmen: lastScanDate oder entryDate
-        final startDate = trade.lastScanDate ?? trade.entryDate;
+          final bars = data['bars'] as List<PriceBar>;
+          final livePrice = data['livePrice'] as double?;
+          // Startdatum bestimmen: lastScanDate oder entryDate
+          final startDate = trade.lastScanDate ?? trade.entryDate;
 
-        // ATR für Trailing Stop Simulation vorbereiten
-        final atrSeries = TA.atr(bars);
+          // ATR für Trailing Stop Simulation vorbereiten
+          final atrSeries = TA.atr(bars);
 
-        // Relevante Bars filtern (Zeit-Reise)
-        final relevantBars = bars.where((b) {
-          if (trade.lastScanDate != null) {
-            return b.date.isAfter(trade.lastScanDate!);
-          }
-          // FIX: Stooq Daily Bar des Entry-Tages ignorieren.
-          // Vermeidet, dass Limits durch Kurse ausgelöst werden, die VOR der Order-Erstellung am selben Tag lagen.
-          final bDate = DateTime(b.date.year, b.date.month, b.date.day);
-          final eDate = DateTime(trade.entryDate.year, trade.entryDate.month, trade.entryDate.day);
-          return bDate.isAfter(eDate);
-        }).toList();
+          // Relevante Bars filtern (Zeit-Reise)
+          final relevantBars = bars.where((b) {
+            if (trade.lastScanDate != null) {
+              return b.date.isAfter(trade.lastScanDate!);
+            }
+            // FIX: Stooq Daily Bar des Entry-Tages ignorieren.
+            // Vermeidet, dass Limits durch Kurse ausgelöst werden, die VOR der Order-Erstellung am selben Tag lagen.
+            final bDate = DateTime(b.date.year, b.date.month, b.date.day);
+            final eDate = DateTime(
+              trade.entryDate.year,
+              trade.entryDate.month,
+              trade.entryDate.day,
+            );
+            return bDate.isAfter(eDate);
+          }).toList();
 
-        TradeRecord currentTrade = trade;
-        bool tradeUpdated = false;
+          TradeRecord currentTrade = trade;
+          bool tradeUpdated = false;
 
-        // 2. Loop durch Historie
-        for (final bar in relevantBars) {
-          // --- ENTRY PRÜFUNG ---
-          if (currentTrade.status == TradeStatus.pending) {
-            bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
-            bool isBreakout = currentTrade.entryReasons.contains("Breakout");
-            // Fallback: Wenn nicht Breakout, nehmen wir Limit/Pullback an
+          // 2. Loop durch Historie
+          for (final bar in relevantBars) {
+            // --- ENTRY PRÜFUNG ---
+            if (currentTrade.status == TradeStatus.pending) {
+              bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
+              bool isBreakout = currentTrade.entryReasons.contains("Breakout");
+              // Fallback: Wenn nicht Breakout, nehmen wir Limit/Pullback an
 
-            double? execPrice;
+              double? execPrice;
 
-            if (isBreakout) {
-              // STOP ORDER
-              if (isLong) {
-                // Buy Stop: High >= Entry
-                if (bar.high >= currentTrade.entryPrice) {
-                  // Gap Schutz: Wenn Open > Entry, dann Open (schlechterer Preis)
-                  execPrice = bar.open > currentTrade.entryPrice ? bar.open : currentTrade.entryPrice;
+              if (isBreakout) {
+                // STOP ORDER
+                if (isLong) {
+                  // Buy Stop: High >= Entry
+                  if (bar.high >= currentTrade.entryPrice) {
+                    // Gap Schutz: Wenn Open > Entry, dann Open (schlechterer Preis)
+                    execPrice = bar.open > currentTrade.entryPrice
+                        ? bar.open
+                        : currentTrade.entryPrice;
+                  }
+                } else {
+                  // Sell Stop: Low <= Entry
+                  if (bar.low <= currentTrade.entryPrice) {
+                    // Gap Schutz: Wenn Open < Entry, dann Open (schlechterer Preis)
+                    execPrice = bar.open < currentTrade.entryPrice
+                        ? bar.open
+                        : currentTrade.entryPrice;
+                  }
                 }
               } else {
-                // Sell Stop: Low <= Entry
-                if (bar.low <= currentTrade.entryPrice) {
-                  // Gap Schutz: Wenn Open < Entry, dann Open (schlechterer Preis)
-                  execPrice = bar.open < currentTrade.entryPrice ? bar.open : currentTrade.entryPrice;
+                // LIMIT ORDER (Pullback)
+                if (isLong) {
+                  // Buy Limit: Low <= Entry
+                  if (bar.low <= currentTrade.entryPrice) {
+                    // Gap Schutz: Wenn Open < Entry, dann Open (besserer Preis)
+                    execPrice = bar.open < currentTrade.entryPrice
+                        ? bar.open
+                        : currentTrade.entryPrice;
+                  }
+                } else {
+                  // Sell Limit: High >= Entry
+                  if (bar.high >= currentTrade.entryPrice) {
+                    // Gap Schutz: Wenn Open > Entry, dann Open (besserer Preis)
+                    execPrice = bar.open > currentTrade.entryPrice
+                        ? bar.open
+                        : currentTrade.entryPrice;
+                  }
                 }
               }
-            } else {
-              // LIMIT ORDER (Pullback)
-              if (isLong) {
-                // Buy Limit: Low <= Entry
-                if (bar.low <= currentTrade.entryPrice) {
-                  // Gap Schutz: Wenn Open < Entry, dann Open (besserer Preis)
-                  execPrice = bar.open < currentTrade.entryPrice ? bar.open : currentTrade.entryPrice;
+
+              if (execPrice != null) {
+                // ENTRY HIT!
+                // SL/TP anpassen an Gap (Risiko gleich halten)
+                final diff = execPrice - currentTrade.entryPrice;
+                double newSl = currentTrade.stopLoss + diff;
+                final newTp1 = currentTrade.takeProfit1 + diff;
+                final newTp2 = currentTrade.takeProfit2 + diff;
+
+                // SAFETY CHECK: SL muss auf der richtigen Seite bleiben
+                if (isLong) {
+                  if (newSl >= execPrice) {
+                    newSl = execPrice * 0.99;
+                  }
+                } else {
+                  if (newSl <= execPrice) {
+                    newSl = execPrice * 1.01;
+                  }
                 }
-              } else {
-                // Sell Limit: High >= Entry
-                if (bar.high >= currentTrade.entryPrice) {
-                  // Gap Schutz: Wenn Open > Entry, dann Open (besserer Preis)
-                  execPrice = bar.open > currentTrade.entryPrice ? bar.open : currentTrade.entryPrice;
-                }
+
+                currentTrade = currentTrade.copyWith(
+                  status: TradeStatus.open,
+                  entryExecutionDate: bar.date,
+                  executionPrice: execPrice,
+                  entryPrice: execPrice, // Update entryPrice für PnL
+                  stopLoss: newSl,
+                  takeProfit1: newTp1,
+                  takeProfit2: newTp2,
+                  lastScanDate: bar.date,
+                );
+                tradeUpdated = true;
+                debugPrint(
+                  "⚡ [Bot] Pending Order Executed (Sim): ${currentTrade.symbol} @ $execPrice",
+                );
               }
             }
 
-            if (execPrice != null) {
-              // ENTRY HIT!
-              // SL/TP anpassen an Gap (Risiko gleich halten)
-              final diff = execPrice - currentTrade.entryPrice;
+            // --- EXIT PRÜFUNG (für Open Trades) ---
+            if (currentTrade.status == TradeStatus.open) {
+              final exitResult = _checkExitConditions(currentTrade, bar);
+              if (exitResult != null) {
+                currentTrade = exitResult;
+                tradeUpdated = true;
+                if (currentTrade.status == TradeStatus.closed ||
+                    currentTrade.status == TradeStatus.stoppedOut ||
+                    currentTrade.status == TradeStatus.takeProfit) {
+                  break; // Trade beendet
+                }
+              }
+
+              // --- TRAILING STOP SIMULATION (auch für frisch ausgelöste Pending Orders) ---
+              // Wir simulieren das Nachziehen des SL für die restlichen Tage im Loop
+              final barIndex = bars.indexOf(bar);
+              final currentAtr = (barIndex != -1 && barIndex < atrSeries.length)
+                  ? (atrSeries[barIndex] ?? bar.close * 0.02)
+                  : bar.close * 0.02;
+
+              double trailingDist = currentAtr * _trailingMult;
+              bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
+
+              if (isLong) {
+                double newSl = bar.close - trailingDist;
+                if (newSl > currentTrade.stopLoss) {
+                  // SL nachziehen (nur verbessern)
+                  currentTrade = currentTrade.copyWith(stopLoss: newSl);
+                  tradeUpdated = true;
+                }
+              } else {
+                double newSl = bar.close + trailingDist;
+                if (newSl < currentTrade.stopLoss) {
+                  currentTrade = currentTrade.copyWith(stopLoss: newSl);
+                  tradeUpdated = true;
+                }
+              }
+
+              // Update lastScanDate
+              currentTrade = currentTrade.copyWith(lastScanDate: bar.date);
+              tradeUpdated = true;
+            }
+          } // End Loop Bars
+
+          // 3. Live Check (Fallback für Entry & Exit)
+          // Falls Historie (Stooq) nichts ausgelöst hat, prüfen wir den aktuellen Yahoo Live-Preis.
+          if (currentTrade.status == TradeStatus.pending && livePrice != null) {
+            bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
+            bool isBreakout = currentTrade.entryReasons.contains("Breakout");
+            bool shouldExecute = false;
+
+            if (isBreakout) {
+              // Stop Order
+              if (isLong) {
+                if (livePrice >= currentTrade.entryPrice) shouldExecute = true;
+              } else {
+                if (livePrice <= currentTrade.entryPrice) shouldExecute = true;
+              }
+            } else {
+              // Limit Order
+              if (isLong) {
+                if (livePrice <= currentTrade.entryPrice) shouldExecute = true;
+              } else {
+                if (livePrice >= currentTrade.entryPrice) shouldExecute = true;
+              }
+            }
+
+            if (shouldExecute) {
+              // Entry zum Live-Preis
+              final diff = livePrice - currentTrade.entryPrice;
               double newSl = currentTrade.stopLoss + diff;
               final newTp1 = currentTrade.takeProfit1 + diff;
               final newTp2 = currentTrade.takeProfit2 + diff;
 
               // SAFETY CHECK: SL muss auf der richtigen Seite bleiben
               if (isLong) {
-                if (newSl >= execPrice) {
-                  newSl = execPrice * 0.99;
-                }
+                if (newSl >= livePrice) newSl = livePrice * 0.99;
               } else {
-                if (newSl <= execPrice) {
-                  newSl = execPrice * 1.01;
-                }
+                if (newSl <= livePrice) newSl = livePrice * 1.01;
               }
 
               currentTrade = currentTrade.copyWith(
                 status: TradeStatus.open,
-                entryExecutionDate: bar.date,
-                executionPrice: execPrice,
-                entryPrice: execPrice, // Update entryPrice für PnL
+                entryExecutionDate: DateTime.now(),
+                executionPrice: livePrice,
+                entryPrice: livePrice,
                 stopLoss: newSl,
                 takeProfit1: newTp1,
                 takeProfit2: newTp2,
-                lastScanDate: bar.date,
+                lastScanDate: DateTime.now(),
               );
               tradeUpdated = true;
-              debugPrint("⚡ [Bot] Pending Order Executed (Sim): ${currentTrade.symbol} @ $execPrice");
+              debugPrint(
+                "⚡ [Bot] Pending Order Executed (LIVE): ${currentTrade.symbol} @ $livePrice",
+              );
             }
           }
 
-          // --- EXIT PRÜFUNG (für Open Trades) ---
-          if (currentTrade.status == TradeStatus.open) {
-            final exitResult = _checkExitConditions(currentTrade, bar);
-            if (exitResult != null) {
-              currentTrade = exitResult;
-              tradeUpdated = true;
-              if (currentTrade.status == TradeStatus.closed ||
-                  currentTrade.status == TradeStatus.stoppedOut ||
-                  currentTrade.status == TradeStatus.takeProfit) {
-                break; // Trade beendet
-              }
-            }
-
-            // --- TRAILING STOP SIMULATION (auch für frisch ausgelöste Pending Orders) ---
-            // Wir simulieren das Nachziehen des SL für die restlichen Tage im Loop
-            final barIndex = bars.indexOf(bar);
-            final currentAtr = (barIndex != -1 && barIndex < atrSeries.length)
-                ? (atrSeries[barIndex] ?? bar.close * 0.02)
-                : bar.close * 0.02;
-
-            double trailingDist = currentAtr * _trailingMult;
-            bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
-
-            if (isLong) {
-              double newSl = bar.close - trailingDist;
-              if (newSl > currentTrade.stopLoss) {
-                // SL nachziehen (nur verbessern)
-                currentTrade = currentTrade.copyWith(stopLoss: newSl);
-                tradeUpdated = true;
-              }
-            } else {
-              double newSl = bar.close + trailingDist;
-              if (newSl < currentTrade.stopLoss) {
-                currentTrade = currentTrade.copyWith(stopLoss: newSl);
-                tradeUpdated = true;
-              }
-            }
-
-            // Update lastScanDate
-            currentTrade = currentTrade.copyWith(lastScanDate: bar.date);
-            tradeUpdated = true;
-          }
-        } // End Loop Bars
-
-        // 3. Live Check (Fallback für Entry & Exit)
-        // Falls Historie (Stooq) nichts ausgelöst hat, prüfen wir den aktuellen Yahoo Live-Preis.
-        if (currentTrade.status == TradeStatus.pending && livePrice != null) {
-          bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
-          bool isBreakout = currentTrade.entryReasons.contains("Breakout");
-          bool shouldExecute = false;
-
-          if (isBreakout) {
-            // Stop Order
-            if (isLong) {
-              if (livePrice >= currentTrade.entryPrice) shouldExecute = true;
-            } else {
-              if (livePrice <= currentTrade.entryPrice) shouldExecute = true;
-            }
-          } else {
-            // Limit Order
-            if (isLong) {
-              if (livePrice <= currentTrade.entryPrice) shouldExecute = true;
-            } else {
-              if (livePrice >= currentTrade.entryPrice) shouldExecute = true;
-            }
-          }
-
-          if (shouldExecute) {
-            // Entry zum Live-Preis
-            final diff = livePrice - currentTrade.entryPrice;
-            double newSl = currentTrade.stopLoss + diff;
-            final newTp1 = currentTrade.takeProfit1 + diff;
-            final newTp2 = currentTrade.takeProfit2 + diff;
-
-            // SAFETY CHECK: SL muss auf der richtigen Seite bleiben
-            if (isLong) {
-              if (newSl >= livePrice) newSl = livePrice * 0.99;
-            } else {
-              if (newSl <= livePrice) newSl = livePrice * 1.01;
-            }
-
-            currentTrade = currentTrade.copyWith(
-              status: TradeStatus.open,
-              entryExecutionDate: DateTime.now(),
-              executionPrice: livePrice,
-              entryPrice: livePrice,
-              stopLoss: newSl,
-              takeProfit1: newTp1,
-              takeProfit2: newTp2,
-              lastScanDate: DateTime.now(),
-            );
-            tradeUpdated = true;
-            debugPrint("⚡ [Bot] Pending Order Executed (LIVE): ${currentTrade.symbol} @ $livePrice");
-
-          }
-        }
-
-        if (currentTrade.status == TradeStatus.open && livePrice != null) {
-          // Live Exit Check
-          final liveBar = PriceBar(
+          if (currentTrade.status == TradeStatus.open && livePrice != null) {
+            // Live Exit Check
+            final liveBar = PriceBar(
               date: DateTime.now(),
               open: livePrice,
               high: livePrice,
               low: livePrice,
               close: livePrice,
-              volume: 0);
-          final exitResult = _checkExitConditions(currentTrade, liveBar);
-          if (exitResult != null) {
-            currentTrade = exitResult;
-          } else {
-            currentTrade = currentTrade.copyWith(lastPrice: livePrice);
+              volume: 0,
+            );
+            final exitResult = _checkExitConditions(currentTrade, liveBar);
+            if (exitResult != null) {
+              currentTrade = exitResult;
+            } else {
+              currentTrade = currentTrade.copyWith(lastPrice: livePrice);
+            }
+            tradeUpdated = true;
           }
+
+          // Update lastScanDate auf JETZT
+          currentTrade = currentTrade.copyWith(lastScanDate: DateTime.now());
           tradeUpdated = true;
-        }
 
-        // Update lastScanDate auf JETZT
-        currentTrade = currentTrade.copyWith(lastScanDate: DateTime.now());
-        tradeUpdated = true;
-
-        if (tradeUpdated) {
-          final index = _trades.indexOf(trade);
-          if (index != -1) {
-            _trades[index] = currentTrade;
+          if (tradeUpdated) {
+            final index = _trades.indexOf(trade);
+            if (index != -1) {
+              _trades[index] = currentTrade;
+            }
           }
+        } catch (e) {
+          debugPrint("❌ [Bot] Fehler bei Pending Order ${trade.symbol}: $e");
         }
-      } catch (e) {
-        debugPrint("❌ [Bot] Fehler bei Pending Order ${trade.symbol}: $e");
-      }
       } // End Batch Loop
     }
   }
 
   Future<void> _checkOpenPositions() async {
-    final openTrades =
-        _trades.where((t) => t.status == TradeStatus.open).toList();
+    final openTrades = _trades
+        .where((t) => t.status == TradeStatus.open)
+        .toList();
     if (openTrades.isEmpty) return;
 
     _scanTotal = openTrades.length;
@@ -634,131 +893,145 @@ class PortfolioService extends ChangeNotifier {
     const int chunkSize = 5;
     for (var i = 0; i < openTrades.length; i += chunkSize) {
       if (_cancelRequested) break;
-      final end = (i + chunkSize < openTrades.length) ? i + chunkSize : openTrades.length;
+      final end = (i + chunkSize < openTrades.length)
+          ? i + chunkSize
+          : openTrades.length;
       final batch = openTrades.sublist(i, end);
 
       // Parallel Fetching
-      final dataResults = await Future.wait(batch.map((t) => _fetchDataForSymbol(t.symbol, lastScanDate: t.lastScanDate)));
+      final dataResults = await Future.wait(
+        batch.map(
+          (t) => _fetchDataForSymbol(t.symbol, lastScanDate: t.lastScanDate),
+        ),
+      );
 
       for (var j = 0; j < batch.length; j++) {
         final trade = batch[j];
         final data = dataResults[j];
-        
+
         _scanCurrent++;
-        _scanStatus = "Manage Position: ${trade.symbol} ($_scanCurrent/$_scanTotal)";
+        _scanStatus =
+            "Manage Position: ${trade.symbol} ($_scanCurrent/$_scanTotal)";
         notifyListeners();
 
-      try {
-        if (data['error'] != null) throw data['error'];
-        final bars = data['bars'] as List<PriceBar>;
-        final livePrice = data['livePrice'] as double?;
+        try {
+          if (data['error'] != null) throw data['error'];
+          final bars = data['bars'] as List<PriceBar>;
+          final livePrice = data['livePrice'] as double?;
 
-        // Startdatum: lastScanDate oder entryExecutionDate oder entryDate
-        final startDate = trade.lastScanDate ?? trade.entryExecutionDate ?? trade.entryDate;
+          // Startdatum: lastScanDate oder entryExecutionDate oder entryDate
+          final startDate =
+              trade.lastScanDate ?? trade.entryExecutionDate ?? trade.entryDate;
 
-        // ATR Serie für Trailing Stop Berechnung vorbereiten (einmalig für alle Bars)
-        // Wir brauchen das, um in der Loop den korrekten ATR-Wert des jeweiligen Tages zu haben.
-        final atrSeries = TA.atr(bars);
+          // ATR Serie für Trailing Stop Berechnung vorbereiten (einmalig für alle Bars)
+          // Wir brauchen das, um in der Loop den korrekten ATR-Wert des jeweiligen Tages zu haben.
+          final atrSeries = TA.atr(bars);
 
-        // Relevante Bars filtern
-        final relevantBars = bars.where((b) {
-          if (trade.lastScanDate != null) {
-            return b.date.isAfter(trade.lastScanDate!);
-          }
-          // FIX: Stooq Daily Bar des Entry-Tages ignorieren.
-          // Vermeidet "False Positives" beim SL/TP durch Volatilität, die VOR dem Einstieg am selben Tag stattfand.
-          final bDate = DateTime(b.date.year, b.date.month, b.date.day);
-          final eDate = DateTime(startDate.year, startDate.month, startDate.day);
-          return bDate.isAfter(eDate);
-        }).toList();
+          // Relevante Bars filtern
+          final relevantBars = bars.where((b) {
+            if (trade.lastScanDate != null) {
+              return b.date.isAfter(trade.lastScanDate!);
+            }
+            // FIX: Stooq Daily Bar des Entry-Tages ignorieren.
+            // Vermeidet "False Positives" beim SL/TP durch Volatilität, die VOR dem Einstieg am selben Tag stattfand.
+            final bDate = DateTime(b.date.year, b.date.month, b.date.day);
+            final eDate = DateTime(
+              startDate.year,
+              startDate.month,
+              startDate.day,
+            );
+            return bDate.isAfter(eDate);
+          }).toList();
 
-        TradeRecord currentTrade = trade;
-        bool tradeUpdated = false;
+          TradeRecord currentTrade = trade;
+          bool tradeUpdated = false;
 
-        for (final bar in relevantBars) {
-          // 1. Prüfe Exit (SL/TP) mit dem aktuellen StopLoss des Trades
-          final exitResult = _checkExitConditions(currentTrade, bar);
-          if (exitResult != null) {
-            currentTrade = exitResult;
+          for (final bar in relevantBars) {
+            // 1. Prüfe Exit (SL/TP) mit dem aktuellen StopLoss des Trades
+            final exitResult = _checkExitConditions(currentTrade, bar);
+            if (exitResult != null) {
+              currentTrade = exitResult;
+              tradeUpdated = true;
+              if (currentTrade.status == TradeStatus.closed ||
+                  currentTrade.status == TradeStatus.stoppedOut ||
+                  currentTrade.status == TradeStatus.takeProfit) {
+                break;
+              }
+            }
+
+            // 2. Trailing Stop Simulation (SL nachziehen)
+            // Wir suchen den ATR Wert passend zu diesem Bar
+            // Da relevantBars eine Teilmenge ist, müssen wir den Index im Original 'bars' finden oder mappen.
+            // Einfache Variante: Wir nehmen den ATR vom gleichen Index (da TA.atr die gleiche Länge wie bars hat).
+            final barIndex = bars.indexOf(bar);
+            final currentAtr = (barIndex != -1 && barIndex < atrSeries.length)
+                ? (atrSeries[barIndex] ?? bar.close * 0.02)
+                : bar.close * 0.02;
+
+            double trailingDist = currentAtr * _trailingMult;
+            bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
+
+            if (isLong) {
+              double newSl = bar.close - trailingDist;
+              // Nur nachziehen (verbessern), niemals verschlechtern
+              if (newSl > currentTrade.stopLoss) {
+                // Begrenzung: SL darf nicht über den aktuellen Preis springen (logisch),
+                // aber hier simulieren wir "End of Day" Anpassung für den NÄCHSTEN Tag.
+                currentTrade = currentTrade.copyWith(stopLoss: newSl);
+                tradeUpdated = true;
+              }
+            } else {
+              // Short
+              double newSl = bar.close + trailingDist;
+              if (newSl < currentTrade.stopLoss) {
+                currentTrade = currentTrade.copyWith(stopLoss: newSl);
+                tradeUpdated = true;
+              }
+            }
+
+            currentTrade = currentTrade.copyWith(lastScanDate: bar.date);
             tradeUpdated = true;
-            if (currentTrade.status == TradeStatus.closed ||
-                currentTrade.status == TradeStatus.stoppedOut ||
-                currentTrade.status == TradeStatus.takeProfit) {
-              break;
-            }
           }
 
-          // 2. Trailing Stop Simulation (SL nachziehen)
-          // Wir suchen den ATR Wert passend zu diesem Bar
-          // Da relevantBars eine Teilmenge ist, müssen wir den Index im Original 'bars' finden oder mappen.
-          // Einfache Variante: Wir nehmen den ATR vom gleichen Index (da TA.atr die gleiche Länge wie bars hat).
-          final barIndex = bars.indexOf(bar);
-          final currentAtr = (barIndex != -1 && barIndex < atrSeries.length) 
-              ? (atrSeries[barIndex] ?? bar.close * 0.02) 
-              : bar.close * 0.02;
+          // 3. Live Price Update & Exit Check
+          if (currentTrade.status == TradeStatus.open) {
+            // Fallback: Wenn Live-Preis fehlt, nehmen wir den letzten Close der History
+            // Damit PnL nicht 0.00 anzeigt.
+            double? priceToUse =
+                livePrice ?? (bars.isNotEmpty ? bars.last.close : null);
 
-          double trailingDist = currentAtr * _trailingMult;
-          bool isLong = currentTrade.takeProfit1 > currentTrade.entryPrice;
-
-          if (isLong) {
-            double newSl = bar.close - trailingDist;
-            // Nur nachziehen (verbessern), niemals verschlechtern
-            if (newSl > currentTrade.stopLoss) {
-              // Begrenzung: SL darf nicht über den aktuellen Preis springen (logisch), 
-              // aber hier simulieren wir "End of Day" Anpassung für den NÄCHSTEN Tag.
-              currentTrade = currentTrade.copyWith(stopLoss: newSl);
-              tradeUpdated = true;
-            }
-          } else {
-            // Short
-            double newSl = bar.close + trailingDist;
-            if (newSl < currentTrade.stopLoss) {
-              currentTrade = currentTrade.copyWith(stopLoss: newSl);
-              tradeUpdated = true;
-            }
-          }
-
-          currentTrade = currentTrade.copyWith(lastScanDate: bar.date);
-          tradeUpdated = true;
-        }
-
-        // 3. Live Price Update & Exit Check
-        if (currentTrade.status == TradeStatus.open) {
-          // Fallback: Wenn Live-Preis fehlt, nehmen wir den letzten Close der History
-          // Damit PnL nicht 0.00 anzeigt.
-          double? priceToUse = livePrice ?? (bars.isNotEmpty ? bars.last.close : null);
-
-          if (livePrice != null) {
-            // Nur wenn wir wirklich einen LIVE Preis haben, prüfen wir Exit Conditions "in Echtzeit"
-            final liveBar = PriceBar(
+            if (livePrice != null) {
+              // Nur wenn wir wirklich einen LIVE Preis haben, prüfen wir Exit Conditions "in Echtzeit"
+              final liveBar = PriceBar(
                 date: DateTime.now(),
                 open: livePrice,
                 high: livePrice,
                 low: livePrice,
                 close: livePrice,
-                volume: 0);
-            final exitResult = _checkExitConditions(currentTrade, liveBar);
-            if (exitResult != null) {
-              currentTrade = exitResult;
+                volume: 0,
+              );
+              final exitResult = _checkExitConditions(currentTrade, liveBar);
+              if (exitResult != null) {
+                currentTrade = exitResult;
+              }
             }
+
+            if (priceToUse != null) {
+              currentTrade = currentTrade.copyWith(lastPrice: priceToUse);
+            }
+            tradeUpdated = true;
           }
-          
-          if (priceToUse != null) {
-            currentTrade = currentTrade.copyWith(lastPrice: priceToUse);
-          }
+
+          currentTrade = currentTrade.copyWith(lastScanDate: DateTime.now());
           tradeUpdated = true;
-        }
 
-        currentTrade = currentTrade.copyWith(lastScanDate: DateTime.now());
-        tradeUpdated = true;
-
-        if (tradeUpdated) {
-          final index = _trades.indexWhere((t) => t.id == trade.id);
-          if (index != -1) _trades[index] = currentTrade;
+          if (tradeUpdated) {
+            final index = _trades.indexWhere((t) => t.id == trade.id);
+            if (index != -1) _trades[index] = currentTrade;
+          }
+        } catch (e) {
+          debugPrint("❌ [Bot] Fehler beim Check von ${trade.symbol}: $e");
         }
-      } catch (e) {
-        debugPrint("❌ [Bot] Fehler beim Check von ${trade.symbol}: $e");
-      }
       } // End Batch Loop
     }
     _savePortfolio();
@@ -831,8 +1104,10 @@ class PortfolioService extends ChangeNotifier {
 
   Future<void> _scanForNewTrades() async {
     // Nur aktive Symbole scannen
-    final activeSymbols =
-        _watchListMap.entries.where((e) => e.value).map((e) => e.key).toList();
+    final activeSymbols = _watchListMap.entries
+        .where((e) => e.value)
+        .map((e) => e.key)
+        .toList();
 
     _scanTotal = activeSymbols.length;
     _scanCurrent = 0;
@@ -848,7 +1123,8 @@ class PortfolioService extends ChangeNotifier {
       // Wir nutzen das _autoIntervalMinutes als Referenz.
       if (_lastAnalysisTime.containsKey(symbol)) {
         final lastScan = _lastAnalysisTime[symbol]!;
-        if (DateTime.now().difference(lastScan).inMinutes < _autoIntervalMinutes) {
+        if (DateTime.now().difference(lastScan).inMinutes <
+            _autoIntervalMinutes) {
           continue; // Überspringen, Daten sind noch "frisch genug"
         }
       }
@@ -859,21 +1135,31 @@ class PortfolioService extends ChangeNotifier {
 
         // Check Max Positions
         if (!_unlimitedPositions) {
-          int openCount =
-              _trades.where((t) => t.status == TradeStatus.open || t.status == TradeStatus.pending).length;
+          int openCount = _trades
+              .where(
+                (t) =>
+                    t.status == TradeStatus.open ||
+                    t.status == TradeStatus.pending,
+              )
+              .length;
           if (openCount >= _maxOpenPositions) {
             _scanStatus =
                 "Max Positionen ($openCount/$_maxOpenPositions) erreicht.";
 
-            debugPrint("⚠️ [Bot] Max Positionen erreicht ($openCount/$_maxOpenPositions).");
+            debugPrint(
+              "⚠️ [Bot] Max Positionen erreicht ($openCount/$_maxOpenPositions).",
+            );
             notifyListeners(); // UI updaten
             break; // Keine neuen Trades mehr
           }
         }
 
         // 1. Daten laden
-        final bars = await _dataService.fetchBars(symbol, interval: _botTimeFrame);
-        
+        final bars = await _dataService.fetchBars(
+          symbol,
+          interval: _botTimeFrame,
+        );
+
         // Zeitstempel aktualisieren (damit wir nicht sofort wieder Stooq abrufen)
         _lastAnalysisTime[symbol] = DateTime.now();
 
@@ -885,8 +1171,9 @@ class PortfolioService extends ChangeNotifier {
         if (signal != null &&
             (signal.type.contains("Buy") || signal.type.contains("Sell"))) {
           // Prüfen, ob wir den Trade schon offen haben
-          bool alreadyOpen = _trades
-              .any((t) => t.symbol == symbol && t.status == TradeStatus.open);
+          bool alreadyOpen = _trades.any(
+            (t) => t.symbol == symbol && t.status == TradeStatus.open,
+          );
           if (!alreadyOpen) {
             // NEU: Entry-Preis Berechnung
             // 1. Yahoo Live Preis (aktuell)
@@ -894,8 +1181,9 @@ class PortfolioService extends ChangeNotifier {
             double executionPrice;
             if (_entryStrategy == 0) {
               // Market: Versuche Live-Preis, sonst Stooq Close
-              final livePrice =
-                  await _dataService.fetchRegularMarketPrice(symbol);
+              final livePrice = await _dataService.fetchRegularMarketPrice(
+                symbol,
+              );
               executionPrice = livePrice ?? bars.last.close;
             } else {
               // Pending (Pullback/Breakout): Wir nutzen den berechneten Entry aus dem Signal
@@ -956,7 +1244,9 @@ class PortfolioService extends ChangeNotifier {
     final relevantSpanA = bars.length > spanOffset
         ? ichimokuOut.spanA[bars.length - 1 - spanOffset]
         : null;
-    final relevantSpanB = bars.length > spanOffset ? ichimokuOut.spanB[bars.length - 1 - spanOffset] : null;
+    final relevantSpanB = bars.length > spanOffset
+        ? ichimokuOut.spanB[bars.length - 1 - spanOffset]
+        : null;
 
     // Donchian Werte extrahieren
     double lastDonchianLo = lastPrice * 0.95;
@@ -1112,7 +1402,8 @@ class PortfolioService extends ChangeNotifier {
       type = "Strong Buy";
     else if (score >= 60)
       type = "Buy";
-    else if (score <= 40) type = "Sell";
+    else if (score <= 40)
+      type = "Sell";
 
     if (type == "Neutral") return null;
 
@@ -1249,22 +1540,27 @@ class PortfolioService extends ChangeNotifier {
     };
 
     return TradeSignal(
-        type: type,
-        entryPrice: entry,
-        stopLoss: sl,
-        takeProfit1: tp1,
-        takeProfit2: tp2,
-        riskRewardRatio: rrFactor,
-        score: score,
-        reasons: reasons,
-        chartPattern: pattern,
-        tp1Percent: tp1Percent,
-        tp2Percent: tp2Percent,
-        indicatorValues: snapshot);
+      type: type,
+      entryPrice: entry,
+      stopLoss: sl,
+      takeProfit1: tp1,
+      takeProfit2: tp2,
+      riskRewardRatio: rrFactor,
+      score: score,
+      reasons: reasons,
+      chartPattern: pattern,
+      tp1Percent: tp1Percent,
+      tp2Percent: tp2Percent,
+      indicatorValues: snapshot,
+    );
   }
 
-  void _executeBuy(String symbol, PriceBar lastBar, TradeSignal signal,
-      double executionPrice) {
+  void _executeBuy(
+    String symbol,
+    PriceBar lastBar,
+    TradeSignal signal,
+    double executionPrice,
+  ) {
     // Money Management: Gewichtung nach Score
     double baseInvest = _botBaseInvest;
     double multiplier = 1.0;
@@ -1273,7 +1569,8 @@ class PortfolioService extends ChangeNotifier {
     if (_dynamicSizing) {
       if (signal.score >= 80 || signal.score <= 20)
         multiplier = 2.0; // Doppelt bei Strong Signal
-      else if (signal.score >= 70 || signal.score <= 30) multiplier = 1.5;
+      else if (signal.score >= 70 || signal.score <= 30)
+        multiplier = 1.5;
     }
     double positionSize = baseInvest * multiplier;
     double qty = positionSize / executionPrice;
@@ -1308,8 +1605,9 @@ class PortfolioService extends ChangeNotifier {
     // Bei Market (_entryStrategy == 0) bleibt es TradeStatus.open
 
     if (_entryStrategy != 0)
-      signal.reasons
-          .add("Strategy: ${_entryStrategy == 1 ? 'Pullback' : 'Breakout'}");
+      signal.reasons.add(
+        "Strategy: ${_entryStrategy == 1 ? 'Pullback' : 'Breakout'}",
+      );
 
     // Bot Einstellungen speichern
     final settingsSnapshot = {
@@ -1328,8 +1626,9 @@ class PortfolioService extends ChangeNotifier {
     };
 
     // Merge mit Indicator Snapshot
-    final fullSnapshot =
-        Map<String, dynamic>.from(signal.indicatorValues ?? {});
+    final fullSnapshot = Map<String, dynamic>.from(
+      signal.indicatorValues ?? {},
+    );
     fullSnapshot.addAll(settingsSnapshot);
 
     final newTrade = TradeRecord(
@@ -1350,14 +1649,18 @@ class PortfolioService extends ChangeNotifier {
       botTimeFrame: _botTimeFrame,
       // NEU: Felder für Historie befüllen
       executionPrice: executionPrice,
-      entryExecutionDate: initialStatus == TradeStatus.open ? DateTime.now() : null,
+      entryExecutionDate: initialStatus == TradeStatus.open
+          ? DateTime.now()
+          : null,
       lastScanDate: DateTime.now(),
     );
 
     _trades.add(newTrade);
     _virtualBalance -= (executionPrice * qty); // Geld abziehen
 
-    debugPrint("🛒 [Bot] ORDER ERSTELLT (${initialStatus.name}): $symbol @ $executionPrice");
+    debugPrint(
+      "🛒 [Bot] ORDER ERSTELLT (${initialStatus.name}): $symbol @ $executionPrice",
+    );
     _savePortfolio(); // Sofort speichern
   }
 
@@ -1377,16 +1680,24 @@ class PortfolioService extends ChangeNotifier {
     }
 
     trade.realizedPnL += pnlFromPartialClose;
-    _virtualBalance += (trade.entryPrice * quantityToSell) + pnlFromPartialClose; // Kapital + Gewinn zurückbuchen
+    _virtualBalance +=
+        (trade.entryPrice * quantityToSell) +
+        pnlFromPartialClose; // Kapital + Gewinn zurückbuchen
     trade.quantity = remainingQuantity; // Positionsgröße reduzieren
     trade.tp1Hit = true;
     trade.stopLoss = trade.entryPrice; // SL auf Break-Even setzen
 
-    debugPrint("💰 [Bot] TP1 HIT: ${trade.symbol} | Sold ${_tp1SellFraction * 100}% | PnL: ${pnlFromPartialClose.toStringAsFixed(2)}");
+    debugPrint(
+      "💰 [Bot] TP1 HIT: ${trade.symbol} | Sold ${_tp1SellFraction * 100}% | PnL: ${pnlFromPartialClose.toStringAsFixed(2)}",
+    );
   }
 
   void _closeTrade(
-      TradeRecord trade, double price, TradeStatus reason, DateTime exitDate) {
+    TradeRecord trade,
+    double price,
+    TradeStatus reason,
+    DateTime exitDate,
+  ) {
     trade.status = reason;
     trade.exitDate = exitDate;
     trade.exitPrice = price;
@@ -1404,7 +1715,9 @@ class PortfolioService extends ChangeNotifier {
 
     // Kapital zurückbuchen (Invest für diesen Teil + PnL für diesen Teil)
     _virtualBalance += (trade.entryPrice * trade.quantity) + pnlForThisClose;
-    debugPrint("💵 [Bot] TRADE CLOSED: ${trade.symbol} | PnL: ${trade.realizedPnL.toStringAsFixed(2)}");
+    debugPrint(
+      "💵 [Bot] TRADE CLOSED: ${trade.symbol} | PnL: ${trade.realizedPnL.toStringAsFixed(2)}",
+    );
     _savePortfolio(); // Sofort speichern
   }
 
@@ -1445,7 +1758,11 @@ class PortfolioService extends ChangeNotifier {
   }
 
   // --- Top Movers Historie ---
-  void addTopMoversToHistory(List<dynamic> topLong, List<dynamic> topShort, TimeFrame tf) {
+  void addTopMoversToHistory(
+    List<dynamic> topLong,
+    List<dynamic> topShort,
+    TimeFrame tf,
+  ) {
     final combined = [...topLong, ...topShort];
     final records = combined.map((mover) {
       return TopMoverRecord(
@@ -1456,9 +1773,14 @@ class PortfolioService extends ChangeNotifier {
       );
     }).toList();
 
-    final result = TopMoverScanResult(scanDate: DateTime.now(), timeFrame: tf, topMovers: records);
+    final result = TopMoverScanResult(
+      scanDate: DateTime.now(),
+      timeFrame: tf,
+      topMovers: records,
+    );
     _topMoverHistory.insert(0, result); // Neueste zuerst
-    if (_topMoverHistory.length > 20) _topMoverHistory = _topMoverHistory.sublist(0, 20); // Limit auf 20 Scans
+    if (_topMoverHistory.length > 20)
+      _topMoverHistory = _topMoverHistory.sublist(0, 20); // Limit auf 20 Scans
     _savePortfolio();
     notifyListeners();
   }
@@ -1494,7 +1816,9 @@ class PortfolioService extends ChangeNotifier {
     await prefs.setBool('bot_enable_open', _enableCheckOpen);
     await prefs.setBool('bot_enable_scan', _enableScanNew);
 
-    final String historyJson = jsonEncode(_topMoverHistory.map((h) => h.toJson()).toList());
+    final String historyJson = jsonEncode(
+      _topMoverHistory.map((h) => h.toJson()).toList(),
+    );
     await prefs.setString('bot_top_mover_history', historyJson);
   }
 
@@ -1517,7 +1841,8 @@ class PortfolioService extends ChangeNotifier {
     _tpPercent1 = prefs.getDouble('bot_tp_percent1') ?? 5.0;
     _tpPercent2 = prefs.getDouble('bot_tp_percent2') ?? 10.0;
     _tp1SellFraction = prefs.getDouble('bot_tp1_sell_fraction') ?? 0.5;
-    _botTimeFrame = TimeFrame.values[prefs.getInt('bot_timeframe') ?? TimeFrame.d1.index];
+    _botTimeFrame =
+        TimeFrame.values[prefs.getInt('bot_timeframe') ?? TimeFrame.d1.index];
 
     _autoIntervalMinutes = prefs.getInt('bot_auto_interval') ?? 60;
     _trailingMult = prefs.getDouble('bot_trailing_mult') ?? 1.5;
@@ -1547,7 +1872,9 @@ class PortfolioService extends ChangeNotifier {
     final String? historyJson = prefs.getString('bot_top_mover_history');
     if (historyJson != null) {
       final List decoded = jsonDecode(historyJson);
-      _topMoverHistory = decoded.map((x) => TopMoverScanResult.fromJson(x)).toList();
+      _topMoverHistory = decoded
+          .map((x) => TopMoverScanResult.fromJson(x))
+          .toList();
     }
     notifyListeners();
   }
@@ -1560,14 +1887,15 @@ class PortfolioService extends ChangeNotifier {
   }
 
   double get totalRealizedPnL {
-    return _trades
-        .where((t) => t.status != TradeStatus.open)
-        .fold(0.0, (sum, t) => sum + t.realizedPnL);
+    return _trades.fold(0.0, (sum, t) => sum + t.realizedPnL);
   }
 
   double get totalUnrealizedPnL {
     return _trades
         .where((t) => t.status == TradeStatus.open)
-        .fold(0.0, (sum, t) => sum + t.calcUnrealizedPnL(t.lastPrice ?? t.entryPrice));
+        .fold(
+          0.0,
+          (sum, t) => sum + t.calcUnrealizedPnL(t.lastPrice ?? t.entryPrice),
+        );
   }
 }

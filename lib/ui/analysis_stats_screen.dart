@@ -32,10 +32,15 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
   Widget build(BuildContext context) {
     final bot = context.watch<PortfolioService>();
     // Filter: Only closed trades (TP or SL)
+    // Filter: Trades with realized PnL (Closed OR Partial TP)
     final closedTrades = bot.trades
-        .where((t) =>
-            t.status == TradeStatus.takeProfit ||
-            t.status == TradeStatus.stoppedOut)
+        .where(
+          (t) =>
+              t.status == TradeStatus.takeProfit ||
+              t.status == TradeStatus.stoppedOut ||
+              t.status == TradeStatus.closed ||
+              t.realizedPnL != 0,
+        )
         .toList();
 
     return Scaffold(
@@ -59,9 +64,14 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
                 children: [
                   Icon(Icons.analytics_outlined, size: 60, color: Colors.grey),
                   SizedBox(height: 16),
-                  Text("Keine geschlossenen Trades für eine Analyse vorhanden."),
+                  Text(
+                    "Keine geschlossenen Trades für eine Analyse vorhanden.",
+                  ),
                   SizedBox(height: 8),
-                  Text("Der Bot muss erst einige Trades abschließen.", style: TextStyle(color: Colors.grey)),
+                  Text(
+                    "Der Bot muss erst einige Trades abschließen.",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             )
@@ -85,68 +95,80 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
         _buildSummaryCard(trades, title: "Gesamt Performance"),
         const SizedBox(height: 24),
 
-        const Text("Performance nach Entry Score",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          "Performance nach Entry Score",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         _buildScorePerformanceGrid(trades),
 
         const SizedBox(height: 24),
-        const Text("Performance nach Aktie",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const Text("Welche Aktien waren am profitabelsten oder unprofitabelsten?",
-            style: TextStyle(color: Colors.grey, fontSize: 12)),
+        const Text(
+          "Performance nach Aktie",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const Text(
+          "Welche Aktien waren am profitabelsten oder unprofitabelsten?",
+          style: TextStyle(color: Colors.grey, fontSize: 12),
+        ),
         const SizedBox(height: 8),
         _buildSymbolPerformance(trades),
 
         const SizedBox(height: 24),
-        const Text("Performance nach TimeFrame",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          "Performance nach TimeFrame",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         _buildGroupedList(trades, (t) => t.botTimeFrame?.label ?? "Unbekannt"),
 
         const SizedBox(height: 24),
-        const Text("Performance nach Strategie",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          "Performance nach Strategie",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         _buildExpandableGroup("Nach Entry-Strategie", trades, (t) {
-           int strat = t.aiAnalysisSnapshot['entryStrategy'] ?? 0;
-           if (strat == 0) return "Market (Sofort)";
-           if (strat == 1) return "Pullback (Limit)";
-           if (strat == 2) return "Breakout (Stop)";
-           return "Unbekannt";
+          int strat = t.aiAnalysisSnapshot['entryStrategy'] ?? 0;
+          if (strat == 0) return "Market (Sofort)";
+          if (strat == 1) return "Pullback (Limit)";
+          if (strat == 2) return "Breakout (Stop)";
+          return "Unbekannt";
         }),
         _buildExpandableGroup("Nach Stop-Loss Methode", trades, (t) {
-           final snap = t.aiAnalysisSnapshot;
-           int sm = snap['stopMethod'] ?? 2;
-           if (sm == 0) return "Donchian";
-           if (sm == 1) return "Prozentual (${snap['stopPercent']}%)";
-           return "ATR (${snap['atrMult']}x)";
+          final snap = t.aiAnalysisSnapshot;
+          int sm = snap['stopMethod'] ?? 2;
+          if (sm == 0) return "Donchian";
+          if (sm == 1) return "Prozentual (${snap['stopPercent']}%)";
+          return "ATR (${snap['atrMult']}x)";
         }),
         _buildExpandableGroup("Nach Take-Profit Methode", trades, (t) {
-           final snap = t.aiAnalysisSnapshot;
-           int tm = snap['tpMethod'] ?? 0;
-           if (tm == 0) return "Risk/Reward";
-           if (tm == 1) return "Prozentual";
-           return "ATR-Ziel";
+          final snap = t.aiAnalysisSnapshot;
+          int tm = snap['tpMethod'] ?? 0;
+          if (tm == 0) return "Risk/Reward";
+          if (tm == 1) return "Prozentual";
+          return "ATR-Ziel";
         }),
 
         const SizedBox(height: 24),
-        const Text("Performance nach Indikatoren-Status",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text(
+          "Performance nach Indikatoren-Status",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
         _buildExpandableGroup("Nach Trendstärke (ADX)", trades, (t) {
-           double adx = (t.aiAnalysisSnapshot['adx'] as num?)?.toDouble() ?? 0;
-           return adx > 25 ? "Starker Trend (>25)" : "Schwacher Trend (<25)";
+          double adx = (t.aiAnalysisSnapshot['adx'] as num?)?.toDouble() ?? 0;
+          return adx > 25 ? "Starker Trend (>25)" : "Schwacher Trend (<25)";
         }),
         _buildExpandableGroup("Nach RSI-Zone", trades, (t) {
-           double rsi = (t.aiAnalysisSnapshot['rsi'] as num?)?.toDouble() ?? 50;
-           if (rsi > 70) return "Überkauft (>70)";
-           if (rsi < 30) return "Überverkauft (<30)";
-           return "Neutral (30-70)";
+          double rsi = (t.aiAnalysisSnapshot['rsi'] as num?)?.toDouble() ?? 50;
+          if (rsi > 70) return "Überkauft (>70)";
+          if (rsi < 30) return "Überverkauft (<30)";
+          return "Neutral (30-70)";
         }),
         _buildExpandableGroup("Nach Squeeze-Status", trades, (t) {
-           bool squeeze = t.aiAnalysisSnapshot['squeeze'] as bool? ?? false;
-           return squeeze ? "Squeeze Aktiv" : "Kein Squeeze";
+          bool squeeze = t.aiAnalysisSnapshot['squeeze'] as bool? ?? false;
+          return squeeze ? "Squeeze Aktiv" : "Kein Squeeze";
         }),
       ],
     );
@@ -178,8 +200,10 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
   }
 
   // --- Tab 3 & 4: Specific Side Analysis ---
-  Widget _buildSideAnalysisTab(List<TradeRecord> allTrades,
-      {required bool isLong}) {
+  Widget _buildSideAnalysisTab(
+    List<TradeRecord> allTrades, {
+    required bool isLong,
+  }) {
     final sideTrades = allTrades.where((t) {
       bool tIsLong = t.takeProfit1 > t.entryPrice;
       return tIsLong == isLong;
@@ -187,22 +211,28 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
 
     if (sideTrades.isEmpty) {
       return Center(
-          child: Text(
-              "Keine ${isLong ? 'Long' : 'Short'} Trades vorhanden."));
+        child: Text("Keine ${isLong ? 'Long' : 'Short'} Trades vorhanden."),
+      );
     }
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildSummaryCard(sideTrades,
-            title: "${isLong ? 'Long' : 'Short'} Performance"),
+        _buildSummaryCard(
+          sideTrades,
+          title: "${isLong ? 'Long' : 'Short'} Performance",
+        ),
         const SizedBox(height: 24),
 
         // 1. Best Settings
-        const Text("Beste Bot-Einstellungen",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const Text("Welche Konfiguration lieferte die besten Ergebnisse?",
-            style: TextStyle(color: Colors.grey, fontSize: 12)),
+        const Text(
+          "Beste Bot-Einstellungen",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const Text(
+          "Welche Konfiguration lieferte die besten Ergebnisse?",
+          style: TextStyle(color: Colors.grey, fontSize: 12),
+        ),
         const SizedBox(height: 8),
         _buildRankedList(
           sideTrades,
@@ -213,30 +243,38 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
         const SizedBox(height: 24),
 
         // 2. Best Market Conditions
-        const Text("Beste Marktbedingungen",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const Text("In welchem Marktumfeld (Trend, RSI, etc.) wurde gewonnen?",
-            style: TextStyle(color: Colors.grey, fontSize: 12)),
+        const Text(
+          "Beste Marktbedingungen",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const Text(
+          "In welchem Marktumfeld (Trend, RSI, etc.) wurde gewonnen?",
+          style: TextStyle(color: Colors.grey, fontSize: 12),
+        ),
         const SizedBox(height: 8),
         _buildRankedList(
           sideTrades,
           (t) => _Analyzer.getMarketProfileLabel(t),
           limit: 5,
         ),
-
       ],
     );
   }
 
   // --- Combination List Builder ---
-  Widget _buildCombinationList(List<TradeRecord> allTrades, {required bool isLong}) {
+  Widget _buildCombinationList(
+    List<TradeRecord> allTrades, {
+    required bool isLong,
+  }) {
     final sideTrades = allTrades.where((t) {
       bool tIsLong = t.takeProfit1 > t.entryPrice;
       return tIsLong == isLong;
     }).toList();
 
     if (sideTrades.isEmpty) {
-      return const Center(child: Text("Keine Trades für diese Seite vorhanden."));
+      return const Center(
+        child: Text("Keine Trades für diese Seite vorhanden."),
+      );
     }
 
     // Group by Settings + Market
@@ -261,11 +299,13 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
           margin: const EdgeInsets.only(bottom: 16),
           elevation: 3,
           shape: RoundedRectangleBorder(
-              side: BorderSide(
-                  color: group.totalPnL >= 0
-                      ? Colors.green.withOpacity(0.5)
-                      : Colors.red.withOpacity(0.5)),
-              borderRadius: BorderRadius.circular(12)),
+            side: BorderSide(
+              color: group.totalPnL >= 0
+                  ? Colors.green.withOpacity(0.5)
+                  : Colors.red.withOpacity(0.5),
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -278,11 +318,13 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(
-                      "Ø Entry Score: ${group.avgEntryScore.toStringAsFixed(1)}",
-                      style: const TextStyle(
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.blueGrey)),
+                    "Ø Entry Score: ${group.avgEntryScore.toStringAsFixed(1)}",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
                 ),
                 // Details
                 Row(
@@ -300,7 +342,7 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
                       content: market.replaceAll(" | ", "\n"),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -309,14 +351,22 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
     );
   }
 
-  Widget _buildCombinationDetailColumn({required IconData icon, required String title, required String content}) {
+  Widget _buildCombinationDetailColumn({
+    required IconData icon,
+    required String title,
+    required String content,
+  }) {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: Theme.of(context).colorScheme.primary),
+              Icon(
+                icon,
+                size: 16,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: 8),
               Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
@@ -363,30 +413,41 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         const SizedBox(height: 8),
         if (groups.isEmpty)
           const Card(
-              child: ListTile(
-                  dense: true,
-                  title: Text("Keine Daten",
-                      style: TextStyle(color: Colors.grey)))),
-        ...groups.map((g) => Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                dense: true,
-                title: Text(g.label,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle:
-                    Text("${g.count} Trades, ${g.winRate.toStringAsFixed(0)}% WR"),
-                trailing: Text(
-                  "${g.totalPnL.toStringAsFixed(2)}€",
-                  style: TextStyle(color: color, fontWeight: FontWeight.bold),
-                ),
+            child: ListTile(
+              dense: true,
+              title: Text("Keine Daten", style: TextStyle(color: Colors.grey)),
+            ),
+          ),
+        ...groups.map(
+          (g) => Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ListTile(
+              dense: true,
+              title: Text(
+                g.label,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-            )),
+              subtitle: Text(
+                "${g.count} Trades, ${g.winRate.toStringAsFixed(0)}% WR",
+              ),
+              trailing: Text(
+                "${g.totalPnL.toStringAsFixed(2)}€",
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -402,9 +463,13 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
         child: Column(
           children: [
             if (title != null) ...[
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const Divider(),
             ],
             Row(
@@ -413,9 +478,14 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
                 _statItem("Trades", "${stats.count}"),
                 _statItem("Win Rate", "${stats.winRate.toStringAsFixed(1)}%"),
                 _statItem(
-                    "Profit Factor", stats.profitFactor.toStringAsFixed(2)),
-                _statItem("Total PnL", "${stats.totalPnL.toStringAsFixed(2)}€",
-                    color: stats.totalPnL >= 0 ? Colors.green : Colors.red),
+                  "Profit Factor",
+                  stats.profitFactor.toStringAsFixed(2),
+                ),
+                _statItem(
+                  "Total PnL",
+                  "${stats.totalPnL.toStringAsFixed(2)}€",
+                  color: stats.totalPnL >= 0 ? Colors.green : Colors.red,
+                ),
               ],
             ),
           ],
@@ -428,22 +498,27 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
     return Column(
       children: [
         Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-        Text(val,
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: color)),
+        Text(
+          val,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildGroupedList(
-      List<TradeRecord> trades, String Function(TradeRecord) grouper) {
+    List<TradeRecord> trades,
+    String Function(TradeRecord) grouper,
+  ) {
     final groups = _Analyzer.groupTrades(trades, grouper);
     // Sort by PnL
     groups.sort((a, b) => b.totalPnL.compareTo(a.totalPnL));
 
-    return Column(
-      children: groups.map((g) => _buildStatRow(g)).toList(),
-    );
+    return Column(children: groups.map((g) => _buildStatRow(g)).toList());
   }
 
   Widget _buildScorePerformanceGrid(List<TradeRecord> trades) {
@@ -483,27 +558,38 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Score ${g.label}",
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 13)),
+                  Text(
+                    "Score ${g.label}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                   const Divider(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("${g.count} Trades",
-                          style: const TextStyle(fontSize: 11)),
-                      Text("${g.winRate.toStringAsFixed(0)}% WR",
-                          style: const TextStyle(
-                              fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(
+                        "${g.count} Trades",
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      Text(
+                        "${g.winRate.toStringAsFixed(0)}% WR",
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     "${g.totalPnL >= 0 ? '+' : ''}${g.totalPnL.toStringAsFixed(2)}€",
                     style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                        fontSize: 14),
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -515,8 +601,10 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
   }
 
   Widget _buildRankedList(
-      List<TradeRecord> trades, String Function(TradeRecord) grouper,
-      {int limit = 5}) {
+    List<TradeRecord> trades,
+    String Function(TradeRecord) grouper, {
+    int limit = 5,
+  }) {
     final groups = _Analyzer.groupTrades(trades, grouper);
     // Filter out groups with < 2 trades to avoid noise
     final relevant = groups.where((g) => g.count >= 2).toList();
@@ -528,55 +616,69 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
 
     if (top.isEmpty)
       return const Text(
-          "Zu wenig Daten für ein Ranking (min. 2 Trades pro Gruppe).",
-          style: TextStyle(color: Colors.grey));
+        "Zu wenig Daten für ein Ranking (min. 2 Trades pro Gruppe).",
+        style: TextStyle(color: Colors.grey),
+      );
 
     return Column(
       children: top
-          .map((g) => Card(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(g.label,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 13)),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                              "Profit Factor: ${g.profitFactor.toStringAsFixed(2)}",
-                              style: const TextStyle(color: Colors.blue)),
-                          Text("WR: ${g.winRate.toStringAsFixed(0)}%"),
-                          Text("${g.totalPnL.toStringAsFixed(2)}€",
-                              style: TextStyle(
-                                  color: g.totalPnL >= 0
-                                      ? Colors.green
-                                      : Colors.red,
-                                  fontWeight: FontWeight.bold)),
-                        ],
-                      )
-                    ],
-                  ),
+          .map(
+            (g) => Card(
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      g.label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Profit Factor: ${g.profitFactor.toStringAsFixed(2)}",
+                          style: const TextStyle(color: Colors.blue),
+                        ),
+                        Text("WR: ${g.winRate.toStringAsFixed(0)}%"),
+                        Text(
+                          "${g.totalPnL.toStringAsFixed(2)}€",
+                          style: TextStyle(
+                            color: g.totalPnL >= 0 ? Colors.green : Colors.red,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ))
+              ),
+            ),
+          )
           .toList(),
     );
   }
 
   Widget _buildExpandableGroup(
-      String title, List<TradeRecord> trades, String Function(TradeRecord) grouper) {
+    String title,
+    List<TradeRecord> trades,
+    String Function(TradeRecord) grouper,
+  ) {
     final groups = _Analyzer.groupTrades(trades, grouper);
     groups.sort((a, b) => b.totalPnL.compareTo(a.totalPnL));
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(
-        title: Text(title,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
         children: groups.map((g) => _buildStatRow(g)).toList(),
       ),
     );
@@ -587,12 +689,14 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
       dense: true,
       title: showLabel ? Text(g.label) : null,
       subtitle: Text(
-          "${g.count} Trades | WR: ${g.winRate.toStringAsFixed(0)}% | PF: ${g.profitFactor.toStringAsFixed(2)}"),
+        "${g.count} Trades | WR: ${g.winRate.toStringAsFixed(0)}% | PF: ${g.profitFactor.toStringAsFixed(2)}",
+      ),
       trailing: Text(
         "${g.totalPnL >= 0 ? '+' : ''}${g.totalPnL.toStringAsFixed(2)}€",
         style: TextStyle(
-            color: g.totalPnL >= 0 ? Colors.green : Colors.red,
-            fontWeight: FontWeight.bold),
+          color: g.totalPnL >= 0 ? Colors.green : Colors.red,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -661,7 +765,9 @@ class _Analyzer {
   }
 
   static List<_GroupStats> groupTrades(
-      List<TradeRecord> trades, String Function(TradeRecord) grouper) {
+    List<TradeRecord> trades,
+    String Function(TradeRecord) grouper,
+  ) {
     final Map<String, List<TradeRecord>> buckets = {};
     for (var t in trades) {
       final key = grouper(t);
@@ -687,8 +793,9 @@ class _Analyzer {
 
     // Strategy
     int strat = snap['entryStrategy'] ?? 0;
-    String sName =
-        strat == 0 ? "Market" : (strat == 1 ? "Pullback" : "Breakout");
+    String sName = strat == 0
+        ? "Market"
+        : (strat == 1 ? "Pullback" : "Breakout");
 
     // Padding (Only show if NOT Market)
     String padStr = "";
@@ -755,7 +862,8 @@ class _Analyzer {
       rsiState = "RSI < 30";
     else if (rsi > 55)
       rsiState = "RSI 55-70";
-    else if (rsi < 45) rsiState = "RSI 30-45";
+    else if (rsi < 45)
+      rsiState = "RSI 30-45";
 
     // MACD
     double macdHist = (snap['macdHist'] as num?)?.toDouble() ?? 0;
@@ -777,7 +885,7 @@ class _Analyzer {
       emaState,
       rsiState,
       macdState,
-      cloudState
+      cloudState,
     ];
     if (squeeze) parts.add("Squeeze Aktiv");
     if (pattern.isNotEmpty) parts.add("Muster: $pattern");
