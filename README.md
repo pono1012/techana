@@ -10,6 +10,8 @@
 
 </div>
 
+---
+
 **TechAna** ist die ultimative **All-in-One-Lösung** für Trader, die nichts dem Zufall überlassen wollen. Wir kombinieren professionelle technische Analyse, KI-gestützte Mustererkennung und automatisierte Trading-Bots in einer einzigen, leistungsstarken App – nativ entwickelt mit Flutter für maximale Performance auf jedem Gerät.
 
 ![TechAna Banner](/lib/assets/banner.svg)
@@ -154,3 +156,29 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 **TechAna** – Trade Smarter, Not Harder.
 
 </div>
+
+---
+
+## 🚀 Neuestes Update (09.02.2026)
+
+Mit diesem Update reagiert der Smart Analysis Core von TechAna nun agiler und präziser auf dynamische Marktbedingungen, um Ihre Handelsentscheidungen mit relevanteren und zeitnahen Daten zu unterstützen. Profitieren Sie von einer verbesserten KI-Performance und einer klareren Kommunikation unserer Neuerungen direkt in der README.
+
+👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
+
+---
+
+### 🛠 Installation & Downloads
+
+#### 🤖 Android
+Lade die `.apk` Datei herunter und installiere sie direkt.
+
+#### 🍏 iOS (Sideloading)
+Die `.ipa` Datei muss signiert und installiert werden. Nutze dafür eines dieser Tools:
+* **[TrollStore](https://github.com/opa334/TrollStore)** (Empfohlen)
+* **[AltStore](https://altstore.io/)**
+* **[SideStore](https://sidestore.io/)**
+
+#### 🖥 Desktop (Windows, macOS, Linux)
+* **Windows:** `.zip` entpacken, `TechAna.exe` starten.
+* **macOS:** `.zip` entpacken, App in "Programme" verschieben.
+* **Linux:** `.zip` entpacken, Executable starten.
