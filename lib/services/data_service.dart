@@ -27,7 +27,7 @@ class DataService {
       // 1. Cookie holen
       final r1 = await http.get(Uri.parse('https://finance.yahoo.com'),
           headers: {"User-Agent": userAgent});
-      
+
       final rawCookie = r1.headers['set-cookie'];
 
       if (rawCookie != null) {
@@ -128,7 +128,8 @@ class DataService {
         }
       }
 
-      debugPrint("✅ [Stooq] ${bars.length} Bars geladen für $cleanSym (Errors: $parseErrors)");
+      debugPrint(
+          "✅ [Stooq] ${bars.length} Bars geladen für $cleanSym (Errors: $parseErrors)");
 
       // Sortieren nach Datum aufsteigend
       bars.sort((a, b) => a.date.compareTo(b.date));
@@ -160,7 +161,8 @@ class DataService {
     String range;
     if (interval.apiString.contains('m')) {
       range = '60d'; // Minuten-Daten: max 60 Tage
-    } else if (interval.apiString == '60m') { // '1h'
+    } else if (interval.apiString == '60m') {
+      // '1h'
       range = '730d'; // Stunden-Daten: max 2 Jahre
     } else {
       range = '10y'; // Tages/Wochen-Daten: max 10 Jahre
@@ -325,7 +327,8 @@ class DataService {
         currency: getStr(financial, 'financialCurrency'),
       );
 
-      debugPrint("✅ [Yahoo] Fundamentals geladen: $ySymbol (KGV: ${fd.peRatio})");
+      debugPrint(
+          "✅ [Yahoo] Fundamentals geladen: $ySymbol (KGV: ${fd.peRatio})");
       return fd;
     } catch (e) {
       // Fehler beim Abruf oder Parsen ignorieren wir hier stillschweigend,
@@ -384,15 +387,22 @@ class DataService {
     }
   }
 
-  Future<double?> fetchRegularMarketPrice(String symbol, {bool isRetry = false}) async {
+  Future<double?> fetchRegularMarketPrice(String symbol,
+      {bool isRetry = false}) async {
+    final bar = await fetchLiveCandle(symbol, isRetry: isRetry);
+    return bar?.close;
+  }
+
+  Future<PriceBar?> fetchLiveCandle(String symbol,
+      {bool isRetry = false}) async {
     // Symbol mapping logic from fetchFundamentals
     String ySymbol = _normalizeSymbolForYahoo(symbol);
 
-    debugPrint("💲 [Yahoo] Lade Live-Preis: $ySymbol");
+    debugPrint("💲 [Yahoo] Lade Live-Candle: $ySymbol");
 
     await _ensureYahooSession();
 
-    // Use chart API to get current price from meta.regularMarketPrice
+    // Use chart API to get current price and day high/low
     String urlStr =
         'https://query2.finance.yahoo.com/v8/finance/chart/$ySymbol?interval=1d&range=1d';
     if (_yahooCrumb != null) urlStr += '&crumb=$_yahooCrumb';
@@ -414,10 +424,11 @@ class DataService {
         if (resp.statusCode == 401 && !isRetry) {
           debugPrint("🔄 [Yahoo] 401 bei Live-Preis. Erneuere Session...");
           _resetSession();
-          return fetchRegularMarketPrice(symbol, isRetry: true);
+          return fetchLiveCandle(symbol, isRetry: true);
         }
 
-        debugPrint("❌ [Yahoo] Live Preis API Error: ${resp.statusCode} für $ySymbol");
+        debugPrint(
+            "❌ [Yahoo] Live Preis API Error: ${resp.statusCode} für $ySymbol");
         return null;
       }
 
@@ -430,16 +441,42 @@ class DataService {
 
       final data = result[0];
       final meta = data['meta'];
-      final price = meta['regularMarketPrice'];
+      final quote = data['indicators']['quote'][0];
 
-      if (price is num) {
-        debugPrint("✅ [Yahoo] Live Preis $ySymbol: $price");
-        return price.toDouble();
+      final double? price = (meta['regularMarketPrice'] as num?)?.toDouble();
+      final double? dayHigh =
+          (meta['regularMarketDayHigh'] as num?)?.toDouble() ??
+              (quote['high'] != null && (quote['high'] as List).isNotEmpty
+                  ? (quote['high'][0] as num?)?.toDouble()
+                  : null);
+      final double? dayLow =
+          (meta['regularMarketDayLow'] as num?)?.toDouble() ??
+              (quote['low'] != null && (quote['low'] as List).isNotEmpty
+                  ? (quote['low'][0] as num?)?.toDouble()
+                  : null);
+      final double? dayOpen =
+          (quote['open'] != null && (quote['open'] as List).isNotEmpty
+              ? (quote['open'][0] as num?)?.toDouble()
+              : null);
+      final int? volume =
+          (quote['volume'] != null && (quote['volume'] as List).isNotEmpty
+              ? (quote['volume'][0] as num?)?.toInt()
+              : 0);
+
+      if (price != null) {
+        // Wir bauen eine "Live Bar"
+        return PriceBar(
+          date: DateTime.now(),
+          open: dayOpen ?? price,
+          high: dayHigh ?? price, // Fallback auf Price wenn High fehlt
+          low: dayLow ?? price, // Fallback auf Price wenn Low fehlt
+          close: price,
+          volume: volume ?? 0,
+        );
       }
-      debugPrint("⚠️ [Yahoo] Live Preis $ySymbol nicht verfügbar");
       return null;
     } catch (e) {
-      debugPrint("❌ [Yahoo] Live Preis Fehler: $e");
+      debugPrint("❌ [Yahoo] Live Candle Fehler: $e");
       return null;
     }
   }
@@ -534,7 +571,8 @@ class DataService {
             debugPrint("✅ [FMP] Profile geladen.");
           }
         } else {
-          debugPrint("⚠️ [FMP] Profile Status: ${respProfile.statusCode} (Nutze Fallback)");
+          debugPrint(
+              "⚠️ [FMP] Profile Status: ${respProfile.statusCode} (Nutze Fallback)");
         }
       } catch (e) {
         debugPrint("FMP Profile Fehler: $e");

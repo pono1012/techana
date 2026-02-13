@@ -16,31 +16,41 @@ class PriceBar {
 
 enum TimeFrame {
   m15, // 15 Minuten
-  h1,  // 1 Stunde
-  h4,  // 4 Stunden
-  d1,  // 1 Tag (Standard)
-  w1,  // 1 Woche
+  h1, // 1 Stunde
+  h4, // 4 Stunden
+  d1, // 1 Tag (Standard)
+  w1, // 1 Woche
 }
 
 // Hilfsfunktion um es für die Yahoo API lesbar zu machen
 extension TimeFrameExtension on TimeFrame {
   String get apiString {
     switch (this) {
-      case TimeFrame.m15: return '15m';
-      case TimeFrame.h1: return '60m'; // oder '1h' je nach API
-      case TimeFrame.h4: return '60m'; // Yahoo hat kein echtes 4h, man muss oft 1h nehmen und aggregieren, aber für den Anfang reicht 1h
-      case TimeFrame.d1: return '1d';
-      case TimeFrame.w1: return '1wk';
+      case TimeFrame.m15:
+        return '15m';
+      case TimeFrame.h1:
+        return '60m'; // oder '1h' je nach API
+      case TimeFrame.h4:
+        return '60m'; // Yahoo hat kein echtes 4h, man muss oft 1h nehmen und aggregieren, aber für den Anfang reicht 1h
+      case TimeFrame.d1:
+        return '1d';
+      case TimeFrame.w1:
+        return '1wk';
     }
   }
-  
+
   String get label {
     switch (this) {
-      case TimeFrame.m15: return '15 Min';
-      case TimeFrame.h1: return '1 Std';
-      case TimeFrame.h4: return '4 Std';
-      case TimeFrame.d1: return 'Tag';
-      case TimeFrame.w1: return 'Woche';
+      case TimeFrame.m15:
+        return '15 Min';
+      case TimeFrame.h1:
+        return '1 Std';
+      case TimeFrame.h4:
+        return '4 Std';
+      case TimeFrame.d1:
+        return 'Tag';
+      case TimeFrame.w1:
+        return 'Woche';
     }
   }
 }
@@ -160,7 +170,7 @@ class AppSettings {
   final bool showCandles;
   final bool showTradeLines;
   final bool showAdx;
-  
+
   // Strategie Params für manuelle Analyse
   final int entryStrategy; // 0=Market, 1=Pullback, 2=Breakout
   final double entryPadding;
@@ -206,7 +216,7 @@ class AppSettings {
     this.tpPercent1 = 5.0,
     this.tpPercent2 = 10.0,
     this.alphaVantageKey,
-    this.fmpKey, 
+    this.fmpKey,
   });
 
   AppSettings copyWith({
@@ -419,4 +429,36 @@ class ComputedData {
     this.fundamentals,
     this.latestSignal,
   });
+}
+
+class PortfolioSnapshot {
+  final DateTime date;
+  final double totalInvested;
+  final double realizedPnL;
+  final double unrealizedPnL;
+  final double
+      equity; // cash + invested + unrealizedPnL (though we track cash as virtualBalance)
+
+  PortfolioSnapshot({
+    required this.date,
+    required this.totalInvested,
+    required this.realizedPnL,
+    required this.unrealizedPnL,
+  }) : equity = realizedPnL +
+            unrealizedPnL; // Simplified equity tracking: just PnL sum
+
+  Map<String, dynamic> toJson() => {
+        'date': date.toIso8601String(),
+        'totalInvested': totalInvested,
+        'realizedPnL': realizedPnL,
+        'unrealizedPnL': unrealizedPnL,
+      };
+
+  factory PortfolioSnapshot.fromJson(Map<String, dynamic> json) =>
+      PortfolioSnapshot(
+        date: DateTime.parse(json['date']),
+        totalInvested: (json['totalInvested'] as num).toDouble(),
+        realizedPnL: (json['realizedPnL'] as num).toDouble(),
+        unrealizedPnL: (json['unrealizedPnL'] as num).toDouble(),
+      );
 }
