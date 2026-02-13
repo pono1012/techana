@@ -275,3 +275,5 @@ Mit v1.0.0 haben wir den Grundstein gelegt. Dies ist nur der Anfang. Wir werden 
 * ⚡ Performance: Der Smart Analysis Core wurde aktualisiert und reagiert nun agiler und präziser auf dynamische Marktbedingungen.
 
 * ⚡ Performance: Der Smart Analysis Core wurde aktualisiert und reagiert nun agiler und präziser auf dynamische Marktbedingungen.
+
+* 🐛 Fix: Behebung kritischer Fehler in der Handelsausführung, die zu verpassten Stop-Loss-, Take-Profit- und Pending-Order-Triggern führen konnten.
