@@ -4,7 +4,9 @@ import '../models/models.dart';
 import '../models/trade_record.dart';
 import '../providers/app_provider.dart';
 import '../services/data_service.dart';
-import '../services/portfolio_service.dart';
+import '../services/watchlist_service.dart';
+import '../services/bot_settings_service.dart';
+import '../services/trade_execution_service.dart';
 import 'score_details_screen.dart';
 import 'top_movers_history_screen.dart';
 
@@ -41,8 +43,11 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
       _imageUrls.clear();
     });
 
-    final portfolioService = context.read<PortfolioService>();
-    final activeSymbols = portfolioService.watchListMap.entries
+    final watchlist = context.read<WatchlistService>();
+    final exec = context.read<TradeExecutionService>();
+    final settings = context.read<BotSettingsService>();
+
+    final activeSymbols = watchlist.watchListMap.entries
         .where((e) => e.value)
         .map((e) => e.key)
         .toList();
@@ -61,7 +66,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
             await _dataService.fetchBars(symbol, interval: _selectedTimeFrame);
         if (bars.length < 50) continue;
 
-        final signal = portfolioService.analyzeStock(bars);
+        final signal = exec.analyzeStock(bars, settings);
         if (signal != null) {
           allSignals.add(_TopMover(symbol, signal));
         }
@@ -76,10 +81,8 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
     // Sortieren und Filtern
     allSignals.sort((a, b) => b.signal.score.compareTo(a.signal.score));
 
-    _topLong = allSignals
-        .where((s) => s.signal.type.contains("Buy"))
-        .take(5)
-        .toList();
+    _topLong =
+        allSignals.where((s) => s.signal.type.contains("Buy")).take(5).toList();
 
     // Für Short, sortieren wir aufsteigend nach Score
     allSignals.sort((a, b) => a.signal.score.compareTo(b.signal.score));
@@ -90,18 +93,22 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
 
     setState(() {
       _isLoading = false;
-      _scanStatus = "Scan abgeschlossen. ${allSignals.length} Signale gefunden.";
+      _scanStatus =
+          "Scan abgeschlossen. ${allSignals.length} Signale gefunden.";
     });
 
     // Ergebnisse in der Historie speichern
-    portfolioService.addTopMoversToHistory(_topLong, _topShort, _selectedTimeFrame);
+    watchlist.addTopMoversToHistory(_topLong, _topShort, _selectedTimeFrame);
 
     // Logos nachladen
     _fetchImages();
   }
 
   Future<void> _fetchImages() async {
-    final symbolsToFetch = {..._topLong.map((e) => e.symbol), ..._topShort.map((e) => e.symbol)};
+    final symbolsToFetch = {
+      ..._topLong.map((e) => e.symbol),
+      ..._topShort.map((e) => e.symbol)
+    };
     if (symbolsToFetch.isEmpty) return;
 
     final appProvider = context.read<AppProvider>();
@@ -130,7 +137,10 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TopMoversHistoryScreen())),
+            onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const TopMoversHistoryScreen())),
             tooltip: "Scan-Historie anzeigen",
           ),
           IconButton(
@@ -148,8 +158,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
       body: Column(
         children: [
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Wrap(
               spacing: 8.0,
               runSpacing: 4.0,
@@ -182,8 +191,10 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  _buildSection("Top 5 Long-Kandidaten", _topLong, Colors.green),
-                  _buildSection("Top 5 Short-Kandidaten", _topShort, Colors.red),
+                  _buildSection(
+                      "Top 5 Long-Kandidaten", _topLong, Colors.green),
+                  _buildSection(
+                      "Top 5 Short-Kandidaten", _topShort, Colors.red),
                 ],
               ),
             ),
@@ -206,7 +217,8 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
             const Card(
               child: ListTile(
                 title: Text("Keine Kandidaten gefunden"),
-                subtitle: Text("Passe die Strategie an oder erweitere die Watchlist."),
+                subtitle: Text(
+                    "Passe die Strategie an oder erweitere die Watchlist."),
               ),
             )
           else
@@ -239,7 +251,8 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
                       externalSignal: signal, externalSymbol: mover.symbol)));
         },
         leading: CircleAvatar(
-          backgroundColor: imageUrl != null ? Colors.transparent : color.withOpacity(0.2),
+          backgroundColor:
+              imageUrl != null ? Colors.transparent : color.withOpacity(0.2),
           backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
           child: imageUrl == null
               ? Text(

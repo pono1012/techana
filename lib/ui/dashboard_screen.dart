@@ -126,17 +126,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Wrap(
                         spacing: 6.0,
                         children: TimeFrame.values.map((interval) {
-                          final isSelected = provider.selectedTimeFrame == interval;
+                          final isSelected =
+                              provider.selectedTimeFrame == interval;
                           return ChoiceChip(
                             label: Text(interval.label),
-                            labelStyle: TextStyle(fontSize: 12, color: isSelected ? Theme.of(context).colorScheme.onPrimary : null),
+                            labelStyle: TextStyle(
+                                fontSize: 12,
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.onPrimary
+                                    : null),
                             selected: isSelected,
                             onSelected: (bool selected) {
                               if (selected) {
                                 provider.setTimeFrame(interval);
                               }
                             },
-                            selectedColor: Theme.of(context).colorScheme.primary,
+                            selectedColor:
+                                Theme.of(context).colorScheme.primary,
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             visualDensity: VisualDensity.compact,
                           );
@@ -150,13 +156,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       value: provider.selectedChartRange,
                       onChanged: (v) => provider.setChartRange(v!),
                       items: const [
-                        DropdownMenuItem(value: ChartRange.week1, child: Text("1W")),
-                        DropdownMenuItem(value: ChartRange.month1, child: Text("1M")),
-                        DropdownMenuItem(value: ChartRange.quarter1, child: Text("3M")),
-                        DropdownMenuItem(value: ChartRange.year1, child: Text("1Y")),
-                        DropdownMenuItem(value: ChartRange.year2, child: Text("2Y")),
-                        DropdownMenuItem(value: ChartRange.year3, child: Text("3Y")),
-                        DropdownMenuItem(value: ChartRange.year5, child: Text("5Y")),
+                        DropdownMenuItem(
+                            value: ChartRange.week1, child: Text("1W")),
+                        DropdownMenuItem(
+                            value: ChartRange.month1, child: Text("1M")),
+                        DropdownMenuItem(
+                            value: ChartRange.quarter1, child: Text("3M")),
+                        DropdownMenuItem(
+                            value: ChartRange.year1, child: Text("1Y")),
+                        DropdownMenuItem(
+                            value: ChartRange.year2, child: Text("2Y")),
+                        DropdownMenuItem(
+                            value: ChartRange.year3, child: Text("3Y")),
+                        DropdownMenuItem(
+                            value: ChartRange.year5, child: Text("5Y")),
                       ],
                     )
                   ],
@@ -380,40 +393,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ),
                           // Rechte Seite: Muster (Klickbar für Erklärung)
-                          InkWell(
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => PatternDetailsScreen(
-                                        patternName:
-                                            data.latestSignal!.chartPattern))),
-                            child: Container(
-                              width: 100,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                  color: Colors.blueAccent.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.candlestick_chart,
-                                        size: 24, color: Colors.blueAccent),
-                                    const SizedBox(height: 4),
-                                    Text(data.latestSignal!.chartPattern,
-                                        style: const TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis),
-                                  ],
+                          Builder(builder: (context) {
+                            // Kerzenmuster hat Vorrang, sonst Divergenz anzeigen
+                            String pattern = data.latestSignal!.chartPattern;
+                            final divType = data.latestSignal!
+                                        .indicatorValues?['divergence']
+                                    as String? ??
+                                'none';
+                            final hasCandlePattern =
+                                pattern.isNotEmpty && pattern != 'Kein Muster';
+                            if (!hasCandlePattern && divType != 'none') {
+                              pattern = divType == 'bullish'
+                                  ? 'Bullish Divergenz'
+                                  : 'Bearish Divergenz';
+                            }
+                            final hasPattern =
+                                pattern.isNotEmpty && pattern != 'Kein Muster';
+                            final bullishKeywords = [
+                              'Bullish',
+                              'Hammer',
+                              'Morning',
+                              'Soldier',
+                              'Piercing',
+                              'Doji'
+                            ];
+                            final isBullish = bullishKeywords
+                                .any((kw) => pattern.contains(kw));
+                            final patternColor = !hasPattern
+                                ? Colors.grey
+                                : (isBullish ? Colors.green : Colors.red);
+                            return InkWell(
+                              onTap: hasPattern
+                                  ? () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => PatternDetailsScreen(
+                                              patternName: pattern)))
+                                  : null,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 100,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                    color: patternColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: patternColor.withOpacity(0.3),
+                                        width: 0.5)),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        hasPattern
+                                            ? Icons.candlestick_chart
+                                            : Icons.candlestick_chart_outlined,
+                                        size: 24,
+                                        color: patternColor,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(hasPattern ? pattern : 'Kein Muster',
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: hasPattern
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                              color: patternColor),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
+                            );
+                          }),
                         ],
                       ),
               ),

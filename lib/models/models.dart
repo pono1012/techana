@@ -175,14 +175,15 @@ class AppSettings {
   final int entryStrategy; // 0=Market, 1=Pullback, 2=Breakout
   final double entryPadding;
   final int entryPaddingType; // 0=%, 1=ATR
-  final int stopMethod; // 0=Donchian, 1=%, 2=ATR
+  final int stopMethod; // 0=Donchian, 1=%, 2=ATR, 3=Swing
   final double stopPercent;
   final double atrMult;
-  final int tpMethod; // 0=RR, 1=%, 2=ATR
+  final int tpMethod; // 0=RR, 1=%, 2=ATR, 3=Pivot
   final double rrTp1;
   final double rrTp2;
   final double tpPercent1;
   final double tpPercent2;
+  final int swingLookback; // Bars für Swing-Low/High Methode
 
   final String? alphaVantageKey;
   final String? fmpKey;
@@ -215,6 +216,7 @@ class AppSettings {
     this.rrTp2 = 3.0,
     this.tpPercent1 = 5.0,
     this.tpPercent2 = 10.0,
+    this.swingLookback = 20,
     this.alphaVantageKey,
     this.fmpKey,
   });
@@ -247,6 +249,7 @@ class AppSettings {
     double? rrTp2,
     double? tpPercent1,
     double? tpPercent2,
+    int? swingLookback,
     String? alphaVantageKey,
     String? fmpKey,
   }) {
@@ -278,6 +281,7 @@ class AppSettings {
       rrTp2: rrTp2 ?? this.rrTp2,
       tpPercent1: tpPercent1 ?? this.tpPercent1,
       tpPercent2: tpPercent2 ?? this.tpPercent2,
+      swingLookback: swingLookback ?? this.swingLookback,
       alphaVantageKey: alphaVantageKey ?? this.alphaVantageKey,
       fmpKey: fmpKey ?? this.fmpKey,
     );

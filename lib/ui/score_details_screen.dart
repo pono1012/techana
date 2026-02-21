@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
-import '../services/portfolio_service.dart';
-import 'fundamental_analysis_screen.dart';
+import '../services/watchlist_service.dart';
+import '../models/models.dart';
 import 'analysis_settings_dialog.dart'; // Import hinzufügen
 
 class ScoreDetailsScreen extends StatelessWidget {
   final TradeSignal? externalSignal;
   final String? externalSymbol;
 
-  const ScoreDetailsScreen({super.key, this.externalSignal, this.externalSymbol});
+  const ScoreDetailsScreen(
+      {super.key, this.externalSignal, this.externalSymbol});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class ScoreDetailsScreen extends StatelessWidget {
     // Nutze externes Signal (vom Bot/TopMover) falls vorhanden, sonst AppProvider
     final sig = externalSignal ?? appProvider.computedData?.latestSignal;
     final symbol = externalSymbol ?? appProvider.symbol;
-    
+
     // ComputedData ist nur verfügbar, wenn wir über den AppProvider kommen
     final data = externalSignal != null ? null : appProvider.computedData;
 
@@ -25,24 +26,43 @@ class ScoreDetailsScreen extends StatelessWidget {
       return const Scaffold(body: Center(child: Text("Keine Daten")));
     }
 
-    final snapshot = sig.indicatorValues ?? {}; // Bot-Analyse-Snapshot verwenden
+    final snapshot = sig.indicatorValues ?? {};
 
-    // Lade Werte aus dem Snapshot für konsistente Anzeige mit der Bot-Logik
-    // Fallbacks auf 'data' nur, wenn data != null (also nicht im TopMover Modus)
     final lastRsi = snapshot['rsi'] as double? ?? 50;
-    final lastStBull = snapshot['stBull'] as bool? ?? (data?.stBull.last ?? false);
-    final lastPrice = snapshot['price'] as double? ?? (data?.bars.last.close ?? 0.0);
-    final lastEma20 = snapshot['ema20'] as double? ?? (data?.ema20.last ?? lastPrice);
-    final lastMacdHist = snapshot['macdHist'] as double? ?? (data?.macdHist.last ?? 0);
-    final squeeze = snapshot['squeeze'] as bool? ?? (data?.squeezeFlags.last ?? false);
+    final lastStBull =
+        snapshot['stBull'] as bool? ?? (data?.stBull.last ?? false);
+    final lastPrice =
+        snapshot['price'] as double? ?? (data?.bars.last.close ?? 0.0);
+    final lastEma20 =
+        snapshot['ema20'] as double? ?? (data?.ema20.last ?? lastPrice);
+    final lastEma50 = snapshot['ema50'] as double? ?? lastPrice;
+    final lastMacdHist =
+        snapshot['macdHist'] as double? ?? (data?.macdHist.last ?? 0);
+    final squeeze =
+        snapshot['squeeze'] as bool? ?? (data?.squeezeFlags.last ?? false);
     final lastAdx = snapshot['adx'] as double? ?? (data?.adx.last ?? 0);
-    final lastStochK = snapshot['stochK'] as double? ?? (data?.stochK.last ?? 50);
+    final lastStochK =
+        snapshot['stochK'] as double? ?? (data?.stochK.last ?? 50);
     final lastObv = snapshot['obv'] as double? ?? (data?.obv.last ?? 0);
-
-    // NEU: Erweiterte Analysen aus dem Snapshot laden
     final isCloudBullish = snapshot['ichimoku_cloud_bull'] as bool? ?? false;
     final isCrossBullish = snapshot['ichimoku_cross_bull'] as bool? ?? false;
     final divergenceType = snapshot['divergence'] as String? ?? 'none';
+    // Neue Indikatoren
+    final lastCci = snapshot['cci'] as double? ?? 0;
+    final lastCmf = snapshot['cmf'] as double? ?? 0;
+    final lastMfi = snapshot['mfi'] as double? ?? 50;
+    final lastAo = snapshot['ao'] as double? ?? 0;
+    final lastBbPct = snapshot['bbPct'] as double? ?? 0.5;
+    final lastPsarBull = snapshot['psarBull'] as bool? ?? lastStBull;
+    final lastVortex = snapshot['vortex'] as double? ?? 0;
+    final lastChop = snapshot['chop'] as double? ?? 61.8;
+    final isTrending = snapshot['isTrending'] as bool? ?? (lastChop < 61.8);
+    // Kategorie-Scores
+    final scoreTrend = snapshot['score_trend'] as double? ?? 0;
+    final scoreMomentum = snapshot['score_momentum'] as double? ?? 0;
+    final scoreVolume = snapshot['score_volume'] as double? ?? 0;
+    final scorePattern = snapshot['score_pattern'] as double? ?? 0;
+    final scoreVolatility = snapshot['score_volatility'] as double? ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -56,8 +76,8 @@ class ScoreDetailsScreen extends StatelessWidget {
                 context: context, builder: (_) => AnalysisSettingsDialog()),
           ),
           // Feature: Zur Bot Watchlist hinzufügen
-          Consumer<PortfolioService>(builder: (context, bot, _) {
-            final isInWatchlist = bot.watchListMap.containsKey(symbol);
+          Consumer<WatchlistService>(builder: (context, watchlist, _) {
+            final isInWatchlist = watchlist.watchListMap.containsKey(symbol);
             return IconButton(
               icon: Icon(isInWatchlist
                   ? Icons.playlist_add_check
@@ -68,7 +88,7 @@ class ScoreDetailsScreen extends StatelessWidget {
               onPressed: isInWatchlist
                   ? null
                   : () {
-                      bot.addWatchlistSymbol(symbol);
+                      watchlist.addWatchlistSymbol(symbol);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
                               Text("$symbol zur Bot-Watchlist hinzugefügt!")));
@@ -105,129 +125,181 @@ class ScoreDetailsScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Detaillierte Indikatoren Erklärung
+          // Kategorie-Scoring Aufschlüsselung
+          const Text("Score-Aufschlüsselung (Forschungsbasiert):",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const SizedBox(height: 8),
+          _buildCategoryBar(context, "🔴 Trend", scoreTrend, 35, Colors.blue),
+          _buildCategoryBar(
+              context, "🟡 Momentum", scoreMomentum, 25, Colors.orange),
+          _buildCategoryBar(
+              context, "🟢 Volumen", scoreVolume, 20, Colors.teal),
+          _buildCategoryBar(
+              context, "🟣 Muster", scorePattern, 15, Colors.purple),
+          _buildCategoryBar(
+              context, "⚪ Volatilität", scoreVolatility, 5, Colors.grey),
+          const SizedBox(height: 20),
+
           const Text("Indikatoren Analyse:",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 8),
 
+          // ---- TREND ----
           _buildIndicatorCard(
-            context,
-            "RSI (Relative Strength Index)",
-            lastRsi.toStringAsFixed(1),
-            lastRsi < 30
-                ? "Überverkauft (Bullish)"
-                : (lastRsi > 70 ? "Überkauft (Bearish)" : "Neutral"),
-            "Der RSI misst die Geschwindigkeit und Veränderung von Preisbewegungen. Werte über 70 deuten auf eine Überhitzung hin (Verkaufsgefahr), Werte unter 30 auf eine Unterbewertung (Kaufchance).",
-            lastRsi < 30
-                ? Colors.green
-                : (lastRsi > 70 ? Colors.red : Colors.grey),
-          ),
-          _buildIndicatorCard(
-            context,
-            "Supertrend",
-            lastStBull ? "Grün" : "Rot",
-            lastStBull ? "Bullish Trend" : "Bearish Trend",
-            "Der Supertrend ist ein trendfolgender Indikator basierend auf der Volatilität (ATR). Er zeigt die aktuelle Hauptrichtung des Marktes an.",
-            lastStBull ? Colors.green : Colors.red,
-          ),
-          _buildIndicatorCard(
-            context,
-            "EMA 20 (Trendfilter)",
-            lastEma20.toStringAsFixed(2),
-            lastPrice > lastEma20
-                ? "Kurs darüber (Bullish)"
-                : "Kurs darunter (Bearish)",
-            "Der Exponential Moving Average (20 Perioden) dient als kurzfristiger Trendfilter. Preise über dem EMA20 signalisieren oft Stärke.",
-            lastPrice > lastEma20 ? Colors.green : Colors.red,
-          ),
-          _buildIndicatorCard(
-            context,
-            "MACD Histogramm",
-            lastMacdHist.toStringAsFixed(4),
-            lastMacdHist > 0 ? "Positives Momentum" : "Negatives Momentum",
-            "Das MACD Histogramm zeigt die Differenz zwischen MACD-Linie und Signallinie. Positive Werte zeigen aufsteigendes Momentum, negative Werte absteigendes.",
-            lastMacdHist > 0 ? Colors.green : Colors.red,
-          ),
-
-          // Neuer Indikator 1: ADX
-          _buildIndicatorCard(
-            context,
-            "ADX (Trendstärke)",
-            lastAdx.toStringAsFixed(1),
-            lastAdx > 25 ? "Starker Trend" : "Seitwärtsphase",
-            "Der Average Directional Index (ADX) misst die Stärke eines Trends, unabhängig von der Richtung. Werte über 25 deuten auf einen etablierten Trend hin.",
-            lastAdx > 25 ? Colors.blue : Colors.grey,
-          ),
-
-          // Neuer Indikator 2: Bollinger Position
-          if (data != null) // Nur anzeigen, wenn wir volle Daten haben (nicht im Snapshot enthalten)
-            _buildIndicatorCard(
               context,
-              "Bollinger Position",
-              (lastPrice > (data.bbMid.last ?? 0))
-                  ? "Obere Hälfte"
-                  : "Untere Hälfte",
-              "Neutral",
-              "Zeigt an, ob sich der Preis eher im oberen (bullishen) oder unteren (bearishen) Bereich der Standardabweichung bewegt.",
-              Colors.blueGrey,
-            ),
-
-          // Neuer Indikator 3: Stochastic
+              "Supertrend",
+              lastStBull ? "Grün" : "Rot",
+              lastStBull ? "Bullish" : "Bearish",
+              "Der Supertrend zeigt die Hauptrichtung basierend auf ATR-Volatilität.",
+              lastStBull ? Colors.green : Colors.red),
           _buildIndicatorCard(
-            context,
-            "Stochastic Oszillator",
-            lastStochK.toStringAsFixed(1),
-            lastStochK > 80
-                ? "Überkauft"
-                : (lastStochK < 20 ? "Überverkauft" : "Neutral"),
-            "Der Stochastic vergleicht den Schlusskurs mit seiner Preisspanne über eine Periode. Werte über 80 deuten auf Überkauftheit, unter 20 auf Überverkauftheit hin.",
-            lastStochK > 80
-                ? Colors.red
-                : (lastStochK < 20 ? Colors.green : Colors.grey),
-          ),
-
-          // Neuer Indikator 4: On-Balance Volume
+              context,
+              "EMA 20 / EMA 50",
+              "${lastEma20.toStringAsFixed(2)} / ${lastEma50.toStringAsFixed(2)}",
+              lastPrice > lastEma20 ? "Kurs über EMA" : "Kurs unter EMA",
+              "Kurzfristiger und mittelfristiger Trendfilter.",
+              lastPrice > lastEma20 ? Colors.green : Colors.red),
           _buildIndicatorCard(
-            context,
-            "On-Balance Volume (OBV)",
-            _formatObv(lastObv),
-            "Volumen-Momentum",
-            "OBV addiert oder subtrahiert das Volumen basierend auf der Preisbewegung. Ein steigender OBV bei steigendem Preis bestätigt den Trend.",
-            Colors.teal,
-          ),
-
-          // Neuer Indikator 5: Ichimoku
+              context,
+              "Parabolic SAR",
+              lastPsarBull ? "Bullish" : "Bearish",
+              lastPsarBull ? "Trend aufwärts" : "Trend abwärts",
+              "PSAR platziert Punkte unter/über dem Preis. Preisüberschreitung = Trendwechsel.",
+              lastPsarBull ? Colors.green : Colors.red),
           _buildIndicatorCard(
-            context,
-            "Ichimoku Analyse",
-            isCrossBullish ? "Positives Momentum" : "Negatives Momentum",
-            isCloudBullish ? "Bullish Trend" : "Bearish Trend",
-            "Die Wolke (Kumo) dient als dynamische Support/Resistance Zone. Der Tenkan/Kijun-Cross ist ein Momentumsignal.",
-            isCloudBullish ? Colors.green : Colors.red,
-          ),
+              context,
+              "Ichimoku Analyse",
+              isCrossBullish ? "Tenkan > Kijun" : "Tenkan < Kijun",
+              isCloudBullish ? "Über der Wolke" : "Unter der Wolke",
+              "Wolke = dynamische S/R Zone. Tenkan/Kijun-Cross = Momentumsignal.",
+              isCloudBullish ? Colors.green : Colors.red),
+          _buildIndicatorCard(
+              context,
+              "Vortex + Choppiness",
+              "VX: ${lastVortex.toStringAsFixed(3)} | CHOP: ${lastChop.toStringAsFixed(1)}",
+              isTrending ? "Trending (< 61.8)" : "Seitwärts (> 61.8)",
+              "Vortex misst Trendbewegungen. Choppiness Index: < 61.8 = Trend, > 61.8 = Range.",
+              isTrending ? Colors.blue : Colors.grey),
 
-          // Neuer Indikator 6: Divergenz (nur anzeigen, wenn eine erkannt wurde)
+          // ---- MOMENTUM ----
+          _buildIndicatorCard(
+              context,
+              "RSI (${lastRsi.toStringAsFixed(1)})",
+              lastRsi.toStringAsFixed(1),
+              lastRsi < 30
+                  ? "Überverkauft"
+                  : (lastRsi > 70 ? "Überkauft" : "Neutral"),
+              "RSI misst Überverkauft (<30) / Überkauft (>70). Im starken Trend (ADX>25) ist RSI>70 kein Warnsignal.",
+              lastRsi < 30
+                  ? Colors.green
+                  : (lastRsi > 70 ? Colors.red : Colors.grey)),
+          _buildIndicatorCard(
+              context,
+              "MACD Histogramm",
+              lastMacdHist.toStringAsFixed(4),
+              lastMacdHist > 0 ? "Positives Momentum" : "Negatives Momentum",
+              "Histogramm > 0 = bullisches Momentum. Steigende Balken = stärker werdendes Signal.",
+              lastMacdHist > 0 ? Colors.green : Colors.red),
+          _buildIndicatorCard(
+              context,
+              "ADX (Trendstärke)",
+              lastAdx.toStringAsFixed(1),
+              lastAdx > 25 ? "Starker Trend" : "Seitwärts",
+              "ADX > 25 = etablierter Trend. Verstärkt andere Momentum-Signale.",
+              lastAdx > 25 ? Colors.blue : Colors.grey),
+          _buildIndicatorCard(
+              context,
+              "CCI (Commodity Channel)",
+              lastCci.toStringAsFixed(1),
+              lastCci < -100
+                  ? "Überverkauft"
+                  : (lastCci > 100 ? "Überkauft" : "Neutral"),
+              "CCI < -100 = stark überverkauft (Kaufgelegenheit). CCI > 100 = überkauft.",
+              lastCci < -100
+                  ? Colors.green
+                  : (lastCci > 100 ? Colors.red : Colors.grey)),
+          _buildIndicatorCard(
+              context,
+              "Stochastic (${lastStochK.toStringAsFixed(1)})",
+              lastStochK.toStringAsFixed(1),
+              lastStochK > 80
+                  ? "Überkauft"
+                  : (lastStochK < 20 ? "Überverkauft" : "Neutral"),
+              "Stochastic vergleicht Schlusskurs mit Preisspanne. <20 = oversold, >80 = overbought.",
+              lastStochK > 80
+                  ? Colors.red
+                  : (lastStochK < 20 ? Colors.green : Colors.grey)),
+          _buildIndicatorCard(
+              context,
+              "Awesome Oscillator",
+              lastAo.toStringAsFixed(4),
+              lastAo > 0 ? "Bullish" : "Bearish",
+              "AO = SMA(5) - SMA(34) der Mittelpunkte. Zeigt Marktmomentum.",
+              lastAo > 0 ? Colors.green : Colors.red),
+
+          // ---- VOLUMEN ----
+          _buildIndicatorCard(
+              context,
+              "On-Balance Volume",
+              _formatObv(lastObv),
+              "Volumen-Momentum",
+              "OBV steigt = Kaufdruck. Divergenz mit Preis = mögliche Umkehr.",
+              Colors.teal),
+          _buildIndicatorCard(
+              context,
+              "CMF (Chaikin Money Flow)",
+              lastCmf.toStringAsFixed(3),
+              lastCmf > 0.05
+                  ? "Positiver Geldfluss"
+                  : (lastCmf < -0.05 ? "Negativer Geldfluss" : "Neutral"),
+              "CMF > 0.05 = Kaufdruck über 20 Tage. CMF < -0.05 = Verkaufsdruck.",
+              lastCmf > 0.05
+                  ? Colors.green
+                  : (lastCmf < -0.05 ? Colors.red : Colors.grey)),
+          _buildIndicatorCard(
+              context,
+              "MFI (Money Flow Index)",
+              lastMfi.toStringAsFixed(1),
+              lastMfi < 20
+                  ? "Überverkauft"
+                  : (lastMfi > 80 ? "Überkauft" : "Neutral"),
+              "MFI = volumengewichteter RSI. < 20 = stark überverkauft (Kaufsignal).",
+              lastMfi < 20
+                  ? Colors.green
+                  : (lastMfi > 80 ? Colors.red : Colors.grey)),
+
+          // ---- MUSTER ----
           if (divergenceType != 'none')
             _buildIndicatorCard(
-              context,
-              "RSI Divergenz",
-              divergenceType == 'bullish' ? "Bullish erkannt" : "Bearish erkannt",
-              "Starkes Umkehrsignal",
-              "Eine Divergenz tritt auf, wenn der Preis eine andere Richtung einschlägt als der RSI-Indikator. Dies ist oft ein starkes Signal für eine bevorstehende Trendumkehr.",
-              divergenceType == 'bullish' ? Colors.green : Colors.red,
-            ),
-
+                context,
+                "RSI Divergenz",
+                divergenceType == 'bullish'
+                    ? "Bullish erkannt"
+                    : "Bearish erkannt",
+                "Starkes Umkehrsignal",
+                "Preis und RSI bewegen sich in entgegengesetzte Richtungen = bevorstehende Trendumkehr.",
+                divergenceType == 'bullish' ? Colors.green : Colors.red),
           if (squeeze)
             _buildIndicatorCard(
+                context,
+                "TTM Squeeze",
+                "Aktiv",
+                "Ausbruch steht bevor",
+                "Bollinger Bands innerhalb Keltner Channels = Energie wird aufgebaut vor Ausbruch.",
+                Colors.orange),
+          _buildIndicatorCard(
               context,
-              "TTM Squeeze",
-              "Aktiv",
-              "Volatilitäts-Ausbruch steht bevor",
-              "Die Bollinger Bands liegen innerhalb der Keltner Channels. Dies deutet auf eine Ruhephase hin, der oft eine explosive Bewegung folgt.",
-              Colors.orange,
-            ),
+              "BB %B (Bollinger)",
+              lastBbPct.toStringAsFixed(2),
+              lastBbPct < 0.1
+                  ? "Oversold"
+                  : (lastBbPct > 0.9 ? "Overbought" : "Mid Range"),
+              "%B zeigt Position innerhalb der Bollinger Bands. <0.1 = unteres Band (Kaufgelegenheit).",
+              lastBbPct < 0.1
+                  ? Colors.green
+                  : (lastBbPct > 0.9 ? Colors.red : Colors.grey)),
 
           const Divider(),
           const SizedBox(height: 16),
@@ -263,6 +335,45 @@ class ScoreDetailsScreen extends StatelessWidget {
     if (v > 1e9) return "${(v / 1e9).toStringAsFixed(2)} Mrd.";
     if (v > 1e6) return "${(v / 1e6).toStringAsFixed(2)} Mio.";
     return v.toStringAsFixed(0);
+  }
+
+  Widget _buildCategoryBar(BuildContext context, String label, double score,
+      double maxScore, Color color) {
+    final pct = ((score + maxScore) / (2 * maxScore)).clamp(0.0, 1.0);
+    final displaySign =
+        score > 0 ? "+${score.toStringAsFixed(1)}" : score.toStringAsFixed(1);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w500)),
+              Text("$displaySign / ${maxScore.toInt()}",
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: score >= 0 ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: pct,
+              backgroundColor: Colors.grey.withOpacity(0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  score >= 0 ? color : Colors.red.withOpacity(0.7)),
+              minHeight: 8,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildIndicatorCard(BuildContext context, String title, String value,

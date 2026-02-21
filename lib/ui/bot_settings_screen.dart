@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/portfolio_service.dart';
+import '../services/bot_settings_service.dart';
+import '../services/trade_execution_service.dart';
+import '../services/watchlist_service.dart';
 
 class BotSettingsScreen extends StatelessWidget {
   const BotSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Determine Tab Count
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -20,12 +22,13 @@ class BotSettingsScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: Consumer<PortfolioService>(
-          builder: (context, bot, child) {
+        body: Consumer4<BotSettingsService, TradeExecutionService,
+            PortfolioService, WatchlistService>(
+          builder: (context, settings, exec, portfolio, watchlist, child) {
             return TabBarView(
               children: [
-                _buildGeneralTab(context, bot),
-                _buildStrategyTab(context, bot),
+                _buildGeneralTab(context, settings, exec, portfolio, watchlist),
+                _buildStrategyTab(context, settings),
               ],
             );
           },
@@ -35,37 +38,43 @@ class BotSettingsScreen extends StatelessWidget {
   }
 
   // --- TAB 1: Allgemein (Start/Stop, Umfang, Money Management, Erweitert) ---
-  Widget _buildGeneralTab(BuildContext context, PortfolioService bot) {
+  Widget _buildGeneralTab(
+      BuildContext context,
+      BotSettingsService settings,
+      TradeExecutionService exec,
+      PortfolioService portfolio,
+      WatchlistService watchlist) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         // 1. Status
         Card(
-          color: bot.autoRun
+          color: exec.autoRun
               ? Colors.green.withOpacity(0.1)
               : Colors.red.withOpacity(0.1),
           child: Column(
             children: [
               SwitchListTile(
                 title: const Text("Bot Aktiv (Auto-Run)"),
-                subtitle: Text(bot.autoRun
-                    ? "Läuft im Hintergrund (Alle ${bot.autoIntervalMinutes} Min)"
+                subtitle: Text(exec.autoRun
+                    ? "Läuft im Hintergrund (Alle ${settings.autoIntervalMinutes} Min)"
                     : "Pausiert"),
-                value: bot.autoRun,
-                onChanged: (v) => bot.toggleAutoRun(v),
+                value: exec.autoRun,
+                onChanged: (v) =>
+                    exec.toggleAutoRun(v, settings, portfolio, watchlist),
                 secondary: Icon(
-                    bot.autoRun
+                    exec.autoRun
                         ? Icons.play_circle_fill
                         : Icons.pause_circle_filled,
-                    color: bot.autoRun ? Colors.green : Colors.red),
+                    color: exec.autoRun ? Colors.green : Colors.red),
               ),
-              if (bot.isScanning)
+              if (exec.isScanning)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => bot.cancelRoutine(),
+                      onPressed: () => exec.cancelRoutine(),
                       icon: const Icon(Icons.stop),
                       label: const Text("Laufenden Scan sofort abbrechen"),
                       style: ElevatedButton.styleFrom(
@@ -86,22 +95,22 @@ class BotSettingsScreen extends StatelessWidget {
               SwitchListTile(
                 title: const Text("Pending Orders prüfen"),
                 subtitle: const Text("Prüft Limit/Stop Orders (Entry)."),
-                value: bot.enableCheckPending,
-                onChanged: (v) => bot.updateRoutineFlags(pending: v),
+                value: settings.enableCheckPending,
+                onChanged: (v) => settings.updateRoutineFlags(pending: v),
               ),
               const Divider(height: 1),
               SwitchListTile(
                 title: const Text("Offene Positionen prüfen"),
                 subtitle: const Text("Prüft SL/TP und aktualisiert PnL."),
-                value: bot.enableCheckOpen,
-                onChanged: (v) => bot.updateRoutineFlags(open: v),
+                value: settings.enableCheckOpen,
+                onChanged: (v) => settings.updateRoutineFlags(open: v),
               ),
               const Divider(height: 1),
               SwitchListTile(
                 title: const Text("Nach neuen Trades suchen"),
                 subtitle: const Text("Scannt Watchlist nach Signalen."),
-                value: bot.enableScanNew,
-                onChanged: (v) => bot.updateRoutineFlags(scan: v),
+                value: settings.enableScanNew,
+                onChanged: (v) => settings.updateRoutineFlags(scan: v),
               ),
             ],
           ),
@@ -114,26 +123,26 @@ class BotSettingsScreen extends StatelessWidget {
             children: [
               _sliderTile(
                   "Invest pro Trade (€)",
-                  bot.botBaseInvest,
+                  settings.botBaseInvest,
                   10,
                   2000,
-                  (v) => bot.updateBotSettings(
-                      v, bot.maxOpenPositions, bot.unlimitedPositions),
+                  (v) => settings.updateBotSettings(v,
+                      settings.maxOpenPositions, settings.unlimitedPositions),
                   desc: "Basis-Investition pro Position."),
               SwitchListTile(
                 title: const Text("Unbegrenzte Positionen"),
-                value: bot.unlimitedPositions,
-                onChanged: (v) => bot.updateBotSettings(
-                    bot.botBaseInvest, bot.maxOpenPositions, v),
+                value: settings.unlimitedPositions,
+                onChanged: (v) => settings.updateBotSettings(
+                    settings.botBaseInvest, settings.maxOpenPositions, v),
               ),
-              if (!bot.unlimitedPositions)
+              if (!settings.unlimitedPositions)
                 _sliderTile(
                   "Max. offene Positionen",
-                  bot.maxOpenPositions.toDouble(),
+                  settings.maxOpenPositions.toDouble(),
                   1,
                   50,
-                  (v) => bot.updateBotSettings(
-                      bot.botBaseInvest, v.toInt(), false),
+                  (v) => settings.updateBotSettings(
+                      settings.botBaseInvest, v.toInt(), false),
                 ),
             ],
           ),
@@ -147,11 +156,11 @@ class BotSettingsScreen extends StatelessWidget {
             children: [
               _sliderTile(
                   "Scan Intervall (Min)",
-                  bot.autoIntervalMinutes.toDouble(),
+                  settings.autoIntervalMinutes.toDouble(),
                   15,
                   240,
-                  (v) => bot.updateAdvancedSettings(
-                      v.toInt(), bot.trailingMult, bot.dynamicSizing),
+                  (v) => settings.updateAdvancedSettings(
+                      v.toInt(), settings.trailingMult, settings.dynamicSizing),
                   desc: "Häufigkeit der automatischen Prüfung."),
             ],
           ),
@@ -164,19 +173,19 @@ class BotSettingsScreen extends StatelessWidget {
             children: [
               _sliderTile(
                   "Trailing Stop (x ATR)",
-                  bot.trailingMult,
+                  settings.trailingMult,
                   0.5,
                   4.0,
-                  (v) => bot.updateAdvancedSettings(
-                      bot.autoIntervalMinutes, v, bot.dynamicSizing),
+                  (v) => settings.updateAdvancedSettings(
+                      settings.autoIntervalMinutes, v, settings.dynamicSizing),
                   desc: "Stop Loss automatisch nachziehen."),
               SwitchListTile(
                 title: const Text("Dynamische Positionsgröße"),
                 subtitle:
                     const Text("Invest verdoppeln bei hohem Score (>80)."),
-                value: bot.dynamicSizing,
-                onChanged: (v) => bot.updateAdvancedSettings(
-                    bot.autoIntervalMinutes, bot.trailingMult, v),
+                value: settings.dynamicSizing,
+                onChanged: (v) => settings.updateAdvancedSettings(
+                    settings.autoIntervalMinutes, settings.trailingMult, v),
               ),
             ],
           ),
@@ -188,7 +197,7 @@ class BotSettingsScreen extends StatelessWidget {
           icon: const Icon(Icons.restore, size: 16),
           label: const Text("Alle Einstellungen zurücksetzen",
               style: TextStyle(fontSize: 12)),
-          onPressed: () => bot.resetBotSettings(),
+          onPressed: () => settings.resetBotSettings(),
           style: TextButton.styleFrom(foregroundColor: Colors.grey),
         )),
 
@@ -206,7 +215,7 @@ class BotSettingsScreen extends StatelessWidget {
   }
 
   // --- TAB 2: Strategie (Entry, Exit, SL, TP) ---
-  Widget _buildStrategyTab(BuildContext context, PortfolioService bot) {
+  Widget _buildStrategyTab(BuildContext context, BotSettingsService settings) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -216,66 +225,68 @@ class BotSettingsScreen extends StatelessWidget {
             children: [
               _dropdownTile<int>(
                 "Strategie Typ",
-                bot.entryStrategy,
+                settings.entryStrategy,
                 const {
                   0: "Market (Sofort)",
                   1: "Pullback (Limit)",
                   2: "Breakout (Stop)"
                 },
-                (v) => bot.updateStrategySettings(
+                (v) => settings.updateStrategySettings(
                   entryStrategy: v!,
-                  entryPadding: bot.entryPadding,
-                  entryPaddingType: bot.entryPaddingType,
-                  stopMethod: bot.stopMethod,
-                  stopPercent: bot.stopPercent,
-                  atrMult: bot.atrMult,
-                  tpMethod: bot.tpMethod,
-                  rrTp1: bot.rrTp1,
-                  rrTp2: bot.rrTp2,
-                  tpPercent1: bot.tpPercent1,
-                  tpPercent2: bot.tpPercent2,
-                  tp1SellFraction: bot.tp1SellFraction,
+                  entryPadding: settings.entryPadding,
+                  entryPaddingType: settings.entryPaddingType,
+                  stopMethod: settings.stopMethod,
+                  stopPercent: settings.stopPercent,
+                  atrMult: settings.atrMult,
+                  tpMethod: settings.tpMethod,
+                  rrTp1: settings.rrTp1,
+                  rrTp2: settings.rrTp2,
+                  tpPercent1: settings.tpPercent1,
+                  tpPercent2: settings.tpPercent2,
+                  tp1SellFraction: settings.tp1SellFraction,
                 ),
               ),
-              if (bot.entryStrategy != 0) ...[
+              if (settings.entryStrategy != 0) ...[
                 const Divider(height: 1),
                 _dropdownTile<int>(
                   "Padding Typ",
-                  bot.entryPaddingType,
+                  settings.entryPaddingType,
                   const {0: "Prozentual (%)", 1: "ATR Faktor"},
-                  (v) => bot.updateStrategySettings(
-                    entryStrategy: bot.entryStrategy,
-                    entryPadding: bot.entryPadding,
+                  (v) => settings.updateStrategySettings(
+                    entryStrategy: settings.entryStrategy,
+                    entryPadding: settings.entryPadding,
                     entryPaddingType: v!,
-                    stopMethod: bot.stopMethod,
-                    stopPercent: bot.stopPercent,
-                    atrMult: bot.atrMult,
-                    tpMethod: bot.tpMethod,
-                    rrTp1: bot.rrTp1,
-                    rrTp2: bot.rrTp2,
-                    tpPercent1: bot.tpPercent1,
-                    tpPercent2: bot.tpPercent2,
-                    tp1SellFraction: bot.tp1SellFraction,
+                    stopMethod: settings.stopMethod,
+                    stopPercent: settings.stopPercent,
+                    atrMult: settings.atrMult,
+                    tpMethod: settings.tpMethod,
+                    rrTp1: settings.rrTp1,
+                    rrTp2: settings.rrTp2,
+                    tpPercent1: settings.tpPercent1,
+                    tpPercent2: settings.tpPercent2,
+                    tp1SellFraction: settings.tp1SellFraction,
                   ),
                 ),
                 _sliderTile(
-                  bot.entryPaddingType == 0 ? "Padding %" : "Padding (x ATR)",
-                  bot.entryPadding,
+                  settings.entryPaddingType == 0
+                      ? "Padding %"
+                      : "Padding (x ATR)",
+                  settings.entryPadding,
                   0.1,
-                  bot.entryPaddingType == 0 ? 2.0 : 5.0,
-                  (v) => bot.updateStrategySettings(
+                  settings.entryPaddingType == 0 ? 2.0 : 5.0,
+                  (v) => settings.updateStrategySettings(
                     entryPadding: v,
-                    entryStrategy: bot.entryStrategy,
-                    entryPaddingType: bot.entryPaddingType,
-                    stopMethod: bot.stopMethod,
-                    stopPercent: bot.stopPercent,
-                    atrMult: bot.atrMult,
-                    tpMethod: bot.tpMethod,
-                    rrTp1: bot.rrTp1,
-                    rrTp2: bot.rrTp2,
-                    tpPercent1: bot.tpPercent1,
-                    tpPercent2: bot.tpPercent2,
-                    tp1SellFraction: bot.tp1SellFraction,
+                    entryStrategy: settings.entryStrategy,
+                    entryPaddingType: settings.entryPaddingType,
+                    stopMethod: settings.stopMethod,
+                    stopPercent: settings.stopPercent,
+                    atrMult: settings.atrMult,
+                    tpMethod: settings.tpMethod,
+                    rrTp1: settings.rrTp1,
+                    rrTp2: settings.rrTp2,
+                    tpPercent1: settings.tpPercent1,
+                    tpPercent2: settings.tpPercent2,
+                    tp1SellFraction: settings.tp1SellFraction,
                   ),
                 ),
               ]
@@ -289,66 +300,67 @@ class BotSettingsScreen extends StatelessWidget {
             children: [
               _dropdownTile<int>(
                 "Methode",
-                bot.stopMethod,
+                settings.stopMethod,
                 const {
-                  0: "Donchian Low",
+                  0: "Donchian Low/High",
                   1: "Prozentual",
-                  2: "ATR (Volatilität)"
+                  2: "ATR (Volatilität)",
+                  3: "Swing-Low/High",
                 },
-                (v) => bot.updateStrategySettings(
+                (v) => settings.updateStrategySettings(
                   stopMethod: v!,
-                  stopPercent: bot.stopPercent,
-                  atrMult: bot.atrMult,
-                  tpMethod: bot.tpMethod,
-                  rrTp1: bot.rrTp1,
-                  rrTp2: bot.rrTp2,
-                  tpPercent1: bot.tpPercent1,
-                  tpPercent2: bot.tpPercent2,
-                  tp1SellFraction: bot.tp1SellFraction,
-                  entryStrategy: bot.entryStrategy,
-                  entryPadding: bot.entryPadding,
-                  entryPaddingType: bot.entryPaddingType,
+                  stopPercent: settings.stopPercent,
+                  atrMult: settings.atrMult,
+                  tpMethod: settings.tpMethod,
+                  rrTp1: settings.rrTp1,
+                  rrTp2: settings.rrTp2,
+                  tpPercent1: settings.tpPercent1,
+                  tpPercent2: settings.tpPercent2,
+                  tp1SellFraction: settings.tp1SellFraction,
+                  entryStrategy: settings.entryStrategy,
+                  entryPadding: settings.entryPadding,
+                  entryPaddingType: settings.entryPaddingType,
                 ),
               ),
-              if (bot.stopMethod == 1)
+              if (settings.stopMethod == 1)
                 _sliderTile(
                     "Stop Abstand %",
-                    bot.stopPercent,
+                    settings.stopPercent,
                     1,
                     20,
-                    (v) => bot.updateStrategySettings(
-                          stopMethod: bot.stopMethod,
+                    (v) => settings.updateStrategySettings(
+                          stopMethod: settings.stopMethod,
                           stopPercent: v,
-                          atrMult: bot.atrMult,
-                          tpMethod: bot.tpMethod,
-                          rrTp1: bot.rrTp1,
-                          rrTp2: bot.rrTp2,
-                          tpPercent1: bot.tpPercent1,
-                          tpPercent2: bot.tpPercent2,
-                          tp1SellFraction: bot.tp1SellFraction,
-                          entryStrategy: bot.entryStrategy,
-                          entryPadding: bot.entryPadding,
-                          entryPaddingType: bot.entryPaddingType,
+                          atrMult: settings.atrMult,
+                          tpMethod: settings.tpMethod,
+                          rrTp1: settings.rrTp1,
+                          rrTp2: settings.rrTp2,
+                          tpPercent1: settings.tpPercent1,
+                          tpPercent2: settings.tpPercent2,
+                          tp1SellFraction: settings.tp1SellFraction,
+                          entryStrategy: settings.entryStrategy,
+                          entryPadding: settings.entryPadding,
+                          entryPaddingType: settings.entryPaddingType,
                         )),
-              if (bot.stopMethod == 2)
+              if (settings.stopMethod == 2)
                 _sliderTile(
                     "ATR Multiplikator",
-                    bot.atrMult,
+                    settings.atrMult,
                     1,
                     5,
-                    (v) => bot.updateStrategySettings(
-                          stopMethod: bot.stopMethod,
-                          stopPercent: bot.stopPercent,
+                    (v) => settings.updateStrategySettings(
+                          stopMethod: settings.stopMethod,
+                          stopPercent: settings.stopPercent,
                           atrMult: v,
-                          tpMethod: bot.tpMethod,
-                          rrTp1: bot.rrTp1,
-                          rrTp2: bot.rrTp2,
-                          tpPercent1: bot.tpPercent1,
-                          tpPercent2: bot.tpPercent2,
-                          tp1SellFraction: bot.tp1SellFraction,
-                          entryStrategy: bot.entryStrategy,
-                          entryPadding: bot.entryPadding,
-                          entryPaddingType: bot.entryPaddingType,
+                          tpMethod: settings.tpMethod,
+                          rrTp1: settings.rrTp1,
+                          rrTp2: settings.rrTp2,
+                          tpPercent1: settings.tpPercent1,
+                          tpPercent2: settings.tpPercent2,
+                          tp1SellFraction: settings.tp1SellFraction,
+                          entryStrategy: settings.entryStrategy,
+                          entryPadding: settings.entryPadding,
+                          entryPaddingType: settings.entryPaddingType,
                         )),
             ],
           ),
@@ -360,122 +372,127 @@ class BotSettingsScreen extends StatelessWidget {
             children: [
               _dropdownTile<int>(
                 "Methode",
-                bot.tpMethod,
-                const {0: "Risk/Reward (CRV)", 1: "Prozentual", 2: "ATR-Ziel"},
-                (v) => bot.updateStrategySettings(
+                settings.tpMethod,
+                const {
+                  0: "Risk/Reward (CRV)",
+                  1: "Prozentual",
+                  2: "ATR-Ziel",
+                  3: "Pivot Points",
+                },
+                (v) => settings.updateStrategySettings(
                   tpMethod: v!,
-                  stopMethod: bot.stopMethod,
-                  stopPercent: bot.stopPercent,
-                  atrMult: bot.atrMult,
-                  rrTp1: bot.rrTp1,
-                  rrTp2: bot.rrTp2,
-                  tpPercent1: bot.tpPercent1,
-                  tpPercent2: bot.tpPercent2,
-                  tp1SellFraction: bot.tp1SellFraction,
-                  entryStrategy: bot.entryStrategy,
-                  entryPadding: bot.entryPadding,
-                  entryPaddingType: bot.entryPaddingType,
+                  stopMethod: settings.stopMethod,
+                  stopPercent: settings.stopPercent,
+                  atrMult: settings.atrMult,
+                  rrTp1: settings.rrTp1,
+                  rrTp2: settings.rrTp2,
+                  tpPercent1: settings.tpPercent1,
+                  tpPercent2: settings.tpPercent2,
+                  tp1SellFraction: settings.tp1SellFraction,
+                  entryStrategy: settings.entryStrategy,
+                  entryPadding: settings.entryPadding,
+                  entryPaddingType: settings.entryPaddingType,
                 ),
               ),
               const Divider(height: 1),
               _sliderTile(
                 "Verkauf bei TP1 (%)",
-                bot.tp1SellFraction * 100,
+                settings.tp1SellFraction * 100,
                 10,
                 100,
-                (v) => bot.updateStrategySettings(
+                (v) => settings.updateStrategySettings(
                   tp1SellFraction: v / 100.0,
-                  stopMethod: bot.stopMethod,
-                  stopPercent: bot.stopPercent,
-                  atrMult: bot.atrMult,
-                  tpMethod: bot.tpMethod,
-                  rrTp1: bot.rrTp1,
-                  rrTp2: bot.rrTp2,
-                  tpPercent1: bot.tpPercent1,
-                  tpPercent2: bot.tpPercent2,
-                  entryStrategy: bot.entryStrategy,
-                  entryPadding: bot.entryPadding,
-                  entryPaddingType: bot.entryPaddingType,
+                  stopMethod: settings.stopMethod,
+                  stopPercent: settings.stopPercent,
+                  atrMult: settings.atrMult,
+                  tpMethod: settings.tpMethod,
+                  rrTp1: settings.rrTp1,
+                  rrTp2: settings.rrTp2,
+                  tpPercent1: settings.tpPercent1,
+                  tpPercent2: settings.tpPercent2,
+                  entryStrategy: settings.entryStrategy,
+                  entryPadding: settings.entryPadding,
+                  entryPaddingType: settings.entryPaddingType,
                 ),
               ),
-              if (bot.tpMethod == 0 || bot.tpMethod == 2) ...[
+              if (settings.tpMethod == 0 || settings.tpMethod == 2) ...[
                 _sliderTile(
                     "TP1 Faktor (R)",
-                    bot.rrTp1,
+                    settings.rrTp1,
                     1,
                     5,
-                    (v) => bot.updateStrategySettings(
+                    (v) => settings.updateStrategySettings(
                           rrTp1: v,
-                          stopMethod: bot.stopMethod,
-                          stopPercent: bot.stopPercent,
-                          atrMult: bot.atrMult,
-                          tpMethod: bot.tpMethod,
-                          rrTp2: bot.rrTp2,
-                          tpPercent1: bot.tpPercent1,
-                          tpPercent2: bot.tpPercent2,
-                          tp1SellFraction: bot.tp1SellFraction,
-                          entryStrategy: bot.entryStrategy,
-                          entryPadding: bot.entryPadding,
-                          entryPaddingType: bot.entryPaddingType,
+                          stopMethod: settings.stopMethod,
+                          stopPercent: settings.stopPercent,
+                          atrMult: settings.atrMult,
+                          tpMethod: settings.tpMethod,
+                          rrTp2: settings.rrTp2,
+                          tpPercent1: settings.tpPercent1,
+                          tpPercent2: settings.tpPercent2,
+                          tp1SellFraction: settings.tp1SellFraction,
+                          entryStrategy: settings.entryStrategy,
+                          entryPadding: settings.entryPadding,
+                          entryPaddingType: settings.entryPaddingType,
                         )),
                 _sliderTile(
                     "TP2 Faktor (R)",
-                    bot.rrTp2,
+                    settings.rrTp2,
                     2,
                     10,
-                    (v) => bot.updateStrategySettings(
+                    (v) => settings.updateStrategySettings(
                           rrTp2: v,
-                          stopMethod: bot.stopMethod,
-                          stopPercent: bot.stopPercent,
-                          atrMult: bot.atrMult,
-                          tpMethod: bot.tpMethod,
-                          rrTp1: bot.rrTp1,
-                          tpPercent1: bot.tpPercent1,
-                          tpPercent2: bot.tpPercent2,
-                          tp1SellFraction: bot.tp1SellFraction,
-                          entryStrategy: bot.entryStrategy,
-                          entryPadding: bot.entryPadding,
-                          entryPaddingType: bot.entryPaddingType,
+                          stopMethod: settings.stopMethod,
+                          stopPercent: settings.stopPercent,
+                          atrMult: settings.atrMult,
+                          tpMethod: settings.tpMethod,
+                          rrTp1: settings.rrTp1,
+                          tpPercent1: settings.tpPercent1,
+                          tpPercent2: settings.tpPercent2,
+                          tp1SellFraction: settings.tp1SellFraction,
+                          entryStrategy: settings.entryStrategy,
+                          entryPadding: settings.entryPadding,
+                          entryPaddingType: settings.entryPaddingType,
                         )),
               ],
-              if (bot.tpMethod == 1) ...[
+              if (settings.tpMethod == 1) ...[
                 _sliderTile(
                     "TP1 %",
-                    bot.tpPercent1,
+                    settings.tpPercent1,
                     1,
                     20,
-                    (v) => bot.updateStrategySettings(
+                    (v) => settings.updateStrategySettings(
                           tpPercent1: v,
-                          stopMethod: bot.stopMethod,
-                          stopPercent: bot.stopPercent,
-                          atrMult: bot.atrMult,
-                          tpMethod: bot.tpMethod,
-                          rrTp1: bot.rrTp1,
-                          rrTp2: bot.rrTp2,
-                          tpPercent2: bot.tpPercent2,
-                          tp1SellFraction: bot.tp1SellFraction,
-                          entryStrategy: bot.entryStrategy,
-                          entryPadding: bot.entryPadding,
-                          entryPaddingType: bot.entryPaddingType,
+                          stopMethod: settings.stopMethod,
+                          stopPercent: settings.stopPercent,
+                          atrMult: settings.atrMult,
+                          tpMethod: settings.tpMethod,
+                          rrTp1: settings.rrTp1,
+                          rrTp2: settings.rrTp2,
+                          tpPercent2: settings.tpPercent2,
+                          tp1SellFraction: settings.tp1SellFraction,
+                          entryStrategy: settings.entryStrategy,
+                          entryPadding: settings.entryPadding,
+                          entryPaddingType: settings.entryPaddingType,
                         )),
                 _sliderTile(
                     "TP2 %",
-                    bot.tpPercent2,
+                    settings.tpPercent2,
                     2,
                     50,
-                    (v) => bot.updateStrategySettings(
+                    (v) => settings.updateStrategySettings(
                           tpPercent2: v,
-                          stopMethod: bot.stopMethod,
-                          stopPercent: bot.stopPercent,
-                          atrMult: bot.atrMult,
-                          tpMethod: bot.tpMethod,
-                          rrTp1: bot.rrTp1,
-                          rrTp2: bot.rrTp2,
-                          tpPercent1: bot.tpPercent1,
-                          tp1SellFraction: bot.tp1SellFraction,
-                          entryStrategy: bot.entryStrategy,
-                          entryPadding: bot.entryPadding,
-                          entryPaddingType: bot.entryPaddingType,
+                          stopMethod: settings.stopMethod,
+                          stopPercent: settings.stopPercent,
+                          atrMult: settings.atrMult,
+                          tpMethod: settings.tpMethod,
+                          rrTp1: settings.rrTp1,
+                          rrTp2: settings.rrTp2,
+                          tpPercent1: settings.tpPercent1,
+                          tp1SellFraction: settings.tp1SellFraction,
+                          entryStrategy: settings.entryStrategy,
+                          entryPadding: settings.entryPadding,
+                          entryPaddingType: settings.entryPaddingType,
                         )),
               ],
             ],

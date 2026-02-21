@@ -47,8 +47,8 @@ class SettingsScreen extends StatelessWidget {
                   SwitchListTile(
                     title: const Text("Muster-Marker"),
                     value: s.showPatternMarkers,
-                    onChanged: (v) =>
-                        provider.updateSettings(s.copyWith(showPatternMarkers: v)),
+                    onChanged: (v) => provider
+                        .updateSettings(s.copyWith(showPatternMarkers: v)),
                   ),
                   SwitchListTile(
                     title: const Text("Trading-Linien (TP/SL)"),
@@ -68,20 +68,22 @@ class SettingsScreen extends StatelessWidget {
                   SwitchListTile(
                     title: const Text("EMA 20 Linie"),
                     value: s.showEMA,
-                    onChanged: (v) => provider.updateSettings(s.copyWith(showEMA: v)),
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(showEMA: v)),
                   ),
                   SwitchListTile(
                     title: const Text("Bollinger Bands"),
                     value: s.showBB,
-                    onChanged: (v) => provider.updateSettings(s.copyWith(showBB: v)),
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(showBB: v)),
                   ),
                   _sliderTile(
                       "Projektion (Tage)",
                       s.projectionDays.toDouble(),
                       5,
                       90,
-                      (v) => provider
-                          .updateSettings(s.copyWith(projectionDays: v.toInt()))),
+                      (v) => provider.updateSettings(
+                          s.copyWith(projectionDays: v.toInt()))),
                 ]),
                 const SizedBox(height: 16),
                 _buildGroupCard(context, "Zusatz-Graphen (unten)", [
@@ -94,7 +96,8 @@ class SettingsScreen extends StatelessWidget {
                   SwitchListTile(
                     title: const Text("RSI Indikator"),
                     value: s.showRSI,
-                    onChanged: (v) => provider.updateSettings(s.copyWith(showRSI: v)),
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(showRSI: v)),
                   ),
                   SwitchListTile(
                     title: const Text("MACD Indikator"),
@@ -111,12 +114,14 @@ class SettingsScreen extends StatelessWidget {
                   SwitchListTile(
                     title: const Text("On-Balance Volume (OBV)"),
                     value: s.showOBV,
-                    onChanged: (v) => provider.updateSettings(s.copyWith(showOBV: v)),
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(showOBV: v)),
                   ),
                   SwitchListTile(
                     title: const Text("ADX (Trendstärke)"),
                     value: s.showAdx,
-                    onChanged: (v) => provider.updateSettings(s.copyWith(showAdx: v)),
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(showAdx: v)),
                   ),
                 ]),
               ],
@@ -130,69 +135,119 @@ class SettingsScreen extends StatelessWidget {
                   _dropdownTile<int>(
                     "Entry Strategie",
                     s.entryStrategy,
-                    const {0: "Market (Sofort)", 1: "Pullback (Limit)", 2: "Breakout (Stop)"},
-                    (v) => provider.updateSettings(s.copyWith(entryStrategy: v)),
-                    subtitle: "Wann einsteigen? 'Market' kauft sofort. 'Pullback' wartet auf günstigeren Preis. 'Breakout' kauft bei Ausbruch nach oben (teurer). Empfohlen: Market oder Pullback.",
+                    const {
+                      0: "Market (Sofort)",
+                      1: "Pullback (Limit)",
+                      2: "Breakout (Stop)"
+                    },
+                    (v) =>
+                        provider.updateSettings(s.copyWith(entryStrategy: v)),
+                    subtitle:
+                        "Wann einsteigen? 'Market' kauft sofort. 'Pullback' wartet auf günstigeren Preis. 'Breakout' kauft bei Ausbruch nach oben (teurer). Empfohlen: Market oder Pullback.",
                   ),
                   if (s.entryStrategy != 0) ...[
                     _dropdownTile<int>(
                       "Entry Padding Typ",
                       s.entryPaddingType,
                       const {0: "Prozentual (%)", 1: "ATR Faktor"},
-                      (v) => provider.updateSettings(s.copyWith(entryPaddingType: v)),
+                      (v) => provider
+                          .updateSettings(s.copyWith(entryPaddingType: v)),
                     ),
                     _sliderTile(
-                      s.entryPaddingType == 0 ? "Entry Padding %" : "Entry Padding (x ATR)",
+                      s.entryPaddingType == 0
+                          ? "Entry Padding %"
+                          : "Entry Padding (x ATR)",
                       s.entryPadding,
                       0.1,
                       s.entryPaddingType == 0 ? 2.0 : 5.0,
-                      (v) => provider.updateSettings(s.copyWith(entryPadding: v)),
-                      desc: "Abstand zum aktuellen Kurs für die Order. Standard: 0.2% oder 0.5x ATR.",
+                      (v) =>
+                          provider.updateSettings(s.copyWith(entryPadding: v)),
+                      desc:
+                          "Abstand zum aktuellen Kurs für die Order. Standard: 0.2% oder 0.5x ATR.",
                     ),
                   ],
                   const Divider(),
                   _dropdownTile<int>(
                     "Stop Loss Methode",
                     s.stopMethod,
-                    const {0: "Donchian Low", 1: "Prozentual", 2: "ATR (Volatilität)"},
+                    const {
+                      0: "Donchian Low",
+                      1: "Prozentual",
+                      2: "ATR (Volatilität)",
+                      3: "Swing-Low/High"
+                    },
                     (v) => provider.updateSettings(s.copyWith(stopMethod: v)),
-                    subtitle: "Wie wird der Stop Loss gesetzt? ATR passt sich der Marktschwankung an (Profi-Standard). Donchian nutzt das letzte Tief.",
+                    subtitle:
+                        "Wie wird der Stop Loss gesetzt? ATR passt sich der Marktschwankung an (Profi-Standard). Swing nutzt das letzte signifikante Tief/Hoch.",
                   ),
                   if (s.stopMethod == 1)
-                    _sliderTile("Stop Loss %", s.stopPercent, 1, 20,
-                        (v) => provider.updateSettings(s.copyWith(stopPercent: v)),
+                    _sliderTile(
+                        "Stop Loss %",
+                        s.stopPercent,
+                        1,
+                        20,
+                        (v) =>
+                            provider.updateSettings(s.copyWith(stopPercent: v)),
                         desc: "Fester prozentualer Abstand. Standard: 5-8%."),
                   if (s.stopMethod == 2 || s.tpMethod == 2)
                     _sliderTile("ATR Multiplikator", s.atrMult, 1, 5,
                         (v) => provider.updateSettings(s.copyWith(atrMult: v)),
-                        desc: "Wie viel 'Luft' hat der Trade? 2.0x ATR ist Standard für Swing-Trading. Kleiner = engerer Stop."),
-                  
+                        desc:
+                            "Wie viel 'Luft' hat der Trade? 2.0x ATR ist Standard für Swing-Trading. Kleiner = engerer Stop."),
+                  if (s.stopMethod == 3)
+                    _sliderTile(
+                        "Swing Lookback (Kerzen)",
+                        s.swingLookback.toDouble(),
+                        5,
+                        50,
+                        (v) => provider.updateSettings(
+                            s.copyWith(swingLookback: v.toInt())),
+                        desc:
+                            "Wie viele Kerzen zurückschauen um das letzte Swing-Tief/Hoch zu finden. Standard: 20."),
                   const Divider(),
                   _dropdownTile<int>(
                     "Take Profit Methode",
                     s.tpMethod,
-                    const {0: "Risk/Reward (CRV)", 1: "Prozentual", 2: "ATR-Ziel"},
+                    const {
+                      0: "Risk/Reward (CRV)",
+                      1: "Prozentual",
+                      2: "ATR-Ziel",
+                      3: "Pivot Points"
+                    },
                     (v) => provider.updateSettings(s.copyWith(tpMethod: v)),
-                    subtitle: "Wann Gewinne mitnehmen? CRV (Risk/Reward) basiert auf dem Risiko (Stop Loss Abstand). Empfohlen: CRV.",
+                    subtitle:
+                        "Wann Gewinne mitnehmen? Pivot Points nutzt klassische Floor-Pivot-Levels als Ziele. CRV empfohlen für Anfänger.",
                   ),
                   if (s.tpMethod == 0 || s.tpMethod == 2) ...[
                     _sliderTile("TP1 Faktor", s.rrTp1, 1, 5,
                         (v) => provider.updateSettings(s.copyWith(rrTp1: v)),
-                        desc: "Erstes Ziel: Vielfaches des Risikos. Standard: 1.5x (bei 100€ Risiko -> 150€ Gewinn)."),
+                        desc:
+                            "Erstes Ziel: Vielfaches des Risikos. Standard: 1.5x (bei 100€ Risiko -> 150€ Gewinn)."),
                     _sliderTile("TP2 Faktor", s.rrTp2, 2, 10,
                         (v) => provider.updateSettings(s.copyWith(rrTp2: v)),
                         desc: "Zweites Ziel (Moonbag). Standard: 3.0x."),
                   ],
                   if (s.tpMethod == 1) ...[
-                    _sliderTile("TP1 %", s.tpPercent1, 1, 20,
-                        (v) => provider.updateSettings(s.copyWith(tpPercent1: v)),
+                    _sliderTile(
+                        "TP1 %",
+                        s.tpPercent1,
+                        1,
+                        20,
+                        (v) =>
+                            provider.updateSettings(s.copyWith(tpPercent1: v)),
                         desc: "Fester Gewinn in %. Standard: 5-10%."),
-                    _sliderTile("TP2 %", s.tpPercent2, 2, 50,
-                        (v) => provider.updateSettings(s.copyWith(tpPercent2: v)),
+                    _sliderTile(
+                        "TP2 %",
+                        s.tpPercent2,
+                        2,
+                        50,
+                        (v) =>
+                            provider.updateSettings(s.copyWith(tpPercent2: v)),
                         desc: "Fernes Ziel in %. Standard: 10-20%."),
                   ],
                   const SizedBox(height: 12),
-                  Center(child: TextButton.icon(
+                  Center(
+                      child: TextButton.icon(
                     icon: const Icon(Icons.restore),
                     label: const Text("Auf Standardwerte zurücksetzen"),
                     onPressed: () => provider.resetStrategySettings(),
@@ -276,7 +331,8 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _sliderTile(String label, double value, double min, double max,
-      Function(double) onChanged, {String? desc}) {
+      Function(double) onChanged,
+      {String? desc}) {
     int divisions = 100;
     if (max - min <= 10) {
       divisions = ((max - min) * 10).toInt(); // 0.1 Schritte
@@ -303,21 +359,28 @@ class SettingsScreen extends StatelessWidget {
         if (desc != null)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(desc, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            child: Text(desc,
+                style: const TextStyle(fontSize: 11, color: Colors.grey)),
           ),
       ],
     );
   }
 
-  Widget _dropdownTile<T>(String title, T value, Map<T, String> items, Function(T?) onChanged, {String? subtitle}) {
+  Widget _dropdownTile<T>(
+      String title, T value, Map<T, String> items, Function(T?) onChanged,
+      {String? subtitle}) {
     return ListTile(
       title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 12)) : null,
+      subtitle: subtitle != null
+          ? Text(subtitle, style: const TextStyle(fontSize: 12))
+          : null,
       trailing: DropdownButton<T>(
         value: value,
         onChanged: onChanged,
         underline: Container(),
-        items: items.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
+        items: items.entries
+            .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))
+            .toList(),
       ),
     );
   }

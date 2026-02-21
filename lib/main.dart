@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/app_provider.dart';
 import 'services/portfolio_service.dart';
+import 'services/bot_settings_service.dart';
+import 'services/watchlist_service.dart';
+import 'services/trade_execution_service.dart';
 import 'services/update_service.dart';
 import 'ui/dashboard_screen.dart';
 
@@ -11,6 +14,9 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => AppProvider()),
         ChangeNotifierProvider(create: (_) => PortfolioService()),
+        ChangeNotifierProvider(create: (_) => BotSettingsService()),
+        ChangeNotifierProvider(create: (_) => WatchlistService()),
+        ChangeNotifierProvider(create: (_) => TradeExecutionService()),
       ],
       child: const MyApp(),
     ),

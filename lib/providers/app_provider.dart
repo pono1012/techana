@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/data_service.dart';
 import '../services/ta_indicators.dart';
+import '../services/ta_extended.dart';
 
 class AppProvider extends ChangeNotifier {
   final DataService _ds = DataService();
@@ -144,41 +145,56 @@ class AppProvider extends ChangeNotifier {
       final atr = safeCalc(() => TA.atr(_fullBars), null);
       final bb = TA.bollinger(closes); // Returns object, safe inside?
       // Wir wrappen die komplexen Objekte manuell
-      
+
       // MACD
       List<double?> macd, macdSignal, macdHist;
       try {
         final m = TA.macd(closes);
-        macd = m.macd; macdSignal = m.signal; macdHist = m.hist;
+        macd = m.macd;
+        macdSignal = m.signal;
+        macdHist = m.hist;
       } catch (e) {
-        macd = List.filled(len, null); macdSignal = List.filled(len, null); macdHist = List.filled(len, null);
+        macd = List.filled(len, null);
+        macdSignal = List.filled(len, null);
+        macdHist = List.filled(len, null);
       }
 
       // Bollinger
       List<double?> bbUp, bbMid, bbLo;
       try {
         final b = TA.bollinger(closes);
-        bbUp = b.up; bbMid = b.mid; bbLo = b.lo;
+        bbUp = b.up;
+        bbMid = b.mid;
+        bbLo = b.lo;
       } catch (e) {
-        bbUp = List.filled(len, null); bbMid = List.filled(len, null); bbLo = List.filled(len, null);
+        bbUp = List.filled(len, null);
+        bbMid = List.filled(len, null);
+        bbLo = List.filled(len, null);
       }
 
       // Donchian
       List<double?> donUp, donMid, donLo;
       try {
         final d = TA.donchian(_fullBars);
-        donUp = d.up; donMid = d.mid; donLo = d.lo;
+        donUp = d.up;
+        donMid = d.mid;
+        donLo = d.lo;
       } catch (e) {
-        donUp = List.filled(len, null); donMid = List.filled(len, null); donLo = List.filled(len, null);
+        donUp = List.filled(len, null);
+        donMid = List.filled(len, null);
+        donLo = List.filled(len, null);
       }
 
       // Supertrend
-      List<double?> stLine; List<bool> stBull;
+      List<double?> stLine;
+      List<bool> stBull;
       try {
         final s = TA.supertrend(_fullBars);
-        stLine = s.line; stBull = s.bull;
+        stLine = s.line;
+        stBull = s.bull;
       } catch (e) {
-        stLine = List.filled(len, null); stBull = List.filled(len, false);
+        stLine = List.filled(len, null);
+        stBull = List.filled(len, false);
       }
 
       // ADX
@@ -201,9 +217,11 @@ class AppProvider extends ChangeNotifier {
       List<double?> stochK, stochD;
       try {
         final s = TA.stochastic(_fullBars);
-        stochK = s.k; stochD = s.d;
+        stochK = s.k;
+        stochD = s.d;
       } catch (e) {
-        stochK = List.filled(len, null); stochD = List.filled(len, null);
+        stochK = List.filled(len, null);
+        stochD = List.filled(len, null);
       }
 
       // OBV
@@ -217,118 +235,309 @@ class AppProvider extends ChangeNotifier {
         proj = null;
       }
 
-      // 2. Score & Strategie Logik (Safe)
+      // NEU: TAX Indikatoren
+      List<double?> cciVals, psarSar, cmfVals, mfiVals, aoVals, bbPctVals;
+      List<bool> psarBull;
+      try {
+        cciVals = TAX.cci(_fullBars);
+        final p = TAX.psar(_fullBars);
+        psarSar = p.sar;
+        psarBull = p.bull;
+        cmfVals = TAX.cmf(_fullBars);
+        mfiVals = TAX.mfi(_fullBars);
+        aoVals = TAX.ao(_fullBars);
+        final bbE = TAX.bbExtended(closes);
+        bbPctVals = bbE.pct;
+      } catch (e) {
+        cciVals = List.filled(len, null);
+        psarSar = List.filled(len, null);
+        psarBull = List.filled(len, false);
+        cmfVals = List.filled(len, null);
+        mfiVals = List.filled(len, null);
+        aoVals = List.filled(len, null);
+        bbPctVals = List.filled(len, null);
+      }
+
+      // Ichimoku
+      List<double?> ichTenkan, ichKijun, ichSpanA, ichSpanB;
+      try {
+        final ich = TA.ichimoku(_fullBars);
+        ichTenkan = ich.tenkan;
+        ichKijun = ich.kijun;
+        ichSpanA = ich.spanA;
+        ichSpanB = ich.spanB;
+      } catch (_) {
+        ichTenkan = List.filled(len, null);
+        ichKijun = List.filled(len, null);
+        ichSpanA = List.filled(len, null);
+        ichSpanB = List.filled(len, null);
+      }
+
+      // Vortex, Chop
+      double lastVipVim = 0, lastChop = 61.8;
+      bool isTrending = false;
+      try {
+        final vx = TAX.vortex(_fullBars);
+        final vip = vx.vip.isNotEmpty ? (vx.vip.last ?? 1.0) : 1.0;
+        final vim = vx.vim.isNotEmpty ? (vx.vim.last ?? 1.0) : 1.0;
+        lastVipVim = vip - vim;
+        final ch = TAX.chop(_fullBars);
+        lastChop = ch.isNotEmpty ? (ch.last ?? 61.8) : 61.8;
+        isTrending = lastChop < 61.8;
+      } catch (_) {}
+
+      // 2. Score & Strategie Logik
       final lastPrice = closes.last;
       final lastRsi = rsi.last ?? 50;
       final lastMacdHist = macdHist.last ?? 0;
       final lastEma20 = ema20.last ?? lastPrice;
+      final lastEma50 = sma50.last ?? lastPrice;
       final lastAtr = atr.last ?? (lastPrice * 0.02);
       final lastStBull = stBull.isNotEmpty ? stBull.last : false;
       final lastStochK = stochK.last ?? 50;
       final lastObv = obv.last ?? 0;
       final lastAdx = adx.last ?? 0;
+      final lastCci = cciVals.isNotEmpty ? (cciVals.last ?? 0) : 0.0;
+      final lastPsarBull = psarBull.isNotEmpty ? psarBull.last : false;
+      final lastPsar =
+          psarSar.isNotEmpty ? (psarSar.last ?? lastPrice) : lastPrice;
+      final lastCmf = cmfVals.isNotEmpty ? (cmfVals.last ?? 0) : 0.0;
+      final lastMfi = mfiVals.isNotEmpty ? (mfiVals.last ?? 50) : 50.0;
+      final lastAo = aoVals.isNotEmpty ? (aoVals.last ?? 0) : 0.0;
+      final lastBbPct = bbPctVals.isNotEmpty ? (bbPctVals.last ?? 0.5) : 0.5;
 
       // Sichere Extraktion Donchian
       double lastDonchianLo = lastPrice * 0.95;
       if (donLo.isNotEmpty) {
         for (final v in donLo.reversed) {
-          if (v != null) { lastDonchianLo = v; break; }
+          if (v != null) {
+            lastDonchianLo = v;
+            break;
+          }
         }
       }
       double lastDonchianUp = lastPrice * 1.05;
       if (donUp.isNotEmpty) {
         for (final v in donUp.reversed) {
-          if (v != null) { lastDonchianUp = v; break; }
+          if (v != null) {
+            lastDonchianUp = v;
+            break;
+          }
         }
       }
 
+      // Ichimoku letzte Werte
+      final lastTenkan = ichTenkan.isNotEmpty ? ichTenkan.last : null;
+      final lastKijun = ichKijun.isNotEmpty ? ichKijun.last : null;
+      const int spanOffset = 26;
+      final relevantSpanA = _fullBars.length > spanOffset
+          ? ichSpanA[_fullBars.length - 1 - spanOffset]
+          : null;
+      final relevantSpanB = _fullBars.length > spanOffset
+          ? ichSpanB[_fullBars.length - 1 - spanOffset]
+          : null;
+
+      // Pattern
       String pattern = "Kein Muster";
       try {
-        pattern = TA.detectPattern(_fullBars);
+        final cps = TAX.detectAllPatterns(_fullBars);
+        pattern = cps.isNotEmpty ? cps.first.name : "Kein Muster";
       } catch (_) {}
 
-      // Scoring System (0 bis 100)
-      int score = 50;
+      // Divergenzen
+      String divergenceType = "none";
+      try {
+        final divRes = TA.detectDivergences(closes, rsi);
+        for (int i = 1; i <= 3; i++) {
+          final idx = _fullBars.length - i;
+          if (divRes.bullishIndices.contains(idx)) {
+            divergenceType = "bullish";
+            break;
+          }
+          if (divRes.bearishIndices.contains(idx)) {
+            divergenceType = "bearish";
+            break;
+          }
+        }
+      } catch (_) {}
+
+      // Kategorie-Budget-Scoring
+      double trendScore = 0, momentumScore = 0, volumeScore = 0;
+      double patternScore = 0, volatilityScore = 0;
       List<String> reasons = [];
 
-      // --- 1. Trend & Struktur (Basis) ---
-      if (lastPrice > lastEma20) {
-        score += 10;
-        reasons.add("Kurs > EMA20 (Kurzfristig Bullish)");
-      } else {
-        score -= 10;
-        reasons.add("Kurs < EMA20 (Kurzfristig Bearish)");
-      }
+      bool strongTrend = lastAdx > 25 && isTrending;
 
+      // === TREND (max 35) ===
       if (lastStBull) {
-        score += 10;
-        reasons.add("Supertrend ist Grün (Bullish)");
-      } else {
-        score -= 10;
-        reasons.add("Supertrend ist Rot (Bearish)");
+        trendScore += 10;
+        reasons.add("Supertrend Bullish");
+      } else
+        trendScore -= 10;
+      if (lastPrice > lastEma20) {
+        trendScore += 7;
+        reasons.add("Kurs > EMA20");
+      } else
+        trendScore -= 7;
+      if (lastPrice > lastEma50) {
+        trendScore += 4;
+        reasons.add("Kurs > EMA50");
+      } else
+        trendScore -= 4;
+      if (lastPsarBull) {
+        trendScore += 5;
+        reasons.add("PSAR Bullish");
+      } else
+        trendScore -= 5;
+      bool isCloudBullish = false;
+      if (relevantSpanA != null && relevantSpanB != null) {
+        if (lastPrice > relevantSpanA && lastPrice > relevantSpanB) {
+          trendScore += 6;
+          reasons.add("Kurs über Wolke");
+          isCloudBullish = true;
+        } else if (lastPrice < relevantSpanA && lastPrice < relevantSpanB) {
+          trendScore -= 6;
+        }
       }
+      bool isCrossBullish = false;
+      if (lastTenkan != null && lastKijun != null) {
+        if (lastTenkan > lastKijun) {
+          trendScore += 3;
+          reasons.add("Tenkan > Kijun");
+          isCrossBullish = true;
+        } else
+          trendScore -= 3;
+      }
+      if (lastVipVim > 0.1) {
+        trendScore = (trendScore + 3).clamp(-35, 35);
+        reasons.add("Vortex Bullish");
+      } else if (lastVipVim < -0.1)
+        trendScore = (trendScore - 3).clamp(-35, 35);
+      trendScore = trendScore.clamp(-35, 35);
 
-      // --- 2. Momentum & ADX Filter ---
-      bool strongTrend = lastAdx > 25;
+      // === MOMENTUM (max 25) ===
       if (strongTrend) {
         if (lastRsi > 50 && lastRsi < 80) {
-          score += 5; reasons.add("RSI bestätigt Trend (Momentum)");
+          momentumScore += 8;
+          reasons.add("RSI Momentum");
         } else if (lastRsi >= 80) {
-          score -= 10; reasons.add("RSI extrem überhitzt (>80)");
-        } else if (lastRsi < 40) {
-          score -= 5; reasons.add("RSI schwächelt im Trend");
-        }
+          momentumScore -= 10;
+          reasons.add("RSI Überhitzt");
+        } else if (lastRsi < 40) momentumScore -= 5;
       } else {
         if (lastRsi > 70) {
-          score -= 15; reasons.add("RSI überkauft in Range (Reversal)");
+          momentumScore -= 12;
+          reasons.add("RSI Überkauft");
         } else if (lastRsi < 30) {
-          score += 15; reasons.add("RSI überverkauft in Range (Bounce)");
-        }
+          momentumScore += 12;
+          reasons.add("RSI Überverkauft");
+        } else if (lastRsi > 55) momentumScore += 4;
       }
-
-      if (lastStochK < 20) {
-        score += 10; reasons.add("Stochastic überverkauft");
-      } else if (lastStochK > 80) {
-        score -= (strongTrend ? 5 : 10); reasons.add("Stochastic überkauft");
-      }
-
-      // --- 3. Volumen & Squeeze ---
-      if (obv.length > 5 && (lastObv > (obv[obv.length - 5] ?? 0))) {
-        score += 5; reasons.add("OBV steigend (Kaufdruck)");
-      } else {
-        score -= 5;
-      }
-
-      if (squeeze.isNotEmpty && squeeze.last) {
-        score += 10; reasons.add("TTM Squeeze aktiv (Ausbruch steht bevor)");
-      }
-
       if (lastMacdHist > 0) {
-        score += 5; reasons.add("MACD Momentum positiv");
-      } else {
-        score -= 5;
+        momentumScore += 5;
+        reasons.add("MACD positiv");
+      } else
+        momentumScore -= 5;
+      if (lastAdx > 30) {
+        momentumScore += 4;
+        reasons.add("ADX Stark");
+      } else if (lastAdx < 20) momentumScore -= 2;
+      if (lastCci < -100) {
+        momentumScore += 5;
+        reasons.add("CCI Überverkauft");
+      } else if (lastCci > 100) {
+        momentumScore -= 5;
+        reasons.add("CCI Überkauft");
       }
+      if (lastAo > 0)
+        momentumScore += 3;
+      else
+        momentumScore -= 3;
+      momentumScore = momentumScore.clamp(-25, 25);
 
-      // --- 4. Pattern ---
-      if (pattern.contains("Bullish") || pattern.contains("Hammer")) {
-        score += 15; reasons.add("Muster: $pattern");
+      // === VOLUMEN (max 20) ===
+      double prevObv5 = obv.length > 5 ? (obv[obv.length - 5] ?? 0) : 0;
+      if (lastObv > prevObv5) {
+        volumeScore += 8;
+        reasons.add("OBV Steigend");
+      } else
+        volumeScore -= 8;
+      if (lastCmf > 0.05) {
+        volumeScore += 6;
+        reasons.add("CMF Positiv");
+      } else if (lastCmf < -0.05) {
+        volumeScore -= 6;
+        reasons.add("CMF Negativ");
       }
-      if (pattern.contains("Bearish") || pattern.contains("Shooting")) {
-        score -= 15; reasons.add("Muster: $pattern");
+      if (lastMfi < 20) {
+        volumeScore += 6;
+        reasons.add("MFI Überverkauft");
+      } else if (lastMfi > 80) {
+        volumeScore -= 6;
+        reasons.add("MFI Überkauft");
       }
+      volumeScore = volumeScore.clamp(-20, 20);
 
-      score = score.clamp(0, 100);
+      // === MUSTER (max 15) ===
+      if (pattern.contains("Bullish") ||
+          pattern.contains("Hammer") ||
+          pattern.contains("Morning") ||
+          pattern.contains("Piercing") ||
+          pattern.contains("White") ||
+          pattern.contains("Tweezers Bottom")) {
+        patternScore += 8;
+        reasons.add("Muster: $pattern");
+      } else if (pattern.contains("Bearish") ||
+          pattern.contains("Shooting") ||
+          pattern.contains("Evening") ||
+          pattern.contains("Dark") ||
+          pattern.contains("Crows") ||
+          pattern.contains("Tweezers Top")) {
+        patternScore -= 8;
+        reasons.add("Muster: $pattern");
+      }
+      if (divergenceType == "bullish") {
+        patternScore += 7;
+        reasons.add("Bullish Divergenz");
+      } else if (divergenceType == "bearish") {
+        patternScore -= 7;
+        reasons.add("Bearish Divergenz");
+      }
+      patternScore = patternScore.clamp(-15, 15);
+
+      // === VOLATILITÄT (max 5) ===
+      if (squeeze.isNotEmpty && squeeze.last) {
+        volatilityScore += 3;
+        reasons.add("Squeeze Aktiv");
+      }
+      if (lastBbPct < 0.1) {
+        volatilityScore += 2;
+        reasons.add("BB Oversold");
+      } else if (lastBbPct > 0.9) volatilityScore -= 2;
+      volatilityScore = volatilityScore.clamp(-5, 5);
+
+      // Gesamt-Score
+      final double rawScore = 50 +
+          trendScore +
+          momentumScore +
+          volumeScore +
+          patternScore +
+          volatilityScore;
+      int score = rawScore.round().clamp(0, 100);
 
       String type = "Neutral";
-      if (score >= 80) type = "Strong Buy";
-      else if (score >= 60) type = "Buy";
-      else if (score <= 20) type = "Strong Sell";
+      if (score >= 80)
+        type = "Strong Buy";
+      else if (score >= 60)
+        type = "Buy";
+      else if (score <= 20)
+        type = "Strong Sell";
       else if (score <= 40) type = "Sell";
 
       // 3. Entry / SL / TP
       bool isLong = score >= 50;
       double entry = lastPrice;
-      
+
       double paddingVal = 0.0;
       if (_settings.entryPaddingType == 0) {
         paddingVal = lastPrice * (_settings.entryPadding / 100);
@@ -337,23 +546,33 @@ class AppProvider extends ChangeNotifier {
       }
 
       if (_settings.entryStrategy == 1) {
-        if (isLong) entry = lastPrice - paddingVal;
-        else entry = lastPrice + paddingVal;
+        if (isLong)
+          entry = lastPrice - paddingVal;
+        else
+          entry = lastPrice + paddingVal;
       } else if (_settings.entryStrategy == 2) {
-        if (isLong) entry = _fullBars.last.high + paddingVal;
-        else entry = _fullBars.last.low - paddingVal;
+        if (isLong)
+          entry = _fullBars.last.high + paddingVal;
+        else
+          entry = _fullBars.last.low - paddingVal;
       }
 
       double sl, tp1, tp2;
       if (isLong) {
-        if (_settings.stopMethod == 0) sl = lastDonchianLo;
-        else if (_settings.stopMethod == 1) sl = lastPrice * (1 - _settings.stopPercent / 100);
-        else sl = lastPrice - (_settings.atrMult * lastAtr);
+        if (_settings.stopMethod == 0)
+          sl = lastDonchianLo;
+        else if (_settings.stopMethod == 1)
+          sl = lastPrice * (1 - _settings.stopPercent / 100);
+        else
+          sl = lastPrice - (_settings.atrMult * lastAtr);
         if (sl >= entry) sl = entry * 0.99;
       } else {
-        if (_settings.stopMethod == 0) sl = lastDonchianUp;
-        else if (_settings.stopMethod == 1) sl = lastPrice * (1 + _settings.stopPercent / 100);
-        else sl = lastPrice + (_settings.atrMult * lastAtr);
+        if (_settings.stopMethod == 0)
+          sl = lastDonchianUp;
+        else if (_settings.stopMethod == 1)
+          sl = lastPrice * (1 + _settings.stopPercent / 100);
+        else
+          sl = lastPrice + (_settings.atrMult * lastAtr);
         if (sl <= entry) sl = entry * 1.01;
       }
 
@@ -391,6 +610,36 @@ class AppProvider extends ChangeNotifier {
         chartPattern: pattern,
         tp1Percent: ((tp1 - entry) / entry * 100).abs(),
         tp2Percent: ((tp2 - entry) / entry * 100).abs(),
+        indicatorValues: {
+          'rsi': lastRsi,
+          'ema20': lastEma20,
+          'ema50': lastEma50,
+          'price': lastPrice,
+          'macdHist': lastMacdHist,
+          'stBull': lastStBull,
+          'stochK': lastStochK,
+          'obv': lastObv,
+          'adx': lastAdx,
+          'squeeze': squeeze.isNotEmpty && squeeze.last,
+          'cci': lastCci,
+          'cmf': lastCmf,
+          'mfi': lastMfi,
+          'ao': lastAo,
+          'bbPct': lastBbPct,
+          'psarBull': lastPsarBull,
+          'psar': lastPsar,
+          'vortex': lastVipVim,
+          'chop': lastChop,
+          'isTrending': isTrending,
+          'ichimoku_cloud_bull': isCloudBullish,
+          'ichimoku_cross_bull': isCrossBullish,
+          'divergence': divergenceType,
+          'score_trend': trendScore,
+          'score_momentum': momentumScore,
+          'score_volume': volumeScore,
+          'score_pattern': patternScore,
+          'score_volatility': volatilityScore,
+        },
       );
 
       // 4. Slicing für Chart
@@ -415,19 +664,24 @@ class AppProvider extends ChangeNotifier {
         macdSignal: slice(macdSignal),
         macdHist: slice(macdHist),
         atr: slice(atr),
-        bbUp: slice(bbUp), bbMid: slice(bbMid), bbLo: slice(bbLo),
-        donchianUp: slice(donUp), donchianMid: slice(donMid), donchianLo: slice(donLo),
-        stLine: slice(stLine), stBull: slice(stBull),
+        bbUp: slice(bbUp),
+        bbMid: slice(bbMid),
+        bbLo: slice(bbLo),
+        donchianUp: slice(donUp),
+        donchianMid: slice(donMid),
+        donchianLo: slice(donLo),
+        stLine: slice(stLine),
+        stBull: slice(stBull),
         squeezeFlags: slice(squeeze),
         adx: slice(adx),
-        stochK: slice(stochK), stochD: slice(stochD),
+        stochK: slice(stochK),
+        stochD: slice(stochD),
         obv: slice(obv),
         proj: proj,
         fundamentals: _fundamentalData,
         latestSignal: signal,
       );
       notifyListeners();
-
     } catch (e, stack) {
       debugPrint("Kritischer Fehler in _recalculate: $e\n$stack");
       // Fallback: Zeige zumindest den Chart ohne Indikatoren
@@ -447,12 +701,18 @@ class AppProvider extends ChangeNotifier {
           macdSignal: List.filled(len, null),
           macdHist: List.filled(len, null),
           atr: List.filled(len, null),
-          bbUp: List.filled(len, null), bbMid: List.filled(len, null), bbLo: List.filled(len, null),
-          donchianUp: List.filled(len, null), donchianMid: List.filled(len, null), donchianLo: List.filled(len, null),
-          stLine: List.filled(len, null), stBull: List.filled(len, false),
+          bbUp: List.filled(len, null),
+          bbMid: List.filled(len, null),
+          bbLo: List.filled(len, null),
+          donchianUp: List.filled(len, null),
+          donchianMid: List.filled(len, null),
+          donchianLo: List.filled(len, null),
+          stLine: List.filled(len, null),
+          stBull: List.filled(len, false),
           squeezeFlags: List.filled(len, false),
           adx: List.filled(len, null),
-          stochK: List.filled(len, null), stochD: List.filled(len, null),
+          stochK: List.filled(len, null),
+          stochD: List.filled(len, null),
           obv: List.filled(len, null),
           proj: null,
           fundamentals: _fundamentalData,
@@ -510,13 +770,16 @@ class AppProvider extends ChangeNotifier {
       _yahooSymbol = ySym;
     }
     // NEU: Lade das letzte Intervall
-    int? tfIdx = prefs.getInt('last_timeframe'); // 'last_timeframe' wird jetzt für das Intervall verwendet
+    int? tfIdx = prefs.getInt(
+        'last_timeframe'); // 'last_timeframe' wird jetzt für das Intervall verwendet
     if (tfIdx != null && tfIdx >= 0 && tfIdx < TimeFrame.values.length) {
       _selectedTimeFrame = TimeFrame.values[tfIdx];
     }
     // ALT: Lade den letzten Chart-Range
     int? rangeIdx = prefs.getInt('last_chart_range');
-    if (rangeIdx != null && rangeIdx >= 0 && rangeIdx < ChartRange.values.length) {
+    if (rangeIdx != null &&
+        rangeIdx >= 0 &&
+        rangeIdx < ChartRange.values.length) {
       _selectedChartRange = ChartRange.values[rangeIdx];
     }
     _searchHistory = prefs.getStringList('search_history') ?? [];

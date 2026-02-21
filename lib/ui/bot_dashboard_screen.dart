@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../services/portfolio_service.dart';
+import '../services/bot_settings_service.dart';
+import '../services/watchlist_service.dart';
+import '../services/trade_execution_service.dart';
 import '../models/trade_record.dart';
 import 'trade_details_screen.dart';
 import 'bot_settings_screen.dart';
@@ -29,19 +32,22 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
       appBar: AppBar(
         title: const Text("Bot Dashboard", style: TextStyle(fontSize: 16)),
         actions: [
-          Consumer<PortfolioService>(builder: (context, bot, _) {
+          Consumer4<PortfolioService, BotSettingsService, TradeExecutionService,
+                  WatchlistService>(
+              builder: (context, portfolio, settings, exec, watchlist, _) {
             return IconButton(
-              icon: bot.isScanning
+              icon: exec.isScanning
                   ? const Icon(Icons.pause_circle_filled, color: Colors.orange)
                   : const Icon(Icons.play_arrow),
               onPressed: () {
-                if (bot.isScanning) {
-                  bot.cancelRoutine();
+                if (exec.isScanning) {
+                  exec.cancelRoutine();
                 } else {
-                  bot.runDailyRoutine();
+                  exec.runDailyRoutine(settings, portfolio, watchlist);
                 }
               },
-              tooltip: bot.isScanning ? "Scan abbrechen" : "Scan jetzt starten",
+              tooltip:
+                  exec.isScanning ? "Scan abbrechen" : "Scan jetzt starten",
             );
           }),
           IconButton(
@@ -68,8 +74,9 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
           ),
         ],
       ),
-      body: Consumer<PortfolioService>(
-        builder: (context, bot, child) {
+      body: Consumer4<PortfolioService, BotSettingsService,
+          TradeExecutionService, WatchlistService>(
+        builder: (context, portfolio, settings, exec, watchlist, child) {
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -77,15 +84,15 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // --- 0. Smart Progress Bar (Top) ---
-                  if (bot.isScanning) _buildSmartProgressBar(bot),
+                  if (exec.isScanning) _buildSmartProgressBar(exec),
 
                   // --- 1. Portfolio Value Graph ---
-                  _buildPortfolioGraphCard(bot),
+                  _buildPortfolioGraphCard(portfolio),
 
                   const SizedBox(height: 12),
 
                   // --- 2. Summary Stats Cards ---
-                  _buildSummaryStats(bot),
+                  _buildSummaryStats(portfolio),
 
                   const SizedBox(height: 16),
 
@@ -119,8 +126,9 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                         return ChoiceChip(
                           label: Text(tf.label,
                               style: const TextStyle(fontSize: 10)),
-                          selected: bot.botTimeFrame == tf,
-                          onSelected: (selected) => bot.setBotTimeFrame(tf),
+                          selected: settings.botTimeFrame == tf,
+                          onSelected: (selected) =>
+                              settings.setBotTimeFrame(tf),
                           visualDensity: VisualDensity.compact,
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
@@ -136,7 +144,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                   const SizedBox(height: 8),
 
                   // --- 5. Categorized Lists ---
-                  ..._buildCategorizedLists(bot),
+                  ..._buildCategorizedLists(portfolio, watchlist),
 
                   const SizedBox(height: 16),
 
@@ -144,7 +152,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                   ExpansionTile(
                     title: const Text("Alle Positionen (Rohdaten)",
                         style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("${bot.trades.length} Trades gesamt"),
+                    subtitle: Text("${portfolio.trades.length} Trades gesamt"),
                     initiallyExpanded: false,
                     children: [
                       // Filter Bar inside
@@ -166,13 +174,13 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                       ),
                       const Divider(),
                       // List items
-                      if (bot.trades.isEmpty)
+                      if (portfolio.trades.isEmpty)
                         const Padding(
                           padding: EdgeInsets.all(16.0),
                           child: Text("Keine Trades vorhanden."),
                         )
                       else
-                        ...bot.trades.reversed.map((trade) {
+                        ...portfolio.trades.reversed.map((trade) {
                           // Apply Filter
                           if (_filter == "Offen" &&
                               trade.status != TradeStatus.open)
@@ -206,7 +214,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                                 trade.realizedPnL >= 0)
                               return const SizedBox.shrink();
                           }
-                          return _buildTradeCard(context, trade, bot);
+                          return _buildTradeCard(context, trade, portfolio);
                         }).toList(),
                     ],
                   ),
@@ -221,28 +229,27 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
     );
   }
 
-  Widget _buildSmartProgressBar(PortfolioService bot) {
+  Widget _buildSmartProgressBar(TradeExecutionService exec) {
     // Phase Logic & Progress Calculation
     double progress = 0.0;
     String phaseName = "";
     String timeEstimate = "";
 
     // Always calculate progress from current/total
-    if (bot.scanTotal > 0) {
-      progress = bot.scanCurrent / bot.scanTotal;
+    if (exec.scanTotal > 0) {
+      progress = exec.scanCurrent / exec.scanTotal;
     }
 
-    if (bot.taskPhase == 1) {
+    if (exec.taskPhase == 1) {
       phaseName = "Check Pending";
-      timeEstimate = "";
-    } else if (bot.taskPhase == 2) {
+    } else if (exec.taskPhase == 2) {
       phaseName = "Check Open";
-      timeEstimate = "";
-    } else if (bot.taskPhase == 3) {
+    } else if (exec.taskPhase == 3) {
       phaseName = "Markt Scan";
-      // Use the service's ETA calculation
-      timeEstimate = bot.estimatedTimeRemaining;
     }
+
+    // Globale Zeitschätzung (ETA) unabhängig von Phase anzeigen
+    timeEstimate = exec.estimatedTimeRemaining;
 
     // Safety clamp
     if (progress > 1.0) progress = 1.0;
@@ -266,7 +273,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Phase ${bot.taskPhase}/3: $phaseName",
+                Text("Phase ${exec.taskPhase}/3: $phaseName",
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold)),
                 Text(percentText,
@@ -280,7 +287,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
             LinearProgressIndicator(
               value: progress,
               backgroundColor: Colors.white10,
-              color: bot.taskPhase == 3 ? Colors.blueAccent : Colors.blueGrey,
+              color: exec.taskPhase == 3 ? Colors.blueAccent : Colors.blueGrey,
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -289,7 +296,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                    child: Text(bot.scanStatus,
+                    child: Text(exec.scanStatus,
                         style: const TextStyle(
                             color: Colors.white70, fontSize: 12),
                         overflow: TextOverflow.ellipsis)),
@@ -305,12 +312,12 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                 )
               ],
             ),
-            if (bot.taskPhase == 3)
+            if (exec.taskPhase == 3)
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
                 child: Align(
                     alignment: Alignment.centerRight,
-                    child: Text("${bot.scanCurrent} / ${bot.scanTotal} Items",
+                    child: Text("${exec.scanCurrent} / ${exec.scanTotal} Items",
                         style: const TextStyle(
                             color: Colors.white30, fontSize: 10))),
               )
@@ -552,9 +559,10 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
     );
   }
 
-  List<Widget> _buildCategorizedLists(PortfolioService bot) {
+  List<Widget> _buildCategorizedLists(
+      PortfolioService portfolio, WatchlistService watchlist) {
     // 1. Map defaults
-    final categories = bot.defaultWatchlistByCategory;
+    final categories = watchlist.defaultWatchlistByCategory;
 
     // 2. Identify trades that belong to categories
     Map<String, List<TradeRecord>> groupedTrades = {};
@@ -565,7 +573,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
       groupedTrades[key] = [];
     }
 
-    for (var trade in bot.trades) {
+    for (var trade in portfolio.trades) {
       bool found = false;
       for (var entry in categories.entries) {
         // Check if symbol is in this list
@@ -587,12 +595,13 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
     groupedTrades.forEach((category, trades) {
       if (trades.isNotEmpty) {
         // Only show categories with activity? Or all? User said "diese kann man aufklappen"
-        widgets.add(_buildCategoryTile(context, category, trades, bot));
+        widgets.add(_buildCategoryTile(context, category, trades, portfolio));
       }
     });
 
     if (otherTrades.isNotEmpty) {
-      widgets.add(_buildCategoryTile(context, "Sonstige", otherTrades, bot));
+      widgets
+          .add(_buildCategoryTile(context, "Sonstige", otherTrades, portfolio));
     }
 
     if (widgets.isEmpty) {
@@ -721,11 +730,51 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                           : (isOpen ? Colors.blue : Colors.grey))),
             ],
           ),
-          subtitle: Text(
-              "Entry: ${trade.entryPrice.toStringAsFixed(2)} | Score: ${trade.entryScore}",
-              style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Entry: ${trade.entryPrice.toStringAsFixed(2)} | Score: ${trade.entryScore}",
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+              ),
+              if (trade.entryPattern.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: _buildPatternChip(trade.entryPattern),
+                ),
+            ],
+          ),
           trailing: _buildTradeTrailing(trade, isOpen, isPending),
         ),
+      ),
+    );
+  }
+
+  /// Kleiner farbiger Chip für das Kerzenmuster
+  Widget _buildPatternChip(String pattern) {
+    // Bestimme ob bullish oder bearish anhand des Namens
+    final bullishKeywords = [
+      'Bullish',
+      'Hammer',
+      'Morning',
+      'Soldier',
+      'Piercing',
+      'Doji'
+    ];
+    final isBullish = bullishKeywords.any((kw) => pattern.contains(kw));
+    final chipColor = isBullish ? Colors.green : Colors.red;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: chipColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: chipColor.withOpacity(0.4), width: 0.5),
+      ),
+      child: Text(
+        pattern,
+        style: TextStyle(
+            fontSize: 9, color: chipColor, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -827,7 +876,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
   }
 
   void _showWatchlistDialog(BuildContext context) {
-    final bot = context.read<PortfolioService>();
+    final watchlist = context.read<WatchlistService>();
     final textCtrl = TextEditingController();
 
     showDialog(
@@ -852,7 +901,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                               hintText: "Symbol (z.B. BTC-USD)"),
                           onSubmitted: (val) {
                             if (val.isNotEmpty) {
-                              bot.addWatchlistSymbol(val);
+                              watchlist.addWatchlistSymbol(val);
                               textCtrl.clear();
                               setState(() {});
                             }
@@ -862,7 +911,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                           icon: const Icon(Icons.add),
                           onPressed: () {
                             if (textCtrl.text.isNotEmpty) {
-                              bot.addWatchlistSymbol(textCtrl.text);
+                              watchlist.addWatchlistSymbol(textCtrl.text);
                               textCtrl.clear();
                               setState(() {});
                             }
@@ -873,9 +922,10 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                     const Divider(),
                     // Kategorisierte Liste
                     Expanded(
-                      child: Consumer<PortfolioService>(
-                        builder: (context, bot, _) {
-                          final categories = bot.defaultWatchlistByCategory;
+                      child: Consumer<WatchlistService>(
+                        builder: (context, watchlist, _) {
+                          final categories =
+                              watchlist.defaultWatchlistByCategory;
                           return ListView(
                             children: categories.entries.map((categoryEntry) {
                               final categorySymbols = categoryEntry.value;
@@ -891,7 +941,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                                     TextButton(
                                       onPressed: () {
                                         for (final symbol in categorySymbols) {
-                                          bot.toggleWatchlistSymbol(
+                                          watchlist.toggleWatchlistSymbol(
                                               symbol, true);
                                         }
                                         setState(() {});
@@ -902,7 +952,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                                     TextButton(
                                       onPressed: () {
                                         for (final symbol in categorySymbols) {
-                                          bot.toggleWatchlistSymbol(
+                                          watchlist.toggleWatchlistSymbol(
                                               symbol, false);
                                         }
                                         setState(() {});
@@ -921,15 +971,16 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                                   return CheckboxListTile(
                                     dense: true,
                                     title: Text(symbol),
-                                    value: bot.watchListMap[symbol] ?? false,
+                                    value:
+                                        watchlist.watchListMap[symbol] ?? false,
                                     secondary: IconButton(
                                       icon: const Icon(Icons.delete,
                                           size: 20, color: Colors.grey),
-                                      onPressed: () =>
-                                          bot.removeWatchlistSymbol(symbol),
+                                      onPressed: () => watchlist
+                                          .removeWatchlistSymbol(symbol),
                                     ),
                                     onChanged: (val) =>
-                                        bot.toggleWatchlistSymbol(
+                                        watchlist.toggleWatchlistSymbol(
                                             symbol, val ?? false),
                                   );
                                 }).toList(),

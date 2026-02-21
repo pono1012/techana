@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../services/data_service.dart';
-import '../services/portfolio_service.dart';
+import '../services/watchlist_service.dart';
 
 class TopMoversHistoryScreen extends StatefulWidget {
   const TopMoversHistoryScreen({super.key});
@@ -26,17 +26,23 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
     if (!mounted) return;
     setState(() => _isLoading = true);
 
-    final history = context.read<PortfolioService>().topMoverHistory;
-    final allSymbols =
-        history.expand((scan) => scan.topMovers.map((m) => m.symbol)).toSet().toList();
+    final history = context.read<WatchlistService>().topMoverHistory;
+    final allSymbols = history
+        .expand((scan) => scan.topMovers.map((m) => m.symbol))
+        .toSet()
+        .toList();
 
     // Alle Symbole laden, aber in Batches um Threading-Fehler zu vermeiden
     const batchSize = 5;
     Map<String, double?> newPrices = {};
 
     for (int i = 0; i < allSymbols.length; i += batchSize) {
-      final batch = allSymbols.sublist(i, i + batchSize > allSymbols.length ? allSymbols.length : i + batchSize);
-      
+      final batch = allSymbols.sublist(
+          i,
+          i + batchSize > allSymbols.length
+              ? allSymbols.length
+              : i + batchSize);
+
       await Future.wait(batch.map((symbol) async {
         try {
           final price = await _dataService.fetchRegularMarketPrice(symbol);
@@ -60,7 +66,7 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final history = context.watch<PortfolioService>().topMoverHistory;
+    final history = context.watch<WatchlistService>().topMoverHistory;
 
     return Scaffold(
       appBar: AppBar(
@@ -101,15 +107,17 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
           final currentPrice = _currentPrices[mover.symbol];
           double? change;
           if (currentPrice != null && mover.priceAtScan > 0) {
-            change = ((currentPrice - mover.priceAtScan) / mover.priceAtScan) * 100;
+            change =
+                ((currentPrice - mover.priceAtScan) / mover.priceAtScan) * 100;
           }
 
           final isBuy = mover.signalType == "Buy";
           final color = isBuy ? Colors.green : Colors.red;
-          
+
           // Wenn es ein Kaufsignal war und der Preis gestiegen ist, ist es gut (grün)
           // Wenn es ein Verkaufssignal war und der Preis gefallen ist, ist es auch gut (grün)
-          bool isSuccess = (isBuy && (change ?? 0) > 0) || (!isBuy && (change ?? 0) < 0);
+          bool isSuccess =
+              (isBuy && (change ?? 0) > 0) || (!isBuy && (change ?? 0) < 0);
 
           return ListTile(
             dense: true,
@@ -121,14 +129,23 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
                     color: color, fontWeight: FontWeight.bold, fontSize: 14),
               ),
             ),
-            title: Text(mover.symbol, style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text("Kurs damals: ${mover.priceAtScan.toStringAsFixed(2)}"),
+            title: Text(mover.symbol,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle:
+                Text("Kurs damals: ${mover.priceAtScan.toStringAsFixed(2)}"),
             trailing: _isLoading && change == null
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2))
                 : Text(
-                    change != null ? "${change > 0 ? '+' : ''}${change.toStringAsFixed(1)}%" : "-",
+                    change != null
+                        ? "${change > 0 ? '+' : ''}${change.toStringAsFixed(1)}%"
+                        : "-",
                     style: TextStyle(
-                      color: change != null ? (isSuccess ? Colors.green : Colors.red) : Colors.grey,
+                      color: change != null
+                          ? (isSuccess ? Colors.green : Colors.red)
+                          : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
