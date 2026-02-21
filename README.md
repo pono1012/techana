@@ -159,9 +159,9 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ---
 
-## 🚀 Neuestes Update (13.02.2026)
+## 🚀 Neuestes Update (21.02.2026)
 
-TechAna erhält ein entscheidendes Stabilitätsupdate, das die Präzision und Zuverlässigkeit Ihrer automatisierten Handelsstrategien maßgeblich verbessert. Kritische Fehler bei der Ausführung von Stop-Loss-, Take-Profit- und Pending-Orders wurden behoben, um unerwartete Verluste zu verhindern und die Konformität Ihrer Trades mit Ihren Strategien zu gewährleisten. Profitieren Sie von einer sichereren und präziseren Handelsausführung.
+TechAna erhält ein entscheidendes Stabilitätsupdate, das die Präzision und Zuverlässigkeit Ihrer automatisierten Handelsstrategien maßgeblich verbessert, indem kritische Fehler bei der Orderausführung behoben wurden. Gleichzeitig wurde der KI-Analyse-Kern durch neue Indikatoren und ein fortschrittliches Scoring-System massiv aufgerüstet, was zu fundierteren und präziseren Handelssignalen führt. Profitieren Sie von einer sichereren, smarteren und flexibleren Handelsautomatisierung.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
