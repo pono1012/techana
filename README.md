@@ -159,9 +159,9 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ---
 
-## 🚀 Neuestes Update (09.02.2026)
+## 🚀 Neuestes Update (13.02.2026)
 
-Mit diesem Update reagiert der Smart Analysis Core von TechAna nun agiler und präziser auf dynamische Marktbedingungen, um Ihre Handelsentscheidungen mit relevanteren und zeitnahen Daten zu unterstützen. Profitieren Sie von einer verbesserten KI-Performance und einer klareren Kommunikation unserer Neuerungen direkt in der README.
+TechAna erhält ein entscheidendes Stabilitätsupdate, das die Präzision und Zuverlässigkeit Ihrer automatisierten Handelsstrategien maßgeblich verbessert. Kritische Fehler bei der Ausführung von Stop-Loss-, Take-Profit- und Pending-Orders wurden behoben, um unerwartete Verluste zu verhindern und die Konformität Ihrer Trades mit Ihren Strategien zu gewährleisten. Profitieren Sie von einer sichereren und präziseren Handelsausführung.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
@@ -170,15 +170,22 @@ Mit diesem Update reagiert der Smart Analysis Core von TechAna nun agiler und pr
 ### 🛠 Installation & Downloads
 
 #### 🤖 Android
-Lade die `.apk` Datei herunter und installiere sie direkt.
+Lade die neueste `.apk` aus den [Releases](../../releases) herunter und installiere sie direkt auf deinem Gerät.
+*(Hinweis: "Installation aus unbekannten Quellen" muss aktiviert sein.)*
 
 #### 🍏 iOS (Sideloading)
-Die `.ipa` Datei muss signiert und installiert werden. Nutze dafür eines dieser Tools:
-* **[TrollStore](https://github.com/opa334/TrollStore)** (Empfohlen)
-* **[AltStore](https://altstore.io/)**
-* **[SideStore](https://sidestore.io/)**
+Da TechAna nicht im AppStore verfügbar ist, muss die `.ipa` Datei manuell signiert werden. Wir empfehlen folgende Tools:
+
+* **[TrollStore](https://github.com/opa334/TrollStore)** ( Empfohlen)
+  * *Beste Erfahrung:* Erlaubt permanente Installation ohne das 7-Tage-Limit.
+  * *Voraussetzung:* Funktioniert nur auf bestimmten iOS-Versionen (CoreTrust Bug).
+* **[SideStore](https://sidestore.io/)** 
+  * *PC-los:* Ermöglicht das Signieren und Aktualisieren direkt auf dem iPhone (via lokalem VPN-Trick), nachdem es einmalig installiert wurde.
+* **[AltStore](https://altstore.io/)** 
+  * *Der Klassiker:* Erfordert einen Computer (PC/Mac) im selben WLAN, um die App alle 7 Tage automatisch zu erneuern.
 
 #### 🖥 Desktop (Windows, macOS, Linux)
-* **Windows:** `.zip` entpacken, `TechAna.exe` starten.
-* **macOS:** `.zip` entpacken, App in "Programme" verschieben.
-* **Linux:** `.zip` entpacken, Executable starten.
+TechAna ist als portable Anwendung verfügbar:
+* **Windows:** `.zip` entpacken und `TechAna.exe` starten.
+* **macOS:** `.dmg` mounten oder `.zip` entpacken und App in den "Programme"-Ordner verschieben.
+* **Linux:** `.tar.gz` entpacken und das Executable via Terminal oder Doppelklick starten.
