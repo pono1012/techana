@@ -1,0 +1,68 @@
+Analyzing techana_v8_autoTrader...                              
+
+warning - The include file 'package:flutter_lints/flutter.yaml' in 'C:\Users\Admin\Documents\ABBOS\TechAna\FlutterApp\techana_v8_autoTrader\analysis_options.yaml' can't be found when analyzing 'C:\Users\Admin\Documents\ABBOS\TechAna\FlutterApp\techana_v8_autoTrader' - analysis_options.yaml:10:10 - include_file_not_found
+warning - Unused import: 'dart:convert' - lib\models\trade_record.dart:1:8 - unused_import
+warning - The value of the local variable 'bb' isn't used - lib\providers\app_provider.dart:146:13 - unused_local_variable
+warning - Unused import: 'dart:math' - lib\services\data_service.dart:2:8 - unused_import
+warning - The stack trace variable 'stack' isn't used and can be removed - lib\services\data_service.dart:384:17 - unused_catch_stack
+warning - The value of the local variable 'profileLoaded' isn't used - lib\services\data_service.dart:533:12 - unused_local_variable
+warning - The operand must be 'null', so the condition is always 'true' - lib\services\data_service.dart:599:17 - unnecessary_null_comparison
+warning - The stack trace variable 'stack' isn't used and can be removed - lib\services\data_service.dart:716:17 - unused_catch_stack
+warning - The declaration '_safeDiv' isn't referenced - lib\services\ta_indicators.dart:72:18 - unused_element
+warning - Unused import: 'dart:io' - lib\services\update_service.dart:2:8 - unused_import
+warning - Unused import: 'dart:math' - lib\ui\analysis_stats_screen.dart:1:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\analysis_stats_screen.dart:304:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\analysis_stats_screen.dart:305:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\analysis_stats_screen.dart:460:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\analysis_stats_screen.dart:554:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\analysis_stats_screen.dart:556:30 - deprecated_member_use
+warning - Unused import: 'package:intl/intl.dart' - lib\ui\bot_dashboard_screen.dart:5:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\bot_dashboard_screen.dart:398:54 - deprecated_member_use
+warning - The value of the local variable 'invested' isn't used - lib\ui\bot_dashboard_screen.dart:600:12 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\bot_dashboard_screen.dart:693:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\bot_dashboard_screen.dart:749:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\bot_dashboard_screen.dart:751:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\bot_settings_screen.dart:54:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\bot_settings_screen.dart:55:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:82:33 - deprecated_member_use
+warning - The value of the local variable 'projColor' isn't used - lib\ui\chart_widget.dart:153:13 - unused_local_variable
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:153:47 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:186:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:224:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:230:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:243:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:256:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:267:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\chart_widget.dart:277:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:94:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:288:45 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:293:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:342:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:390:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:439:57 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:442:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:671:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:672:34 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:708:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:713:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:784:37 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\dashboard_screen.dart:789:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\fundamental_analysis_screen.dart:100:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\pattern_details_screen.dart:32:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\pattern_details_screen.dart:51:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\score_details_screen.dart:107:49 - deprecated_member_use
+warning - The declaration '_formatLarge' isn't referenced - lib\ui\score_details_screen.dart:326:10 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\score_details_screen.dart:395:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\score_details_screen.dart:397:53 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\score_details_screen.dart:430:42 - deprecated_member_use
+warning - The declaration '_getColorForVal' isn't referenced - lib\ui\score_details_screen.dart:457:9 - unused_element
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\top_movers_history_screen.dart:125:38 - deprecated_member_use
+warning - Unused import: '../models/trade_record.dart' - lib\ui\top_movers_screen.dart:4:8 - unused_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\top_movers_screen.dart:182:36 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\top_movers_screen.dart:255:61 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\trade_details_screen.dart:39:20 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\trade_details_screen.dart:513:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\ui\trade_details_screen.dart:515:53 - deprecated_member_use
+  error - Target of URI doesn't exist: 'package:techana_v2/main.dart' - test\widget_test.dart:11:8 - uri_does_not_exist
+  error - The name 'MyApp' isn't a class - test\widget_test.dart:16:35 - creation_with_non_type
+

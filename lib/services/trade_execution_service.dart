@@ -635,6 +635,11 @@ class TradeExecutionService extends ChangeNotifier {
 
   Future<void> _scanForNewTrades(BotSettingsService settings,
       PortfolioService portfolio, WatchlistService watchlist) async {
+    // Strategie vor dem Scan auf Wunsch randomisieren
+    if (settings.autoRandomizeStrategy) {
+      settings.randomizeStrategy();
+    }
+
     final activeSymbols = watchlist.watchListMap.entries
         .where((e) => e.value)
         .map((e) => e.key)

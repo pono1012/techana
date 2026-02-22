@@ -1,3 +1,4 @@
+import 'dart:math' as _math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
@@ -34,6 +35,9 @@ class BotSettingsService extends ChangeNotifier {
 
   TimeFrame _botTimeFrame = TimeFrame.d1;
 
+  // Randomizer Option
+  bool _autoRandomizeStrategy = false;
+
   // Getters
   double get botBaseInvest => _botBaseInvest;
   int get maxOpenPositions => _maxOpenPositions;
@@ -61,8 +65,51 @@ class BotSettingsService extends ChangeNotifier {
   bool get enableCheckOpen => _enableCheckOpen;
   bool get enableScanNew => _enableScanNew;
 
+  bool get autoRandomizeStrategy => _autoRandomizeStrategy;
+
   BotSettingsService() {
     _loadSettings();
+  }
+
+  void setAutoRandomizeStrategy(bool value) {
+    _autoRandomizeStrategy = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void randomizeStrategy() {
+    final random = _math.Random();
+
+    // Zufällige Stop-Methode (0=Donchian, 1=Prozent, 2=ATR, 3=Swing)
+    _stopMethod = random.nextInt(4);
+    _stopPercent = 2.0 + random.nextDouble() * 10.0; // 2% bis 12%
+    _atrMult = 1.0 + random.nextDouble() * 3.0; // 1.0 bis 4.0
+
+    // Zufällige Entry-Strategie (0=Market, 1=Limit/Pullback, 2=Stop/Breakout)
+    _entryStrategy = random.nextInt(3);
+    _entryPaddingType = random.nextInt(2);
+    if (_entryPaddingType == 0) {
+      _entryPadding = 0.1 + random.nextDouble() * 1.5; // 0.1% bis 1.6%
+    } else {
+      _entryPadding = 0.5 + random.nextDouble() * 2.5; // 0.5x bis 3.0x ATR
+    }
+
+    // Zufällige TP-Methode (0=RR, 1=Percent, 2=ATR, 3=Pivot)
+    _tpMethod = random.nextInt(4);
+    _rrTp1 = 1.0 + random.nextDouble() * 1.5; // 1.0 bis 2.5 RR
+    _rrTp2 = _rrTp1 + 0.5 + random.nextDouble() * 2.0; // Tp1 + (0.5 bis 2.5) RR
+
+    _tpPercent1 = 3.0 + random.nextDouble() * 10.0; // 3% bis 13%
+    _tpPercent2 =
+        _tpPercent1 + 2.0 + random.nextDouble() * 15.0; // Tp1 + (2% bis 17%)
+
+    _tp1SellFraction = 0.3 + random.nextDouble() * 0.5; // 30% bis 80%
+
+    // Zufälliger Timeframe // 15m (1) bis 1w (5)
+    _botTimeFrame = TimeFrame.values[1 + random.nextInt(5)];
+
+    _saveSettings();
+    notifyListeners();
   }
 
   void updateBotSettings(double invest, int maxPos, bool unlimited) {
@@ -175,6 +222,7 @@ class BotSettingsService extends ChangeNotifier {
     await prefs.setBool('bot_enable_pending', _enableCheckPending);
     await prefs.setBool('bot_enable_open', _enableCheckOpen);
     await prefs.setBool('bot_enable_scan', _enableScanNew);
+    await prefs.setBool('bot_auto_randomize', _autoRandomizeStrategy);
   }
 
   Future<void> _loadSettings() async {
@@ -204,6 +252,7 @@ class BotSettingsService extends ChangeNotifier {
     _enableCheckPending = prefs.getBool('bot_enable_pending') ?? true;
     _enableCheckOpen = prefs.getBool('bot_enable_open') ?? true;
     _enableScanNew = prefs.getBool('bot_enable_scan') ?? true;
+    _autoRandomizeStrategy = prefs.getBool('bot_auto_randomize') ?? false;
     notifyListeners();
   }
 }

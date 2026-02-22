@@ -105,163 +105,172 @@ class TradeDetailsScreen extends StatelessWidget {
             )
           else ...[
             // --- Kategorie-Scores ---
+            // --- Kategorie-Scores (Tippbar) ---
             if (snap.containsKey('score_trend')) ...[
               const SizedBox(height: 4),
               _buildCategoryBar(
+                  context,
                   "Trend",
                   (snap['score_trend'] as num?)?.toDouble() ?? 0,
                   35,
-                  Colors.blue),
+                  Colors.blue, [
+                _buildIndicatorCard(
+                  "Supertrend",
+                  (snap['stBull'] == true) ? "Bullish" : "Bearish",
+                  (snap['stBull'] == true) ? "Trend aufwärts" : "Trend abwärts",
+                ),
+                if (snap.containsKey('psarBull'))
+                  _buildIndicatorCard(
+                    "Parabolic SAR",
+                    (snap['psarBull'] == true) ? "Bullish" : "Bearish",
+                    "",
+                  ),
+                _buildIndicatorCard(
+                  "EMA 20 / 50",
+                  "${(snap['ema20'] as num?)?.toStringAsFixed(2) ?? "-"} / ${(snap['ema50'] as num?)?.toStringAsFixed(2) ?? "-"}",
+                  _getEmaStatus(snap['price'] as num?, snap['ema20'] as num?),
+                ),
+                _buildIndicatorCard(
+                  "Ichimoku",
+                  (snap['ichimoku_cloud_bull'] == true) ? "Bullish" : "Bearish",
+                  (snap['ichimoku_cloud_bull'] == true)
+                      ? "Über Wolke"
+                      : "Unter Wolke",
+                ),
+                if (snap.containsKey('vortex') && snap.containsKey('chop')) ...[
+                  _buildIndicatorCard(
+                    "Vortex",
+                    (snap['vortex'] as num?)?.toStringAsFixed(3) ?? "-",
+                    (snap['isTrending'] == true) ? "Trending" : "Seitwärts",
+                  ),
+                  _buildIndicatorCard(
+                    "Choppiness",
+                    (snap['chop'] as num?)?.toStringAsFixed(1) ?? "-",
+                    ((snap['chop'] as num? ?? 100) < 61.8)
+                        ? "Trend < 61.8"
+                        : "Range > 61.8",
+                  ),
+                ],
+              ]),
               _buildCategoryBar(
+                  context,
                   "Momentum",
                   (snap['score_momentum'] as num?)?.toDouble() ?? 0,
                   25,
-                  Colors.orange),
+                  Colors.orange, [
+                _buildIndicatorCard(
+                  "RSI",
+                  (snap['rsi'] as num?)?.toStringAsFixed(1) ?? "-",
+                  _getRsiStatus(snap['rsi'] as num?),
+                ),
+                _buildIndicatorCard(
+                  "MACD Hist",
+                  (snap['macdHist'] as num?)?.toStringAsFixed(4) ?? "-",
+                  (snap['macdHist'] as num? ?? 0) > 0 ? "Positiv" : "Negativ",
+                ),
+                _buildIndicatorCard(
+                  "ADX",
+                  (snap['adx'] as num?)?.toStringAsFixed(1) ?? "-",
+                  ((snap['adx'] as num? ?? 0) > 25)
+                      ? "Starker Trend"
+                      : "Seitwärts",
+                ),
+                if (snap.containsKey('cci'))
+                  _buildIndicatorCard(
+                    "CCI",
+                    (snap['cci'] as num?)?.toStringAsFixed(1) ?? "-",
+                    ((snap['cci'] as num? ?? 0) < -100)
+                        ? "Überverkauft"
+                        : (((snap['cci'] as num? ?? 0) > 100)
+                            ? "Überkauft"
+                            : "Neutral"),
+                  ),
+                _buildIndicatorCard(
+                  "Stochastic",
+                  (snap['stochK'] as num?)?.toStringAsFixed(1) ?? "-",
+                  ((snap['stochK'] as num? ?? 50) > 80)
+                      ? "Überkauft"
+                      : (((snap['stochK'] as num? ?? 50) < 20)
+                          ? "Überverkauft"
+                          : "Neutral"),
+                ),
+                if (snap.containsKey('ao'))
+                  _buildIndicatorCard(
+                    "Awesome Oscillator",
+                    (snap['ao'] as num?)?.toStringAsFixed(4) ?? "-",
+                    ((snap['ao'] as num? ?? 0) > 0) ? "Bullish" : "Bearish",
+                  ),
+              ]),
               _buildCategoryBar(
+                  context,
                   "Volumen",
                   (snap['score_volume'] as num?)?.toDouble() ?? 0,
                   20,
-                  Colors.teal),
+                  Colors.teal, [
+                _buildIndicatorCard(
+                  "OBV",
+                  _formatObv((snap['obv'] as num?)?.toDouble() ?? 0),
+                  "Volumen-Momentum",
+                ),
+                if (snap.containsKey('cmf'))
+                  _buildIndicatorCard(
+                    "CMF",
+                    (snap['cmf'] as num?)?.toStringAsFixed(3) ?? "-",
+                    ((snap['cmf'] as num? ?? 0) > 0.05)
+                        ? "Positiver Fluss"
+                        : (((snap['cmf'] as num? ?? 0) < -0.05)
+                            ? "Negativer Fluss"
+                            : "Neutral"),
+                  ),
+                if (snap.containsKey('mfi'))
+                  _buildIndicatorCard(
+                    "MFI",
+                    (snap['mfi'] as num?)?.toStringAsFixed(1) ?? "-",
+                    ((snap['mfi'] as num? ?? 50) < 20)
+                        ? "Überverkauft"
+                        : (((snap['mfi'] as num? ?? 50) > 80)
+                            ? "Überkauft"
+                            : "Neutral"),
+                  ),
+              ]),
               _buildCategoryBar(
+                  context,
                   "Muster",
                   (snap['score_pattern'] as num?)?.toDouble() ?? 0,
                   15,
-                  Colors.purple),
+                  Colors.purple, [
+                if (snap.containsKey('divergence') &&
+                    snap['divergence'] != 'none')
+                  _buildIndicatorCard(
+                    "Divergenz",
+                    (snap['divergence'] as String).toUpperCase(),
+                    "Starkes Umkehrsignal",
+                  ),
+              ]),
               _buildCategoryBar(
+                  context,
                   "Volatilität",
                   (snap['score_volatility'] as num?)?.toDouble() ?? 0,
                   5,
-                  Colors.grey),
-              const SizedBox(height: 8),
+                  Colors.grey, [
+                _buildIndicatorCard(
+                  "Squeeze",
+                  (snap['squeeze'] == true) ? "AKTIV" : "Inaktiv",
+                  (snap['squeeze'] == true) ? "Ausbruch erwartet" : "",
+                ),
+                if (snap.containsKey('bbPct'))
+                  _buildIndicatorCard(
+                    "BB %B",
+                    (snap['bbPct'] as num?)?.toStringAsFixed(2) ?? "-",
+                    ((snap['bbPct'] as num? ?? 0.5) < 0.1)
+                        ? "Oversold"
+                        : (((snap['bbPct'] as num? ?? 0.5) > 0.9)
+                            ? "Overbought"
+                            : "Mid"),
+                  ),
+              ]),
             ],
-            // --- Trend ---
-            _buildIndicatorCard(
-              "Supertrend",
-              (snap['stBull'] == true) ? "Bullish" : "Bearish",
-              (snap['stBull'] == true) ? "Trend aufwärts" : "Trend abwärts",
-            ),
-            if (snap.containsKey('psarBull'))
-              _buildIndicatorCard(
-                "Parabolic SAR",
-                (snap['psarBull'] == true) ? "Bullish" : "Bearish",
-                "",
-              ),
-            _buildIndicatorCard(
-              "EMA 20 / 50",
-              "${(snap['ema20'] as num?)?.toStringAsFixed(2) ?? "-"} / ${(snap['ema50'] as num?)?.toStringAsFixed(2) ?? "-"}",
-              _getEmaStatus(snap['price'] as num?, snap['ema20'] as num?),
-            ),
-            _buildIndicatorCard(
-              "Ichimoku",
-              (snap['ichimoku_cloud_bull'] == true) ? "Bullish" : "Bearish",
-              (snap['ichimoku_cloud_bull'] == true)
-                  ? "Über Wolke"
-                  : "Unter Wolke",
-            ),
-            if (snap.containsKey('vortex') && snap.containsKey('chop')) ...[
-              _buildIndicatorCard(
-                "Vortex",
-                (snap['vortex'] as num?)?.toStringAsFixed(3) ?? "-",
-                (snap['isTrending'] == true) ? "Trending" : "Seitwärts",
-              ),
-              _buildIndicatorCard(
-                "Choppiness",
-                (snap['chop'] as num?)?.toStringAsFixed(1) ?? "-",
-                ((snap['chop'] as num? ?? 100) < 61.8)
-                    ? "Trend < 61.8"
-                    : "Range > 61.8",
-              ),
-            ],
-            // --- Momentum ---
-            _buildIndicatorCard(
-              "RSI",
-              (snap['rsi'] as num?)?.toStringAsFixed(1) ?? "-",
-              _getRsiStatus(snap['rsi'] as num?),
-            ),
-            _buildIndicatorCard(
-              "MACD Hist",
-              (snap['macdHist'] as num?)?.toStringAsFixed(4) ?? "-",
-              (snap['macdHist'] as num? ?? 0) > 0 ? "Positiv" : "Negativ",
-            ),
-            _buildIndicatorCard(
-              "ADX",
-              (snap['adx'] as num?)?.toStringAsFixed(1) ?? "-",
-              ((snap['adx'] as num? ?? 0) > 25) ? "Starker Trend" : "Seitwärts",
-            ),
-            if (snap.containsKey('cci'))
-              _buildIndicatorCard(
-                "CCI",
-                (snap['cci'] as num?)?.toStringAsFixed(1) ?? "-",
-                ((snap['cci'] as num? ?? 0) < -100)
-                    ? "Überverkauft"
-                    : (((snap['cci'] as num? ?? 0) > 100)
-                        ? "Überkauft"
-                        : "Neutral"),
-              ),
-            _buildIndicatorCard(
-              "Stochastic",
-              (snap['stochK'] as num?)?.toStringAsFixed(1) ?? "-",
-              ((snap['stochK'] as num? ?? 50) > 80)
-                  ? "Überkauft"
-                  : (((snap['stochK'] as num? ?? 50) < 20)
-                      ? "Überverkauft"
-                      : "Neutral"),
-            ),
-            if (snap.containsKey('ao'))
-              _buildIndicatorCard(
-                "Awesome Oscillator",
-                (snap['ao'] as num?)?.toStringAsFixed(4) ?? "-",
-                ((snap['ao'] as num? ?? 0) > 0) ? "Bullish" : "Bearish",
-              ),
-            // --- Volumen ---
-            _buildIndicatorCard(
-              "OBV",
-              _formatObv((snap['obv'] as num?)?.toDouble() ?? 0),
-              "Volumen-Momentum",
-            ),
-            if (snap.containsKey('cmf'))
-              _buildIndicatorCard(
-                "CMF",
-                (snap['cmf'] as num?)?.toStringAsFixed(3) ?? "-",
-                ((snap['cmf'] as num? ?? 0) > 0.05)
-                    ? "Positiver Fluss"
-                    : (((snap['cmf'] as num? ?? 0) < -0.05)
-                        ? "Negativer Fluss"
-                        : "Neutral"),
-              ),
-            if (snap.containsKey('mfi'))
-              _buildIndicatorCard(
-                "MFI",
-                (snap['mfi'] as num?)?.toStringAsFixed(1) ?? "-",
-                ((snap['mfi'] as num? ?? 50) < 20)
-                    ? "Überverkauft"
-                    : (((snap['mfi'] as num? ?? 50) > 80)
-                        ? "Überkauft"
-                        : "Neutral"),
-              ),
-            // --- Volatility / Muster ---
-            _buildIndicatorCard(
-              "Squeeze",
-              (snap['squeeze'] == true) ? "AKTIV" : "Inaktiv",
-              (snap['squeeze'] == true) ? "Ausbruch erwartet" : "",
-            ),
-            if (snap.containsKey('bbPct'))
-              _buildIndicatorCard(
-                "BB %B",
-                (snap['bbPct'] as num?)?.toStringAsFixed(2) ?? "-",
-                ((snap['bbPct'] as num? ?? 0.5) < 0.1)
-                    ? "Oversold"
-                    : (((snap['bbPct'] as num? ?? 0.5) > 0.9)
-                        ? "Overbought"
-                        : "Mid"),
-              ),
-            if (snap.containsKey('divergence') && snap['divergence'] != 'none')
-              _buildIndicatorCard(
-                "Divergenz",
-                (snap['divergence'] as String).toUpperCase(),
-                "Starkes Umkehrsignal",
-              ),
-          ],
+          ], // Added missing closing bracket for the else block
 
           const SizedBox(height: 20),
 
@@ -440,40 +449,78 @@ class TradeDetailsScreen extends StatelessWidget {
     return v.toStringAsFixed(0);
   }
 
-  Widget _buildCategoryBar(
-      String label, double score, double maxScore, Color color) {
+  Widget _buildCategoryBar(BuildContext context, String label, double score,
+      double maxScore, Color color, List<Widget> indicators) {
     final pct = ((score + maxScore) / (2 * maxScore)).clamp(0.0, 1.0);
     final sign =
         score > 0 ? "+${score.toStringAsFixed(1)}" : score.toStringAsFixed(1);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(label,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text("$sign / ${maxScore.toInt()}",
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: score >= 0 ? Colors.green : Colors.red)),
-            ],
-          ),
-          const SizedBox(height: 2),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: pct,
-              backgroundColor: Colors.grey.withOpacity(0.15),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                  score >= 0 ? color : Colors.red.withOpacity(0.7)),
-              minHeight: 6,
+
+    return InkWell(
+      onTap: () {
+        if (indicators.isEmpty) return;
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+          builder: (ctx) => Padding(
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("$label Details",
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: indicators,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
             ),
           ),
-        ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(label,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text("$sign / ${maxScore.toInt()}",
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: score >= 0 ? Colors.green : Colors.red)),
+              ],
+            ),
+            const SizedBox(height: 2),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: pct,
+                backgroundColor: Colors.grey.withOpacity(0.15),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    score >= 0 ? color : Colors.red.withOpacity(0.7)),
+                minHeight: 6,
+              ),
+            ),
+            const SizedBox(height: 2),
+            const Text("Details anzeigen...",
+                style: TextStyle(fontSize: 9, color: Colors.grey)),
+          ],
+        ),
       ),
     );
   }

@@ -11,7 +11,7 @@ import '../models/trade_record.dart';
 import 'trade_details_screen.dart';
 import 'bot_settings_screen.dart';
 import 'analysis_stats_screen.dart';
-import '../models/models.dart';
+
 import 'top_movers_screen.dart';
 
 class BotDashboardScreen extends StatefulWidget {
@@ -115,27 +115,6 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                   // User wanted "ganz oben", so we hide this simple one if we use the top one.
                   // allowing it to show ONLY if NOT scanning (which it never does) OR just removing it.
                   // Removing, as the top bar replaces it.
-
-                  // --- TimeFrame Switcher (optional) ---
-                  Center(
-                    child: Wrap(
-                      spacing: 8.0,
-                      runSpacing: 4.0,
-                      alignment: WrapAlignment.center,
-                      children: TimeFrame.values.map((tf) {
-                        return ChoiceChip(
-                          label: Text(tf.label,
-                              style: const TextStyle(fontSize: 10)),
-                          selected: settings.botTimeFrame == tf,
-                          onSelected: (selected) =>
-                              settings.setBotTimeFrame(tf),
-                          visualDensity: VisualDensity.compact,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        );
-                      }).toList(),
-                    ),
-                  ),
 
                   const SizedBox(height: 16),
                   const Text("Positionen nach Kategorie",

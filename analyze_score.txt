@@ -1,0 +1,10 @@
+Analyzing score_details_screen.dart...
+
+warning - score_details_screen.dart:326:10 - The declaration '_formatLarge' isn't referenced. Try removing the declaration of '_formatLarge'. - unused_element
+warning - score_details_screen.dart:457:9 - The declaration '_getColorForVal' isn't referenced. Try removing the declaration of '_getColorForVal'. - unused_element
+   info - score_details_screen.dart:107:49 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - score_details_screen.dart:395:46 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - score_details_screen.dart:397:53 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - score_details_screen.dart:430:42 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+
+6 issues found.

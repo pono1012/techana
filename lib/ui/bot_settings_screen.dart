@@ -4,6 +4,7 @@ import '../services/portfolio_service.dart';
 import '../services/bot_settings_service.dart';
 import '../services/trade_execution_service.dart';
 import '../services/watchlist_service.dart';
+import '../models/models.dart';
 
 class BotSettingsScreen extends StatelessWidget {
   const BotSettingsScreen({super.key});
@@ -219,6 +220,46 @@ class BotSettingsScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        _buildSectionHeader(context, "Allgemein & Zeitrahmen"),
+        Card(
+          child: Column(
+            children: [
+              SwitchListTile(
+                title: const Text("Wechselnde Strategien"),
+                subtitle: const Text("Für jeden Scan zufällige Werte testen"),
+                value: settings.autoRandomizeStrategy,
+                onChanged: (v) => settings.setAutoRandomizeStrategy(v),
+              ),
+              const Divider(height: 1),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Analyse Interval",
+                        style: TextStyle(fontSize: 13)),
+                    Wrap(
+                      spacing: 4.0,
+                      children: TimeFrame.values.map((tf) {
+                        return ChoiceChip(
+                          label: Text(tf.label,
+                              style: const TextStyle(fontSize: 10)),
+                          selected: settings.botTimeFrame == tf,
+                          onSelected: (selected) =>
+                              settings.setBotTimeFrame(tf),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
         _buildSectionHeader(context, "Entry (Einstieg)"),
         Card(
           child: Column(
