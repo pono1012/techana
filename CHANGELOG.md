@@ -1,3 +1,61 @@
+### 2026-02-21 - Update
+
+**TechAna Release Notes - Update vom 13. Februar 2026**
+
+#### Highlights dieses Updates
+
+Wir freuen uns, ein umfassendes Update für TechAna vorzustellen, das nicht nur die Stabilität und Zuverlässigkeit Ihrer automatisierten Handelsausführung signifikant verbessert, sondern auch die Intelligenz unseres Analyse-Kerns auf ein neues Niveau hebt. Dieses Release behebt kritische Fehler in der Orderverarbeitung und erweitert die strategischen Möglichkeiten durch tiefere Marktanalysen und neue Konfigurationsoptionen für Ihren Trading-Bot.
+
+#### Fehlerbehebungen und Stabilitätsverbesserungen
+
+*   **Behebung kritischer Fehler in der Handelsausführung:** Ein gravierender Fehler im Kern der Handelsausführung wurde behoben. Dieser Fehler konnte dazu führen, dass wichtige Order-Typen wie Stop-Loss, Take-Profit und Pending-Orders unter bestimmten Bedingungen nicht korrekt oder gar nicht ausgelöst wurden. Die betroffenen Bereiche umfassten sowohl die Datenverarbeitung als auch die Service-Schichten und die Benutzeroberfläche der Bot-Steuerung.
+    *   **Ihr Nutzen:** Diese Korrektur stellt sicher, dass Ihre Schutzmechanismen und Gewinnmitnahmen stets zuverlässig funktionieren. Sie können nun mit erhöhtem Vertrauen handeln, da Ihre automatisierten Strategien und manuellen Schutzbefehle präzise und zeitgerecht ausgeführt werden. Dies minimiert das Risiko unerwarteter Verluste und maximiert die Wahrscheinlichkeit, Ihre Gewinnziele zu erreichen, was zu einem insgesamt sichereren und kontrollierteren Handelserlebnis führt.
+
+#### Neue Funktionen und Analyse-Upgrades
+
+*   **Erweiterter KI-Analyse-Kern mit neuen Indikatoren:** Der Smart Analysis Core wurde erheblich erweitert und integriert nun eine Vielzahl neuer technischer Indikatoren aus der `ta_extended`-Bibliothek, darunter CCI, PSAR, CMF, MFI, Awesome Oscillator (AO), Bollinger Band %B sowie Vortex und Chop Index. Zudem wurde der Ichimoku Cloud Indikator hinzugefügt.
+    *   **Ihr Nutzen:** TechAna kann Marktbewegungen nun mit weitaus größerer Präzision und Tiefe analysieren. Dies führt zu relevanteren und zeitnahen Handelssignalen, die eine breitere Palette von Marktbedingungen berücksichtigen. Ihre Handelsentscheidungen werden durch ein umfassenderes Verständnis des Marktes untermauert.
+*   **Verbessertes Scoring-System:** Das bisherige Scoring-Modell wurde durch ein differenziertes, kategoriebasiertes Budget-Scoring-System ersetzt. Dieses berücksichtigt separate Bewertungen für Trend, Momentum, Volumen, Chartmuster und Volatilität, um eine robustere und nuanciertere Bewertung der Marktlage zu ermöglichen.
+    *   **Ihr Nutzen:** Die Qualität der generierten Handelssignale wird deutlich gesteigert. Das neue System minimiert Fehlinterpretationen und bietet eine transparentere Grundlage für die Kauf-/Verkaufsempfehlungen, was zu potenziell profitableren und sichereren Trades führt.
+*   **Erkennung von Candlestick-Mustern und Divergenzen:** Der Analyse-Kern erkennt nun automatisch gängige Candlestick-Muster und identifiziert bullische/bearische Divergenzen auf Basis von Preis und RSI.
+    *   **Ihr Nutzen:** Sie erhalten frühzeitig Hinweise auf potenzielle Trendwenden oder Fortsetzungen. Dies ermöglicht es Ihnen, proaktiver zu agieren und von Mustern zu profitieren, die historisch gesehen eine hohe Vorhersagekraft haben.
+*   **Erweiterte Optionen für Stop-Loss und Take-Profit Strategien:** Neue Methoden für Stop-Loss (Swing) und Take-Profit (Pivot) wurden in den Bot-Einstellungen eingeführt, ergänzt durch einen einstellbaren `swingLookback`-Parameter.
+    *   **Ihr Nutzen:** Mehr Flexibilität und Präzision bei der Definition Ihrer Risikomanagement- und Gewinnmitnahme-Strategien. Passen Sie den Bot noch genauer an Ihren Handelsstil und Ihre Marktanalyse an, um optimierte Ausstiegsstrategien zu nutzen.
+
+#### Architektonische Verbesserungen und Refactoring
+
+*   **Modularisierung der Bot- und Portfolio-Services:** Die Funktionalitäten für Bot-Einstellungen, Watchlist-Management und Handelsausführung wurden aus dem `PortfolioService` in dedizierte, neue Services (`BotSettingsService`, `WatchlistService`, `TradeExecutionService`) ausgelagert und als separate `ChangeNotifierProvider`s in die Anwendung integriert.
+    *   **Ihr Nutzen:** Diese strukturelle Verbesserung führt zu einem saubereren, wartbareren und erweiterbaren Code. Für Sie bedeutet das eine stabilere Anwendung und die Grundlage für zukünftige, schnellere Feature-Entwicklungen. Die neue Architektur ermöglicht zudem dedizierte Einstellungsbereiche für Ihren Bot.
+
+#### Dokumentation und Interne Updates
+
+*   **Aktualisierter CHANGELOG und README:** Der `CHANGELOG.md` wurde um die detaillierten Release Notes für dieses Update erweitert und ersetzt die temporären `current_patch_notes.md`, die nun entfernt wurden. Die `README.md` wurde ebenfalls aktualisiert, um die neuesten Highlights und verbesserte Installationsanweisungen widerzuspiegeln.
+    *   **Ihr Nutzen:** Verbesserte Transparenz über die Änderungen und eine klarere Kommunikation der Vorteile. Die aktualisierten Installationsanleitungen erleichtern den Einstieg und die Wartung der Anwendung.
+*   **Anwendungsversion `1.0.0+3`:** Die interne Version von TechAna wurde entsprechend der vorgenommenen Änderungen aktualisiert.
+*   **KI-Statusaktualisierung:** Der interne Status des KI-Berichtssystems (`last_ai_commit`) wurde aktualisiert, um sicherzustellen, dass nachfolgende KI-Analysen und Berichte stets die neuesten Codeänderungen und Systemzustände korrekt reflektieren.
+
+### 📂 Geänderte Dateien
+- `lib/main.dart`
+- `lib/models/models.dart`
+- `lib/providers/app_provider.dart`
+- `lib/services/bot_settings_service.dart`
+- `lib/services/portfolio_service.dart`
+- `lib/services/ta_extended.dart`
+- `lib/services/trade_execution_service.dart`
+- `lib/services/watchlist_service.dart`
+- `lib/ui/bot_dashboard_screen.dart`
+- `lib/ui/bot_settings_screen.dart`
+- `lib/ui/dashboard_screen.dart`
+- `lib/ui/pattern_details_screen.dart`
+- `lib/ui/score_details_screen.dart`
+- `lib/ui/settings_screen.dart`
+- `lib/ui/top_movers_history_screen.dart`
+- `lib/ui/top_movers_screen.dart`
+- `lib/ui/trade_details_screen.dart`
+- `pubspec.yaml`
+
+---
+
 ### 2026-02-13 - Update
 
 #### Highlights dieses Updates
