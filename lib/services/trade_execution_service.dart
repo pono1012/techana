@@ -286,7 +286,7 @@ class TradeExecutionService extends ChangeNotifier {
 
             if (currentTrade.status == TradeStatus.open) {
               final exitResult =
-                  _checkExitConditions(currentTrade, bar, portfolio);
+                  _checkExitConditions(currentTrade, bar, portfolio, settings);
               if (exitResult != null) {
                 currentTrade = exitResult;
                 tradeUpdated = true;
@@ -400,8 +400,8 @@ class TradeExecutionService extends ChangeNotifier {
                     close: liveBar.close,
                     volume: 0);
 
-            final exitResult =
-                _checkExitConditions(currentTrade, checkBar, portfolio);
+            final exitResult = _checkExitConditions(
+                currentTrade, checkBar, portfolio, settings);
             if (exitResult != null) {
               currentTrade = exitResult;
             } else {
@@ -491,7 +491,7 @@ class TradeExecutionService extends ChangeNotifier {
 
           for (final bar in relevantBars) {
             final exitResult =
-                _checkExitConditions(currentTrade, bar, portfolio);
+                _checkExitConditions(currentTrade, bar, portfolio, settings);
             if (exitResult != null) {
               currentTrade = exitResult;
               tradeUpdated = true;
@@ -556,8 +556,8 @@ class TradeExecutionService extends ChangeNotifier {
                       close: liveBar.close,
                       volume: 0);
 
-              final exitResult =
-                  _checkExitConditions(currentTrade, checkBar, portfolio);
+              final exitResult = _checkExitConditions(
+                  currentTrade, checkBar, portfolio, settings);
               if (exitResult != null) {
                 currentTrade = exitResult;
               }
@@ -582,8 +582,8 @@ class TradeExecutionService extends ChangeNotifier {
     }
   }
 
-  TradeRecord? _checkExitConditions(
-      TradeRecord trade, PriceBar bar, PortfolioService portfolio) {
+  TradeRecord? _checkExitConditions(TradeRecord trade, PriceBar bar,
+      PortfolioService portfolio, BotSettingsService settings) {
     bool isLong = trade.takeProfit1 > trade.entryPrice;
     bool slHit = false;
     bool tp1Hit = false;
@@ -625,10 +625,8 @@ class TradeExecutionService extends ChangeNotifier {
         realizedPnL: trade.realizedPnL + pnl,
       );
     } else if (tp1Hit) {
-      // Need a way of retrieving tp1SellFraction, maybe from trade settings
-      // However setting it back requires logic
-      // In portfolio we can do handleTakeProfit1
-      return portfolio.handleTp1Hit(trade, trade.takeProfit1, bar.date);
+      return portfolio.handleTp1Hit(
+          trade, trade.takeProfit1, bar.date, settings.tp1SellFraction);
     }
     return null;
   }

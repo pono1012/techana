@@ -46,29 +46,34 @@ class PortfolioService extends ChangeNotifier {
     notifyListeners();
   }
 
-  TradeRecord handleTp1Hit(TradeRecord trade, double price, DateTime date) {
+  TradeRecord handleTp1Hit(
+      TradeRecord trade, double price, DateTime date, double tp1SellFraction) {
     if (trade.tp1Hit) return trade;
-
-    final double tp1SellFraction =
-        0.5; // Default or configured in BotSettingsService, simple hack for now: or pass it!
-    // We should ideally pass tp1SellFraction, let's just use 0.5 for now to keep the signature clean
 
     final double quantityToSell = trade.quantity * tp1SellFraction;
     final double remainingQuantity = trade.quantity - quantityToSell;
 
     bool isLong = trade.takeProfit1 > trade.entryPrice;
     double pnlFromPartialClose;
+    double newSl = trade.stopLoss;
+
     if (isLong) {
       pnlFromPartialClose = (price - trade.entryPrice) * quantityToSell;
+      if (trade.stopLoss < trade.entryPrice) {
+        newSl = trade.entryPrice;
+      }
     } else {
       pnlFromPartialClose = (trade.entryPrice - price) * quantityToSell;
+      if (trade.stopLoss > trade.entryPrice) {
+        newSl = trade.entryPrice;
+      }
     }
 
     final newTrade = trade.copyWith(
       tp1Hit: true,
       quantity: remainingQuantity,
       realizedPnL: trade.realizedPnL + pnlFromPartialClose,
-      stopLoss: trade.entryPrice,
+      stopLoss: newSl,
     );
 
     _virtualBalance +=
