@@ -341,6 +341,8 @@ class TradeCardWidget extends StatelessWidget {
   });
 
   Widget _buildPatternChip(String pattern) {
+    if (pattern.isEmpty || pattern == 'Kein Muster')
+      return const SizedBox.shrink();
     final bullishKeywords = [
       'Bullish',
       'Hammer',
@@ -363,6 +365,51 @@ class TradeCardWidget extends StatelessWidget {
         style: TextStyle(
             fontSize: 9, color: chipColor, fontWeight: FontWeight.w600),
       ),
+    );
+  }
+
+  Widget _buildMtcBadge(bool confirmed) {
+    if (!confirmed) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      decoration: BoxDecoration(
+        color: Colors.cyanAccent.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border:
+            Border.all(color: Colors.cyanAccent.withOpacity(0.5), width: 0.5),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.verified, color: Colors.cyanAccent, size: 8),
+          SizedBox(width: 2),
+          Text("MTC",
+              style: TextStyle(
+                  fontSize: 8,
+                  color: Colors.cyanAccent,
+                  fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptimizerBadge(bool exists) {
+    if (!exists) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      decoration: BoxDecoration(
+        color: Colors.amberAccent.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(4),
+        border:
+            Border.all(color: Colors.amberAccent.withOpacity(0.5), width: 0.5),
+      ),
+      child: const Text("OPT",
+          style: TextStyle(
+              fontSize: 8,
+              color: Colors.amberAccent,
+              fontWeight: FontWeight.bold)),
     );
   }
 
@@ -473,9 +520,17 @@ class TradeCardWidget extends StatelessWidget {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(trade.symbol,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 13)),
+              Row(
+                children: [
+                  Text(trade.symbol,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 13)),
+                  _buildMtcBadge(
+                      trade.aiAnalysisSnapshot['mtc_confirmed'] == true),
+                  _buildOptimizerBadge(
+                      trade.aiAnalysisSnapshot['optimized_params'] != null),
+                ],
+              ),
               Text(statusText,
                   style: TextStyle(
                       fontSize: 9,

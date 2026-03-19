@@ -42,6 +42,12 @@ class BotSettingsService extends ChangeNotifier {
   int _mcSimulations = 200;
   bool _mcStrictMode = false;
 
+  // Expert Features (NEU)
+  bool _useMarketRegime = true;
+  bool _useAiProbability = true;
+  bool _useMtc = false;
+  bool _useStrategyOptimizer = false;
+
   // Getters
   double get botBaseInvest => _botBaseInvest;
   int get maxOpenPositions => _maxOpenPositions;
@@ -73,6 +79,11 @@ class BotSettingsService extends ChangeNotifier {
 
   int get mcSimulations => _mcSimulations;
   bool get mcStrictMode => _mcStrictMode;
+
+  bool get useMarketRegime => _useMarketRegime;
+  bool get useAiProbability => _useAiProbability;
+  bool get useMtc => _useMtc;
+  bool get useStrategyOptimizer => _useStrategyOptimizer;
 
   BotSettingsService() {
     _loadSettings();
@@ -191,6 +202,30 @@ class BotSettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setUseMarketRegime(bool value) {
+    _useMarketRegime = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void setUseAiProbability(bool value) {
+    _useAiProbability = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void setUseMtc(bool value) {
+    _useMtc = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void setUseStrategyOptimizer(bool value) {
+    _useStrategyOptimizer = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
   void resetBotSettings() {
     _botBaseInvest = 100.0;
     _maxOpenPositions = 5;
@@ -244,6 +279,10 @@ class BotSettingsService extends ChangeNotifier {
     await prefs.setBool('bot_auto_randomize', _autoRandomizeStrategy);
     await prefs.setInt('bot_mc_sims', _mcSimulations);
     await prefs.setBool('bot_mc_strict', _mcStrictMode);
+    await prefs.setBool('bot_use_regime', _useMarketRegime);
+    await prefs.setBool('bot_use_ai_prob', _useAiProbability);
+    await prefs.setBool('bot_use_mtc', _useMtc);
+    await prefs.setBool('bot_use_optimizer', _useStrategyOptimizer);
   }
 
   Future<void> _loadSettings() async {
@@ -276,6 +315,10 @@ class BotSettingsService extends ChangeNotifier {
     _autoRandomizeStrategy = prefs.getBool('bot_auto_randomize') ?? false;
     _mcSimulations = prefs.getInt('bot_mc_sims') ?? 200;
     _mcStrictMode = prefs.getBool('bot_mc_strict') ?? false;
+    _useMarketRegime = prefs.getBool('bot_use_regime') ?? true;
+    _useAiProbability = prefs.getBool('bot_use_ai_prob') ?? true;
+    _useMtc = prefs.getBool('bot_use_mtc') ?? false;
+    _useStrategyOptimizer = prefs.getBool('bot_use_optimizer') ?? false;
     notifyListeners();
   }
 }

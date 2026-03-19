@@ -284,9 +284,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
 
-            // --- Scoreboard (Feste Höhe statt Expanded, damit es nicht gequetscht wird) ---
+            // --- Scoreboard ---
             SizedBox(
-              height: 100,
+              height: 120,
               child: Container(
                 width: double.infinity,
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
@@ -307,7 +307,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ? const Center(child: Text("Keine Analyse"))
                     : Row(
                         children: [
-                          // Linke Seite: Score & Typ (Klickbar für Details)
+                          // Linke Seite: Score & Typ
                           Expanded(
                             flex: 4,
                             child: InkWell(
@@ -320,6 +320,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.layers_outlined,
+                                          size: 12, color: Colors.grey[600]),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                          data!.latestSignal!.marketRegime
+                                                  ?.label ??
+                                              "Unbekannt",
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey[600])),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
                                   const Text("Trading Score",
                                       style: TextStyle(
                                           fontSize: 12, color: Colors.grey)),
@@ -329,7 +345,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     alignment: Alignment.centerLeft,
                                     child: Row(
                                       children: [
-                                        Text("${data!.latestSignal!.score}",
+                                        Text("${data.latestSignal!.score}",
                                             style: const TextStyle(
                                                 fontSize: 28,
                                                 fontWeight: FontWeight.bold)),
@@ -338,6 +354,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                 fontSize: 14,
                                                 color: Colors.grey,
                                                 height: 2)),
+                                        const SizedBox(width: 8),
+                                        if (data.latestSignal!.aiConfidence !=
+                                            null)
+                                          Column(
+                                            children: [
+                                              const Text("AI-Conf.",
+                                                  style: TextStyle(
+                                                      fontSize: 8,
+                                                      color: Colors.blueGrey)),
+                                              Text(
+                                                  "${(data.latestSignal!.aiConfidence! * 100).toStringAsFixed(0)}%",
+                                                  style: const TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          Colors.blueAccent)),
+                                            ],
+                                          ),
                                         const SizedBox(width: 12),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
@@ -390,15 +425,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       data.latestSignal!.entryPrice,
                                       Colors.blue),
                                   _buildCompactRow("SL",
-                                      data.latestSignal!.stopLoss, Colors.red),
+                                      data.latestSignal!.stopLoss, Colors.red,
+                                      isOptimized:
+                                          data.latestSignal!.optimizedParams !=
+                                              null),
                                   _buildCompactRow(
                                       "TP1",
                                       data.latestSignal!.takeProfit1,
-                                      Colors.green),
+                                      Colors.green,
+                                      isOptimized:
+                                          data.latestSignal!.optimizedParams !=
+                                              null),
                                   _buildCompactRow(
                                       "TP2",
                                       data.latestSignal!.takeProfit2,
-                                      Colors.green.withOpacity(0.7)),
+                                      Colors.green.withOpacity(0.7),
+                                      isOptimized:
+                                          data.latestSignal!.optimizedParams !=
+                                              null),
                                 ],
                               ),
                             ),
@@ -574,6 +618,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 );
               }),
 
+            // --- MTC Status Bar ---
+            if (data?.latestSignal?.indicatorValues != null &&
+                (data!.latestSignal!.indicatorValues!['mtc_confirmed'] == true))
+              Builder(builder: (context) {
+                final sig = data!.latestSignal!;
+                final mtcTrend =
+                    sig.indicatorValues!['mtc_trend'] as String? ?? "neutral";
+                Color mtcColor = Colors.grey;
+                IconData mtcIcon = Icons.unfold_more;
+                String mtcText = "MTC: Neutral";
+
+                if (mtcTrend == "bullish") {
+                  mtcColor = Colors.cyanAccent;
+                  mtcIcon = Icons.verified;
+                  mtcText = "MTC: Bullish Bestätigt (H1, H4, D1)";
+                } else if (mtcTrend == "bearish") {
+                  mtcColor = Colors.orangeAccent;
+                  mtcIcon = Icons.verified;
+                  mtcText = "MTC: Bearish Bestätigt (H1, H4, D1)";
+                }
+
+                return Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: mtcColor.withOpacity(0.1),
+                    border: Border.all(
+                        color: mtcColor.withOpacity(0.3), width: 0.5),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(mtcIcon, color: mtcColor, size: 14),
+                      const SizedBox(width: 6),
+                      Text(mtcText,
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: mtcColor)),
+                      const Spacer(),
+                      const Icon(Icons.info_outline,
+                          color: Colors.white24, size: 12),
+                    ],
+                  ),
+                );
+              }),
+
             // --- Indikator Charts ---
             if (data != null) ...[
               // Volumen
@@ -671,13 +764,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return v.toStringAsFixed(0);
   }
 
-  Widget _buildCompactRow(String label, double val, Color color) {
+  Widget _buildCompactRow(String label, double val, Color color,
+      {bool isOptimized = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 1),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          Row(
+            children: [
+              Text(label,
+                  style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              if (isOptimized)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Text("OPT",
+                      style: TextStyle(
+                          fontSize: 7,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amberAccent.withOpacity(0.8))),
+                ),
+            ],
+          ),
           Text(val.toStringAsFixed(2),
               style: TextStyle(
                   fontSize: 10, fontWeight: FontWeight.bold, color: color)),

@@ -75,6 +75,40 @@ class DataService {
     }
   }
 
+  /// Holt Daten für höhere Zeitebenen zur Trend-Bestätigung (MTC)
+  Future<Map<TimeFrame, List<PriceBar>>> fetchMtcData(
+      String symbol, TimeFrame base) async {
+    final Map<TimeFrame, List<PriceBar>> results = {};
+
+    final List<TimeFrame> highers = [];
+    if (base == TimeFrame.m15) {
+      highers.addAll([TimeFrame.h1, TimeFrame.h4]);
+    } else if (base == TimeFrame.h1) {
+      highers.addAll([TimeFrame.h4, TimeFrame.d1]);
+    } else if (base == TimeFrame.h4) {
+      highers.addAll([TimeFrame.d1, TimeFrame.w1]);
+    } else if (base == TimeFrame.d1) {
+      highers.add(TimeFrame.w1);
+    }
+
+    if (highers.isEmpty) return results;
+
+    debugPrint(
+        "🔭 [MTC] Lade ${highers.length} höhere Zeitebenen für $symbol...");
+    try {
+      final futures = highers.map((tf) => fetchBars(symbol, interval: tf));
+      final responses = await Future.wait(futures);
+
+      for (int i = 0; i < highers.length; i++) {
+        results[highers[i]] = responses[i];
+      }
+    } catch (e) {
+      debugPrint("⚠️ [MTC] Fehler beim Laden der Konfluenz-Daten: $e");
+    }
+
+    return results;
+  }
+
   Future<List<PriceBar>> _fetchBarsStooq(String symbol) async {
     final cleanSym = symbol.trim().toLowerCase();
     final url = Uri.parse('https://stooq.com/q/d/l/?s=$cleanSym&i=d');

@@ -10,10 +10,16 @@ import 'monte_carlo_service.dart';
 import 'portfolio_service.dart';
 import 'bot_settings_service.dart';
 import 'watchlist_service.dart';
+import 'market_regime_service.dart';
+import 'indicator_analyzer_service.dart';
+import 'strategy_optimizer_service.dart';
 
 class TradeExecutionService extends ChangeNotifier {
   final DataService _dataService = DataService();
   final MonteCarloService _mcService = MonteCarloService();
+  final MarketRegimeService _regimeService = MarketRegimeService();
+  final IndicatorAnalyzerService _analyzerService = IndicatorAnalyzerService();
+  final StrategyOptimizerService _optimizerService = StrategyOptimizerService();
 
   bool _isScanning = false;
   bool get isScanning => _isScanning;
@@ -688,7 +694,15 @@ class TradeExecutionService extends ChangeNotifier {
 
         if (bars.length < 50) continue;
 
-        final signal = analyzeStock(bars, settings);
+        // === NEW: Multi-Timeframe Confluence (MTC) ===
+        String mtcTrend = "neutral";
+        if (settings.useMtc) {
+          final mtcData =
+              await _dataService.fetchMtcData(symbol, settings.botTimeFrame);
+          mtcTrend = TA.checkMtcTrend(mtcData);
+        }
+
+        final signal = analyzeStock(bars, settings, mtcTrend: mtcTrend);
 
         // --- NEW: FMP Classic Stock Filters ---
         bool blockTrade = false;
@@ -743,21 +757,33 @@ class TradeExecutionService extends ChangeNotifier {
 
         if (signal != null &&
             (signal.type.contains("Buy") || signal.type.contains("Sell"))) {
-          TradeSignal finalSignal = signal;
+          TradeSignal optimizedSignal = signal;
+
+          // === NEW: Strategy Optimizer ===
+          if (settings.useStrategyOptimizer) {
+            _scanStatus = "Optimiere Strategie für $symbol...";
+            notifyListeners();
+            final bestParams = await _optimizerService.optimizeExit(
+              bars,
+              signal.entryPrice,
+              signal.stopLoss,
+              signal.takeProfit1,
+              signal.takeProfit2,
+              signal.type.contains("Buy"),
+            );
+            optimizedSignal = signal.copyWith(
+              stopLoss: bestParams['sl'],
+              takeProfit1: bestParams['tp1'],
+              takeProfit2: bestParams['tp2'],
+              optimizedParams: bestParams,
+            );
+          }
+
+          TradeSignal finalSignal = optimizedSignal;
           if (scoreBoost > 0) {
-            finalSignal = TradeSignal(
-              type: signal.type,
-              entryPrice: signal.entryPrice,
-              stopLoss: signal.stopLoss,
-              takeProfit1: signal.takeProfit1,
-              takeProfit2: signal.takeProfit2,
-              riskRewardRatio: signal.riskRewardRatio,
+            finalSignal = finalSignal.copyWith(
               score: signal.score + scoreBoost,
               reasons: [...signal.reasons, ...extraReasons],
-              chartPattern: signal.chartPattern,
-              tp1Percent: signal.tp1Percent,
-              tp2Percent: signal.tp2Percent,
-              indicatorValues: signal.indicatorValues,
             );
           }
 
@@ -784,7 +810,8 @@ class TradeExecutionService extends ChangeNotifier {
     }
   }
 
-  TradeSignal? analyzeStock(List<PriceBar> bars, BotSettingsService settings) {
+  TradeSignal? analyzeStock(List<PriceBar> bars, BotSettingsService settings,
+      {String mtcTrend = "neutral"}) {
     if (bars.isEmpty) return null;
     final closes = bars.map((b) => b.close).toList();
 
@@ -1079,13 +1106,48 @@ class TradeExecutionService extends ChangeNotifier {
     }
     volatilityScore = volatilityScore.clamp(-5, 5);
 
+    // === NEW: Market Regime & AI Weights ===
+    final regime = _regimeService.detectRegime(bars);
+    final winRates = _analyzerService.analyze(bars);
+
+    // Dynamische Gewichtung anwenden (AI-Probability)
+    // Wir multiplizieren die Scores mit den Win Rates relativ zu 0.5 (Neutral)
+    final double trendWeight = winRates.getWeight("ema") * 2.0;
+    final double momentumWeight = winRates.getWeight("rsi") * 2.0;
+    final double volumeWeight = winRates.getWeight("macd") * 2.0;
+    final double patternWeight = 1.0; // patterns bleiben fix
+    final double volatilityWeight = winRates.getWeight("bb") * 2.0;
+
+    // Regime-spezifische Anpassung
+    double regimeMultiplier = 1.0;
+    if (regime == MarketRegime.ranging) {
+      regimeMultiplier = 0.5;
+    } else if (regime == MarketRegime.volatile) {
+      regimeMultiplier = 0.7;
+    }
+
+    // === MTC Score Adjustment ===
+    if (mtcTrend != "neutral") {
+      if (mtcTrend == "bullish") {
+        reasons.add("MTC Bullish Confirmed");
+        trendScore = (trendScore + 10).clamp(-35, 35);
+      } else if (mtcTrend == "bearish") {
+        reasons.add("MTC Bearish Confirmed");
+        trendScore = (trendScore - 10).clamp(-35, 35);
+      }
+    }
+
     final double rawScore = 50 +
-        (trendScore / 35 * 35) +
-        (momentumScore / 25 * 25) +
-        (volumeScore / 20 * 20) +
-        (patternScore / 15 * 15) +
-        (volatilityScore / 5 * 5) +
+        ((trendScore * trendWeight * regimeMultiplier) / 35 * 35) +
+        ((momentumScore * momentumWeight) / 25 * 25) +
+        ((volumeScore * volumeWeight) / 20 * 20) +
+        ((patternScore * patternWeight) / 15 * 15) +
+        ((volatilityScore * volatilityWeight) / 5 * 5) +
         mcScore;
+
+    // AI Confidence berechnen
+    final double aiConfidence = winRates.averageWinRate;
+
     int score = rawScore.round().clamp(0, 100);
 
     String type = "Neutral";
@@ -1228,6 +1290,13 @@ class TradeExecutionService extends ChangeNotifier {
       'score_volatility': volatilityScore,
       'score_mc': mcScore,
       'mc_bull_pct': mcBullPct,
+      'market_regime': regime.label,
+      'ai_confidence': aiConfidence,
+      'weight_ema': winRates.getWeight("ema"),
+      'weight_rsi': winRates.getWeight("rsi"),
+      'weight_macd': winRates.getWeight("macd"),
+      'weight_bb': winRates.getWeight("bb"),
+      'weight_stoch': winRates.getWeight("stoch"),
     };
 
     // === MC STRICT MODE CHECK ===
@@ -1266,6 +1335,8 @@ class TradeExecutionService extends ChangeNotifier {
       tp1Percent: tp1Percent,
       tp2Percent: tp2Percent,
       indicatorValues: snapshot,
+      aiConfidence: aiConfidence,
+      mtcConfirmed: mtcTrend != "neutral",
     );
   }
 
@@ -1331,6 +1402,9 @@ class TradeExecutionService extends ChangeNotifier {
     final fullSnapshot =
         Map<String, dynamic>.from(signal.indicatorValues ?? {});
     fullSnapshot.addAll(settingsSnapshot);
+    if (signal.optimizedParams != null) {
+      fullSnapshot['optimized_params'] = signal.optimizedParams;
+    }
 
     final newTrade = TradeRecord(
       id: DateTime.now().millisecondsSinceEpoch.toString(),

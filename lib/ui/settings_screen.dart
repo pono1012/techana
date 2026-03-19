@@ -263,6 +263,38 @@ class SettingsScreen extends StatelessWidget {
                     onPressed: () => provider.resetStrategySettings(),
                   )),
                 ]),
+                const SizedBox(height: 16),
+                _buildGroupCard(context, "Experten Features (AI/Algo)", [
+                  SwitchListTile(
+                    title: const Text("Markt-Regime Filter"),
+                    subtitle:
+                        const Text("Anpassung an Trend/Range/Volatilität"),
+                    value: s.useMarketRegime,
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(useMarketRegime: v)),
+                  ),
+                  SwitchListTile(
+                    title: const Text("AI Probability Scoring"),
+                    subtitle: const Text("Gewichtung nach hist. Trefferrate"),
+                    value: s.useAiProbability,
+                    onChanged: (v) => provider
+                        .updateSettings(s.copyWith(useAiProbability: v)),
+                  ),
+                  SwitchListTile(
+                    title: const Text("Multi-Timeframe (MTC)"),
+                    subtitle: const Text("Bestätigung auf höheren Zeitebenen"),
+                    value: s.useMtc,
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(useMtc: v)),
+                  ),
+                  SwitchListTile(
+                    title: const Text("Strategy Optimizer"),
+                    subtitle: const Text("Sucht ideale Indikator-Parameter"),
+                    value: s.useStrategyOptimizer,
+                    onChanged: (v) => provider
+                        .updateSettings(s.copyWith(useStrategyOptimizer: v)),
+                  ),
+                ]),
               ],
             ),
 

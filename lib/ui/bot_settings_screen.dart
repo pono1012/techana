@@ -554,6 +554,39 @@ class BotSettingsScreen extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        _buildSectionHeader(context, "Experten Features (AI/Algo)"),
+        Card(
+          child: Column(
+            children: [
+              SwitchListTile(
+                title: const Text("Markt-Regime Filter"),
+                subtitle: const Text("Anpassung an Trend/Range/Volatilität."),
+                value: settings.useMarketRegime,
+                onChanged: (v) => settings.setUseMarketRegime(v),
+              ),
+              SwitchListTile(
+                title: const Text("AI Probability Scoring"),
+                subtitle: const Text("Gewichtung nach hist. Trefferrate."),
+                value: settings.useAiProbability,
+                onChanged: (v) => settings.setUseAiProbability(v),
+              ),
+              SwitchListTile(
+                title: const Text("Multi-Timeframe (MTC)"),
+                subtitle:
+                    const Text("Trendbestätigung auf höheren Zeitebenen."),
+                value: settings.useMtc,
+                onChanged: (v) => settings.setUseMtc(v),
+              ),
+              SwitchListTile(
+                title: const Text("Strategy Optimizer"),
+                subtitle: const Text("Sucht ideale Indikator-Parameter."),
+                value: settings.useStrategyOptimizer,
+                onChanged: (v) => settings.setUseStrategyOptimizer(v),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

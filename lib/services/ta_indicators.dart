@@ -74,6 +74,30 @@ class TA {
     return a / b;
   }
 
+  /// Prüft den Trend auf mehreren Zeitebenen (MTC)
+  static String checkMtcTrend(Map<TimeFrame, List<PriceBar>> mtcData) {
+    if (mtcData.isEmpty) return "neutral";
+    bool allBull = true;
+    bool allBear = true;
+
+    for (final tfBars in mtcData.values) {
+      if (tfBars.length < 50) return "neutral";
+      final closes = tfBars.map((b) => b.close).toList();
+      // Einfacher EMA50 Trendcheck
+      double? lastE50;
+      if (closes.length >= 50) {
+        final e50Series = TA.ema(closes, 50);
+        lastE50 = e50Series.last;
+      }
+      if (lastE50 == null || closes.last < lastE50) allBull = false;
+      if (lastE50 == null || closes.last > lastE50) allBear = false;
+    }
+
+    if (allBull) return "bullish";
+    if (allBear) return "bearish";
+    return "neutral";
+  }
+
   static List<double?> sma(List<double> x, int n) {
     final out = List<double?>.filled(x.length, null);
     if (x.length < n) return out;
@@ -722,7 +746,8 @@ class TA {
       if (rsiValues[i] == null) continue;
 
       // Bearish: Preis macht höheres Hoch, RSI macht tieferes Hoch
-      if (isPivot(prices.cast<double?>(), i) == 1 && isPivot(rsiValues, i) == 1) {
+      if (isPivot(prices.cast<double?>(), i) == 1 &&
+          isPivot(rsiValues, i) == 1) {
         for (int k = recentHighs.length - 1; k >= 0; k--) {
           final prev = recentHighs[k];
           if (i - prev > lookback) break;
@@ -735,7 +760,8 @@ class TA {
       }
 
       // Bullish: Preis macht tieferes Tief, RSI macht höheres Tief
-      if (isPivot(prices.cast<double?>(), i) == -1 && isPivot(rsiValues, i) == -1) {
+      if (isPivot(prices.cast<double?>(), i) == -1 &&
+          isPivot(rsiValues, i) == -1) {
         for (int k = recentLows.length - 1; k >= 0; k--) {
           final prev = recentLows[k];
           if (i - prev > lookback) break;

@@ -5,10 +5,12 @@ import '../services/data_service.dart';
 import '../services/ta_indicators.dart';
 import '../services/ta_extended.dart';
 import '../services/monte_carlo_service.dart';
+import '../services/strategy_optimizer_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final DataService _ds = DataService();
   final MonteCarloService _mc = MonteCarloService();
+  final StrategyOptimizerService _optimizer = StrategyOptimizerService();
   ThemeMode _themeMode = ThemeMode.dark;
   String _symbol = 'DAX';
   String _yahooSymbol = '^GDAXI'; // Separater Ticker für Yahoo
@@ -68,9 +70,9 @@ class AppProvider extends ChangeNotifier {
     _saveState();
   }
 
-  void setChartRange(ChartRange range) {
+  Future<void> setChartRange(ChartRange range) async {
     _selectedChartRange = range;
-    _recalculate();
+    await _recalculate();
     _saveState();
   }
 
@@ -81,9 +83,9 @@ class AppProvider extends ChangeNotifier {
     _saveSettings();
   }
 
-  void updateSettings(AppSettings newSettings) {
+  Future<void> updateSettings(AppSettings newSettings) async {
     _settings = newSettings;
-    _recalculate(); // Neuberechnung triggern (für Strategie/Charts)
+    await _recalculate(); // Neuberechnung triggern (für Strategie/Charts)
   }
 
   Future<void> fetchData() async {
@@ -98,7 +100,7 @@ class AppProvider extends ChangeNotifier {
       if (_fullBars.isEmpty) throw Exception("Keine Daten");
 
       // Chart sofort anzeigen
-      _recalculate();
+      await _recalculate();
       _isLoading = false;
       notifyListeners();
 
@@ -117,10 +119,20 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  void _recalculate() {
+  Future<void> _recalculate() async {
     if (_fullBars.isEmpty) return;
 
     try {
+      // === NEW: Multi-Timeframe Confluence (MTC) ===
+      String mtcTrend = "neutral";
+      if (_settings.useMtc) {
+        // Wir nutzen hier _isLoading nicht, um Flackern zu vermeiden,
+        // aber wir könnten einen kleinen Status-Indikator setzen.
+        final mtcData =
+            await _ds.fetchMtcData(_yahooSymbol, _selectedTimeFrame);
+        mtcTrend = TA.checkMtcTrend(mtcData);
+      }
+
       final closes = _fullBars.map((b) => b.close).toList();
       final int len = _fullBars.length;
 
@@ -533,6 +545,17 @@ class AppProvider extends ChangeNotifier {
       } else if (lastBbPct > 0.9) volatilityScore -= 2;
       volatilityScore = volatilityScore.clamp(-5, 5);
 
+      // === MTC Score Adjustment ===
+      if (mtcTrend != "neutral") {
+        if (mtcTrend == "bullish") {
+          reasons.add("MTC Bullish Confirmed");
+          trendScore = (trendScore + 10).clamp(-35, 35);
+        } else if (mtcTrend == "bearish") {
+          reasons.add("MTC Bearish Confirmed");
+          trendScore = (trendScore - 10).clamp(-35, 35);
+        }
+      }
+
       // Gesamt-Score (mit MC)
       final double rawScore = 50 +
           trendScore +
@@ -595,6 +618,7 @@ class AppProvider extends ChangeNotifier {
       }
 
       final risk = (entry - sl).abs();
+
       if (isLong) {
         if (_settings.tpMethod == 1) {
           tp1 = entry * (1 + _settings.tpPercent1 / 100);
@@ -610,6 +634,23 @@ class AppProvider extends ChangeNotifier {
       } else {
         tp1 = entry - (risk * _settings.rrTp1);
         tp2 = entry - (risk * _settings.rrTp2);
+      }
+
+      // === NEW: Strategy Optimizer ===
+      Map<String, dynamic>? optimizedParams;
+      if (_settings.useStrategyOptimizer) {
+        final best = await _optimizer.optimizeExit(
+          _fullBars,
+          entry,
+          sl,
+          tp1,
+          tp2,
+          isLong,
+        );
+        sl = best['sl']!;
+        tp1 = best['tp1']!;
+        tp2 = best['tp2']!;
+        optimizedParams = best;
       }
 
       double crvRisk = (entry - sl).abs();
@@ -659,6 +700,8 @@ class AppProvider extends ChangeNotifier {
           'score_volatility': volatilityScore,
           'score_mc': mcScore,
           'mc_bull_pct': mcBullPct,
+          'mtc_confirmed': mtcTrend != "neutral",
+          'optimized_params': optimizedParams,
         },
       );
 
@@ -822,6 +865,10 @@ class AppProvider extends ChangeNotifier {
       tpPercent1: prefs.getDouble('man_tp_pct1') ?? 5.0,
       tpPercent2: prefs.getDouble('man_tp_pct2') ?? 10.0,
       mcSimulations: prefs.getInt('man_mc_sims') ?? 200,
+      useMarketRegime: prefs.getBool('man_use_regime') ?? true,
+      useAiProbability: prefs.getBool('man_use_ai_prob') ?? true,
+      useMtc: prefs.getBool('man_use_mtc') ?? false,
+      useStrategyOptimizer: prefs.getBool('man_use_optimizer') ?? false,
     );
     notifyListeners();
   }
@@ -841,6 +888,10 @@ class AppProvider extends ChangeNotifier {
       tpPercent1: 5.0,
       tpPercent2: 10.0,
       mcSimulations: 200,
+      useMarketRegime: true,
+      useAiProbability: true,
+      useMtc: false,
+      useStrategyOptimizer: false,
     );
     _saveSettings();
     notifyListeners();
@@ -866,5 +917,9 @@ class AppProvider extends ChangeNotifier {
     prefs.setDouble('man_tp_pct1', _settings.tpPercent1);
     prefs.setDouble('man_tp_pct2', _settings.tpPercent2);
     prefs.setInt('man_mc_sims', _settings.mcSimulations);
+    prefs.setBool('man_use_regime', _settings.useMarketRegime);
+    prefs.setBool('man_use_ai_prob', _settings.useAiProbability);
+    prefs.setBool('man_use_mtc', _settings.useMtc);
+    prefs.setBool('man_use_optimizer', _settings.useStrategyOptimizer);
   }
 }

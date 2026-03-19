@@ -122,10 +122,76 @@ class ScoreDetailsScreen extends StatelessWidget {
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: _getColorForType(sig.type))),
+                const SizedBox(height: 12),
+                if (sig.marketRegime != null)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.blueGrey.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.layers_outlined,
+                            size: 16, color: Colors.blueGrey),
+                        const SizedBox(width: 8),
+                        Text("Regime: ${sig.marketRegime!.label}",
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blueGrey)),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
           const SizedBox(height: 20),
+
+          // AI Probability Insights
+          if (sig.aiConfidence != null) ...[
+            const Text("AI Probability Insights",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blueAccent.withOpacity(0.2)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Durchschnittliche Konfidenz"),
+                      Text("${(sig.aiConfidence! * 100).toStringAsFixed(1)}%",
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueAccent)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                      "Indikator-Gewichtung (Erfolgsrate letzte 50 Bars):",
+                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 8),
+                  _buildAiWeightRow("EMA Trend", snapshot['weight_ema'] ?? 0.5),
+                  _buildAiWeightRow(
+                      "RSI Momentum", snapshot['weight_rsi'] ?? 0.5),
+                  _buildAiWeightRow(
+                      "MACD Volume", snapshot['weight_macd'] ?? 0.5),
+                  _buildAiWeightRow(
+                      "Bollinger Bands", snapshot['weight_bb'] ?? 0.5),
+                  _buildAiWeightRow(
+                      "Stochastic", snapshot['weight_stoch'] ?? 0.5),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
 
           // Kategorie-Scoring Aufschlüsselung
           const Text("Score-Aufschlüsselung (Tippbar für Details):",
@@ -323,13 +389,6 @@ class ScoreDetailsScreen extends StatelessWidget {
     return v.toStringAsFixed(0);
   }
 
-  String _formatLarge(double? v) {
-    if (v == null) return "-";
-    if (v > 1e9) return "${(v / 1e9).toStringAsFixed(2)} Mrd.";
-    if (v > 1e6) return "${(v / 1e6).toStringAsFixed(2)} Mio.";
-    return v.toStringAsFixed(0);
-  }
-
   Widget _buildCategoryBar(BuildContext context, String label, double score,
       double maxScore, Color color, List<Widget> indicators) {
     final pct = ((score + maxScore) / (2 * maxScore)).clamp(0.0, 1.0);
@@ -454,15 +513,41 @@ class ScoreDetailsScreen extends StatelessWidget {
     return Colors.grey;
   }
 
-  Color _getColorForVal(double? val, double low, double high,
-      {bool invert = false}) {
-    if (val == null) return Colors.white;
-    if (invert) {
-      return val < low
-          ? Colors.green
-          : (val > high ? Colors.red : Colors.orange);
-    }
-    return val > high ? Colors.green : (val < low ? Colors.red : Colors.orange);
+  Widget _buildAiWeightRow(String name, dynamic weight) {
+    final double w = (weight is num) ? weight.toDouble() : 0.5;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(name, style: const TextStyle(fontSize: 11)),
+              Text("${(w * 100).toStringAsFixed(0)}%",
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: w > 0.5
+                          ? Colors.green
+                          : (w < 0.5 ? Colors.red : Colors.grey))),
+            ],
+          ),
+          const SizedBox(height: 2),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: w.clamp(0.0, 1.0),
+              minHeight: 3,
+              backgroundColor: Colors.grey.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(w > 0.5
+                  ? Colors.green
+                  : (w < 0.5 ? Colors.red : Colors.grey)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildRow(String label, String val, Color color) {

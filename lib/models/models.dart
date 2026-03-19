@@ -234,6 +234,12 @@ class AppSettings {
   final String? fmpKey;
   final int mcSimulations; // Anzahl Monte Carlo Simulationen für Scoring
 
+  // Feature Toggles (NEU)
+  final bool useMarketRegime;
+  final bool useAiProbability;
+  final bool useMtc;
+  final bool useStrategyOptimizer;
+
   AppSettings({
     this.themeModeIndex = 1,
     this.chartRangeDays = 252,
@@ -266,6 +272,10 @@ class AppSettings {
     this.alphaVantageKey,
     this.fmpKey,
     this.mcSimulations = 200,
+    this.useMarketRegime = true,
+    this.useAiProbability = true,
+    this.useMtc = false,
+    this.useStrategyOptimizer = false,
   });
 
   AppSettings copyWith({
@@ -300,6 +310,10 @@ class AppSettings {
     String? alphaVantageKey,
     String? fmpKey,
     int? mcSimulations,
+    bool? useMarketRegime,
+    bool? useAiProbability,
+    bool? useMtc,
+    bool? useStrategyOptimizer,
   }) {
     return AppSettings(
       themeModeIndex: themeModeIndex ?? this.themeModeIndex,
@@ -333,6 +347,10 @@ class AppSettings {
       alphaVantageKey: alphaVantageKey ?? this.alphaVantageKey,
       fmpKey: fmpKey ?? this.fmpKey,
       mcSimulations: mcSimulations ?? this.mcSimulations,
+      useMarketRegime: useMarketRegime ?? this.useMarketRegime,
+      useAiProbability: useAiProbability ?? this.useAiProbability,
+      useMtc: useMtc ?? this.useMtc,
+      useStrategyOptimizer: useStrategyOptimizer ?? this.useStrategyOptimizer,
     );
   }
 }
@@ -414,6 +432,10 @@ class TradeSignal {
   final double? tp1Percent;
   final double? tp2Percent;
   final Map<String, dynamic>? indicatorValues;
+  final MarketRegime? marketRegime;
+  final double? aiConfidence;
+  final bool? mtcConfirmed;
+  final Map<String, dynamic>? optimizedParams;
 
   TradeSignal({
     required this.type,
@@ -428,7 +450,49 @@ class TradeSignal {
     this.tp1Percent,
     this.tp2Percent,
     this.indicatorValues,
+    this.marketRegime,
+    this.aiConfidence,
+    this.mtcConfirmed,
+    this.optimizedParams,
   });
+
+  TradeSignal copyWith({
+    String? type,
+    double? entryPrice,
+    double? stopLoss,
+    double? takeProfit1,
+    double? takeProfit2,
+    double? riskRewardRatio,
+    int? score,
+    List<String>? reasons,
+    String? chartPattern,
+    double? tp1Percent,
+    double? tp2Percent,
+    Map<String, dynamic>? indicatorValues,
+    MarketRegime? marketRegime,
+    double? aiConfidence,
+    bool? mtcConfirmed,
+    Map<String, dynamic>? optimizedParams,
+  }) {
+    return TradeSignal(
+      type: type ?? this.type,
+      entryPrice: entryPrice ?? this.entryPrice,
+      stopLoss: stopLoss ?? this.stopLoss,
+      takeProfit1: takeProfit1 ?? this.takeProfit1,
+      takeProfit2: takeProfit2 ?? this.takeProfit2,
+      riskRewardRatio: riskRewardRatio ?? this.riskRewardRatio,
+      score: score ?? this.score,
+      reasons: reasons ?? this.reasons,
+      chartPattern: chartPattern ?? this.chartPattern,
+      tp1Percent: tp1Percent ?? this.tp1Percent,
+      tp2Percent: tp2Percent ?? this.tp2Percent,
+      indicatorValues: indicatorValues ?? this.indicatorValues,
+      marketRegime: marketRegime ?? this.marketRegime,
+      aiConfidence: aiConfidence ?? this.aiConfidence,
+      mtcConfirmed: mtcConfirmed ?? this.mtcConfirmed,
+      optimizedParams: optimizedParams ?? this.optimizedParams,
+    );
+  }
 }
 
 class ComputedData {
@@ -542,4 +606,39 @@ class MonteCarloResult {
     this.medianTpDay,
     this.medianSlDay,
   });
+}
+
+enum MarketRegime {
+  trendingBull,
+  trendingBear,
+  ranging,
+  volatile,
+  unknown;
+
+  String get label {
+    switch (this) {
+      case MarketRegime.trendingBull:
+        return 'Bullischer Trend';
+      case MarketRegime.trendingBear:
+        return 'Bearischer Trend';
+      case MarketRegime.ranging:
+        return 'Seitwärts (Range)';
+      case MarketRegime.volatile:
+        return 'Volatil (Choppy)';
+      case MarketRegime.unknown:
+        return 'Unbekannt';
+    }
+  }
+}
+
+class IndicatorWinRates {
+  final Map<String, double> rates; // "rsi": 0.65, "macd": 0.58 etc.
+  final double averageWinRate;
+
+  IndicatorWinRates({required this.rates})
+      : averageWinRate = rates.isEmpty
+            ? 0.0
+            : rates.values.reduce((a, b) => a + b) / rates.length;
+
+  double getWeight(String name) => rates[name] ?? 0.5;
 }
