@@ -159,11 +159,9 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ---
 
-## 🚀 Neuestes Update (22.02.2026)
+## 🚀 Neuestes Update (19.03.2026)
 
-## 🚀 Neuestes Update (21.02.2026)
-
-TechAna erhält ein entscheidendes Stabilitätsupdate, das die Präzision und Zuverlässigkeit Ihrer automatisierten Handelsstrategien maßgeblich verbessert, indem kritische Fehler bei der Orderausführung behoben wurden. Gleichzeitig wurde der KI-Analyse-Kern durch neue Indikatoren und ein fortschrittliches Scoring-System massiv aufgerüstet, was zu fundierteren und präziseren Handelssignalen führt. Profitieren Sie von einer sichereren, smarteren und flexibleren Handelsautomatisierung.
+Dieses Update revolutioniert Ihre Handelsentscheidungen mit einer neuen Monte-Carlo-Simulationsengine und tiefergehender Fundamentalanalyse. Profitieren Sie von intelligenteren Bot-Strategien, die Earnings-Risiken vermeiden und Analysten- sowie Insider-Signale nutzen, für präzisere und risikobewusstere Trades. Ein wichtiger Fix verbessert zudem die Zuverlässigkeit der Stop-Loss-Anpassung nach Teilausstiegen.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
