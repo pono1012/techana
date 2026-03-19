@@ -1,3 +1,73 @@
+### 2026-03-19 - Update
+
+#### Wichtige Neuerungen und Verbesserungen in TechAna
+
+Dieses Update bringt bedeutende Erweiterungen in der analytischen Tiefe und der Automatisierung unserer Handelsstrategien, insbesondere durch die Einführung einer Monte-Carlo-Simulationsengine und die Integration von fundamentalen Marktdaten. Unser Ziel ist es, Ihnen noch präzisere und risikobewusstere Entscheidungen zu ermöglichen und die Robustheit Ihrer automatisierten Handelsprozesse zu steigern.
+
+#### 🚀 Features
+
+*   **Integration der Monte-Carlo-Simulation für verbesserte Prognosen:**
+    *   **Nutzen:** TechAna verfügt nun über eine hochmoderne Monte-Carlo-Simulationsengine. Diese neue Funktionalität ermöglicht die probabilistische Vorhersage von zukünftigen Kursentwicklungen und bewertet die Wahrscheinlichkeit, dass ein Trade Take-Profit- oder Stop-Loss-Niveaus innerhalb eines definierten Zeitraums erreicht.
+    *   **Für User/Devs:** Sowohl in der manuellen Analyse als auch in den automatisierten Bots wird die Qualität der Handelssignale durch eine zukunftsgerichtete, risikobasierte Bewertung erheblich gesteigert. Der Kern-Score von TechAna berücksichtigt diese neuen probabilistischen Einblicke für fundiertere Entscheidungen. Entwickler können die Simulation direkt nutzen, um eigene Strategien zu verfeinern.
+
+*   **Erweiterte Fundamentalanalyse-Integration (FMP Classic Data):**
+    *   **Nutzen:** TechAna kann nun eine Vielzahl zusätzlicher fundamentaler Daten von Financial Modeling Prep (FMP) abrufen, darunter bevorstehende Earnings-Termine, Analysten-Kursziele und jüngste Insider-Handelsaktivitäten.
+    *   **Für User/Devs:** Diese Daten sind direkt in die Analyse integrierbar und ermöglichen eine ganzheitlichere Bewertung von Assets. Entwickler können auf diese erweiterten Datenpunkte für komplexere Algorithmen und Filter zugreifen.
+
+*   **Intelligentere Bot-Handelsstrategien:**
+    *   **Nutzen:** Die Automatisierungsfunktionen des Bots wurden signifikant aufgewertet, um die neuen Analysefähigkeiten zu nutzen:
+        *   **Earnings-Blocker:** Der Bot vermeidet jetzt automatisch Trades kurz vor wichtigen Unternehmens-Earnings (innerhalb von 3 Tagen), um volatile Marktbewegungen und damit verbundene Risiken zu umgehen.
+        *   **Analysten-Kursziel-Boost:** Bei Kaufsignalen erhalten Assets einen Score-Bonus von 10 Punkten, wenn Analysten ein signifikantes Kurspotenzial (>15% über dem aktuellen Kurs) prognostizieren.
+        *   **Insider-Kauf-Boost:** Wenn vermehrt Insider-Käufe festgestellt werden (mindestens 3 in der jüngsten Vergangenheit), erhalten Kaufsignale ebenfalls einen Score-Bonus von 10 Punkten.
+        *   **Monte-Carlo-Strict-Mode:** Eine neue Bot-Einstellung erlaubt es, Trades abzulehnen, wenn die Monte-Carlo-Simulation eine höhere Wahrscheinlichkeit für das Erreichen des Stop-Loss als des Take-Profit-Ziels prognostiziert.
+    *   **Für User:** Ihre automatisierten Strategien werden durch diese fundamentalen Filter und probabilistischen Risikobewertungen deutlich intelligenter, was potenziell zu sichereren und profitableren Trades führt.
+
+*   **Konfigurierbare Monte-Carlo-Simulationen:**
+    *   **Nutzen:** Sie können jetzt die Anzahl der Monte-Carlo-Simulationen in den App-Einstellungen (für die manuelle Analyse) und in den Bot-Einstellungen (für automatisierte Strategien) anpassen. Die Standardeinstellung beträgt 200 Simulationen.
+    *   **Für User:** Mehr Kontrolle über die Rechenintensität und Präzision der Monte-Carlo-Analyse, passend zu Ihren Präferenzen und der Performance Ihres Systems.
+
+*   **Erweiterte Timeframe-Randomisierung im Bot:**
+    *   **Nutzen:** Der Bot wählt bei der Strategie-Randomisierung nun aus einem breiteren Spektrum aller verfügbaren Timeframes aus (von 15m bis 1w).
+    *   **Für User:** Ermöglicht dem Bot, über eine größere Vielfalt von Marktzyklen und Trading-Stilen hinweg zu optimieren und potenziell bessere Strategien zu entdecken.
+
+#### 🩹 Fixes
+
+*   **Korrektur der Stop-Loss-Anpassung nach Teilgewinnmitnahme (TP1):**
+    *   **Nutzen:** Ein kritischer Fehler wurde behoben, der dazu führte, dass die Stop-Loss-Anpassung nach einer ersten Teilgewinnmitnahme (TP1) nicht korrekt funktionierte oder die konfigurierte Verkaufsfraktion nicht beachtet wurde.
+    *   **Für User:** Verbesserte Zuverlässigkeit und Präzision in der automatisierten Verlustbegrenzung nach Teilausstiegen, was die Risikomanagement-Strategien des Bots schützt und unbeabsichtigte Verluste verhindert.
+
+#### ⚙️ Verbesserungen & Interne Änderungen
+
+*   **Code-Refactoring des Bot-Dashboards:**
+    *   **Nutzen:** Das Bot-Dashboard wurde intern überarbeitet, um die Code-Basis modularer und leichter wartbar zu machen. Dadurch können zukünftige Entwicklungen und Erweiterungen des Dashboards effizienter umgesetzt werden.
+    *   **Für Devs:** Vereinfacht die Pflege und Erweiterung des UI-Codes und verbessert die Stabilität der Anwendung.
+*   **Bereinigungen von ungenutztem Code und Imports:**
+    *   **Nutzen:** Entfernung von veraltetem oder ungenutztem Code sowie von unnötigen Importen.
+    *   **Für Devs:** Saubere, schlankere und effizientere Code-Basis, die die Performance verbessern kann.
+
+### 📂 Geänderte Dateien
+- `flutter_analyze.txt`
+- `lib/models/models.dart`
+- `lib/models/trade_record.dart`
+- `lib/providers/app_provider.dart`
+- `lib/services/bot_settings_service.dart`
+- `lib/services/data_service.dart`
+- `lib/services/monte_carlo_service.dart`
+- `lib/services/trade_execution_service.dart`
+- `lib/services/update_service.dart`
+- `lib/ui/analysis_stats_screen.dart`
+- `lib/ui/bot_dashboard_screen.dart`
+- `lib/ui/bot_dashboard_widgets.dart`
+- `lib/ui/bot_settings_screen.dart`
+- `lib/ui/dashboard_screen.dart`
+- `lib/ui/fundamental_analysis_screen.dart`
+- `lib/ui/monte_carlo_screen.dart`
+- `lib/ui/settings_screen.dart`
+- `lib/ui/top_movers_screen.dart`
+- `pubspec.yaml`
+
+---
+
 ### 2026-02-22 - Update
 
 TechAna Release Notes - Update vom 21. Februar 2026
