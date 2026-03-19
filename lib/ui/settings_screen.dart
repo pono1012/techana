@@ -245,6 +245,16 @@ class SettingsScreen extends StatelessWidget {
                             provider.updateSettings(s.copyWith(tpPercent2: v)),
                         desc: "Fernes Ziel in %. Standard: 10-20%."),
                   ],
+                  const Divider(),
+                  _sliderTile(
+                      "MC Simulationen",
+                      s.mcSimulations.toDouble(),
+                      50,
+                      1000,
+                      (v) => provider
+                          .updateSettings(s.copyWith(mcSimulations: v.toInt())),
+                      desc:
+                          "Anzahl der Szenarien für das Scoring. Höher = genauer, aber langsamer. Standard: 200."),
                   const SizedBox(height: 12),
                   Center(
                       child: TextButton.icon(

@@ -1,16 +1,19 @@
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../models/trade_record.dart';
 import 'data_service.dart';
 import 'ta_indicators.dart';
 import 'ta_extended.dart';
+import 'monte_carlo_service.dart';
 import 'portfolio_service.dart';
 import 'bot_settings_service.dart';
 import 'watchlist_service.dart';
 
 class TradeExecutionService extends ChangeNotifier {
   final DataService _dataService = DataService();
+  final MonteCarloService _mcService = MonteCarloService();
 
   bool _isScanning = false;
   bool get isScanning => _isScanning;
@@ -687,8 +690,77 @@ class TradeExecutionService extends ChangeNotifier {
 
         final signal = analyzeStock(bars, settings);
 
+        // --- NEW: FMP Classic Stock Filters ---
+        bool blockTrade = false;
+        int scoreBoost = 0;
+        List<String> extraReasons = [];
+
         if (signal != null &&
             (signal.type.contains("Buy") || signal.type.contains("Sell"))) {
+          final prefs = await SharedPreferences.getInstance();
+          final String? fmpKey = prefs.getString('fmp_key');
+          if (fmpKey != null && fmpKey.isNotEmpty) {
+            _scanStatus = "Prüfe Fundamentals für $symbol...";
+            notifyListeners();
+            final fmp = await _dataService.fetchFmpData(symbol, fmpKey);
+            if (fmp != null) {
+              // 1. Earnings Blocker (Sicherheit vor volatilen Quartalszahlen)
+              if (fmp.nextEarnings != null) {
+                final daysToEarnings =
+                    fmp.nextEarnings!.date.difference(DateTime.now()).inDays;
+                if (daysToEarnings >= 0 && daysToEarnings <= 3) {
+                  debugPrint(
+                      "🚫 [Bot] Trade blockiert für $symbol: Earnings in $daysToEarnings Tagen.");
+                  blockTrade = true;
+                }
+              }
+              // 2. Analyst Target Boost (nur bei Buy Signalen)
+              if (fmp.analystTarget != null && signal.type.contains("Buy")) {
+                if (fmp.analystTarget!.targetConsensus >
+                    bars.last.close * 1.15) {
+                  scoreBoost += 10;
+                  extraReasons.add("Analyst Upside >15%");
+                }
+              }
+              // 3. Insider Trading Boost (nur bei Buy Signalen)
+              if (fmp.insiderTrades != null &&
+                  fmp.insiderTrades!.isNotEmpty &&
+                  signal.type.contains("Buy")) {
+                int buyCount = fmp.insiderTrades!
+                    .where((t) => t.transactionType.contains("P"))
+                    .length;
+                if (buyCount >= 3) {
+                  // Mindestens 3 Insider-Käufe in letzter Zeit
+                  scoreBoost += 10;
+                  extraReasons.add("Strong Insider Buying");
+                }
+              }
+            }
+          }
+        }
+
+        if (blockTrade) continue;
+
+        if (signal != null &&
+            (signal.type.contains("Buy") || signal.type.contains("Sell"))) {
+          TradeSignal finalSignal = signal;
+          if (scoreBoost > 0) {
+            finalSignal = TradeSignal(
+              type: signal.type,
+              entryPrice: signal.entryPrice,
+              stopLoss: signal.stopLoss,
+              takeProfit1: signal.takeProfit1,
+              takeProfit2: signal.takeProfit2,
+              riskRewardRatio: signal.riskRewardRatio,
+              score: signal.score + scoreBoost,
+              reasons: [...signal.reasons, ...extraReasons],
+              chartPattern: signal.chartPattern,
+              tp1Percent: signal.tp1Percent,
+              tp2Percent: signal.tp2Percent,
+              indicatorValues: signal.indicatorValues,
+            );
+          }
+
           bool alreadyOpen = portfolio.trades
               .any((t) => t.symbol == symbol && t.status == TradeStatus.open);
           if (!alreadyOpen) {
@@ -698,10 +770,10 @@ class TradeExecutionService extends ChangeNotifier {
                   await _dataService.fetchRegularMarketPrice(symbol);
               executionPrice = livePrice ?? bars.last.close;
             } else {
-              executionPrice = signal.entryPrice;
+              executionPrice = finalSignal.entryPrice;
             }
-            _executeBuy(
-                symbol, bars.last, signal, executionPrice, settings, portfolio);
+            _executeBuy(symbol, bars.last, finalSignal, executionPrice,
+                settings, portfolio);
           }
         }
 
@@ -981,6 +1053,20 @@ class TradeExecutionService extends ChangeNotifier {
     }
     patternScore = patternScore.clamp(-15, 15);
 
+    // === MONTE CARLO (max 10) ===
+    double mcScore = 0;
+    double mcBullPct = 50;
+    try {
+      final mcBullProb = _mcService.quickBullProbability(bars,
+          days: 30, sims: settings.mcSimulations);
+      mcBullPct = mcBullProb * 100;
+      mcScore = ((mcBullProb - 0.5) * 20).clamp(-10, 10);
+      if (mcBullProb >= 0.60)
+        reasons.add('MC Bullish (${mcBullPct.toStringAsFixed(0)}%)');
+      if (mcBullProb <= 0.40)
+        reasons.add('MC Bearish (${mcBullPct.toStringAsFixed(0)}%)');
+    } catch (_) {}
+
     if (isSqueeze) {
       volatilityScore += 3;
       reasons.add("Squeeze Aktiv");
@@ -998,7 +1084,8 @@ class TradeExecutionService extends ChangeNotifier {
         (momentumScore / 25 * 25) +
         (volumeScore / 20 * 20) +
         (patternScore / 15 * 15) +
-        (volatilityScore / 5 * 5);
+        (volatilityScore / 5 * 5) +
+        mcScore;
     int score = rawScore.round().clamp(0, 100);
 
     String type = "Neutral";
@@ -1139,7 +1226,32 @@ class TradeExecutionService extends ChangeNotifier {
       'score_volume': volumeScore,
       'score_pattern': patternScore,
       'score_volatility': volatilityScore,
+      'score_mc': mcScore,
+      'mc_bull_pct': mcBullPct,
     };
+
+    // === MC STRICT MODE CHECK ===
+    if (settings.mcStrictMode) {
+      try {
+        final mcResult = _mcService.runSimulation(
+          historicalBars: bars,
+          daysToSimulate: 30,
+          numSimulations: settings.mcSimulations,
+          tpPrice: tp1,
+          slPrice: sl,
+        );
+        final tpProb = mcResult.tpProbability ?? 0.0;
+        final slProb = mcResult.slProbability ?? 0.0;
+
+        // Wenn die Chance auf SL höher ist als auf TP1, Trade abbrechen
+        if (tpProb < slProb) {
+          return null;
+        }
+      } catch (_) {
+        // Bei Fehlern in der Simulation im Zweifel auch abbrechen in Strict Mode
+        return null;
+      }
+    }
 
     return TradeSignal(
       type: type,

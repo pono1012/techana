@@ -1,4 +1,3 @@
-import 'dart:convert';
 import '../models/models.dart';
 
 enum TradeStatus { pending, open, closed, stoppedOut, takeProfit }

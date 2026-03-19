@@ -4,9 +4,11 @@ import '../models/models.dart';
 import '../services/data_service.dart';
 import '../services/ta_indicators.dart';
 import '../services/ta_extended.dart';
+import '../services/monte_carlo_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final DataService _ds = DataService();
+  final MonteCarloService _mc = MonteCarloService();
   ThemeMode _themeMode = ThemeMode.dark;
   String _symbol = 'DAX';
   String _yahooSymbol = '^GDAXI'; // Separater Ticker für Yahoo
@@ -505,6 +507,21 @@ class AppProvider extends ChangeNotifier {
       }
       patternScore = patternScore.clamp(-15, 15);
 
+      // === MONTE CARLO (max 10) ===
+      double mcScore = 0;
+      double mcBullPct = 50;
+      try {
+        final mcBullProb = _mc.quickBullProbability(_fullBars,
+            days: 30, sims: _settings.mcSimulations);
+        mcBullPct = mcBullProb * 100;
+        // >60% bull → bullish score, <40% bull → bearish score
+        mcScore = ((mcBullProb - 0.5) * 20).clamp(-10, 10); // -10 bis +10
+        if (mcBullProb >= 0.60)
+          reasons.add('MC Bullish (${mcBullPct.toStringAsFixed(0)}%)');
+        if (mcBullProb <= 0.40)
+          reasons.add('MC Bearish (${mcBullPct.toStringAsFixed(0)}%)');
+      } catch (_) {}
+
       // === VOLATILITÄT (max 5) ===
       if (squeeze.isNotEmpty && squeeze.last) {
         volatilityScore += 3;
@@ -516,13 +533,14 @@ class AppProvider extends ChangeNotifier {
       } else if (lastBbPct > 0.9) volatilityScore -= 2;
       volatilityScore = volatilityScore.clamp(-5, 5);
 
-      // Gesamt-Score
+      // Gesamt-Score (mit MC)
       final double rawScore = 50 +
           trendScore +
           momentumScore +
           volumeScore +
           patternScore +
-          volatilityScore;
+          volatilityScore +
+          mcScore;
       int score = rawScore.round().clamp(0, 100);
 
       String type = "Neutral";
@@ -639,6 +657,8 @@ class AppProvider extends ChangeNotifier {
           'score_volume': volumeScore,
           'score_pattern': patternScore,
           'score_volatility': volatilityScore,
+          'score_mc': mcScore,
+          'mc_bull_pct': mcBullPct,
         },
       );
 
@@ -801,6 +821,7 @@ class AppProvider extends ChangeNotifier {
       rrTp2: prefs.getDouble('man_rr_tp2') ?? 3.0,
       tpPercent1: prefs.getDouble('man_tp_pct1') ?? 5.0,
       tpPercent2: prefs.getDouble('man_tp_pct2') ?? 10.0,
+      mcSimulations: prefs.getInt('man_mc_sims') ?? 200,
     );
     notifyListeners();
   }
@@ -819,6 +840,7 @@ class AppProvider extends ChangeNotifier {
       rrTp2: 3.0,
       tpPercent1: 5.0,
       tpPercent2: 10.0,
+      mcSimulations: 200,
     );
     _saveSettings();
     notifyListeners();
@@ -843,5 +865,6 @@ class AppProvider extends ChangeNotifier {
     prefs.setDouble('man_rr_tp2', _settings.rrTp2);
     prefs.setDouble('man_tp_pct1', _settings.tpPercent1);
     prefs.setDouble('man_tp_pct2', _settings.tpPercent2);
+    prefs.setInt('man_mc_sims', _settings.mcSimulations);
   }
 }

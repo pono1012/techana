@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
-import '../models/trade_record.dart';
 import '../providers/app_provider.dart';
 import '../services/data_service.dart';
 import '../services/watchlist_service.dart';

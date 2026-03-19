@@ -10,6 +10,7 @@ import 'pattern_details_screen.dart';
 import 'fundamental_analysis_screen.dart';
 import 'news_screen.dart';
 import 'bot_dashboard_screen.dart';
+import 'monte_carlo_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -273,6 +274,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
 
+            // --- Monte Carlo Simulation (BottomSheet) ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              child: FilledButton.tonalIcon(
+                onPressed: () => showMonteCarloSheet(context, provider.symbol),
+                icon: const Icon(Icons.query_stats, size: 18),
+                label: const Text("Monte Carlo Simulation"),
+              ),
+            ),
+
             // --- Scoreboard (Feste Höhe statt Expanded, damit es nicht gequetscht wird) ---
             SizedBox(
               height: 100,
@@ -474,6 +485,94 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
               ),
             ),
+
+            // --- MC Outlook Bar ---
+            if (data?.latestSignal?.indicatorValues != null)
+              Builder(builder: (context) {
+                final mcBull = (data!.latestSignal!
+                            .indicatorValues?['mc_bull_pct'] as num?)
+                        ?.toDouble() ??
+                    50;
+                final mcBear = 100 - mcBull;
+                String mcLabel;
+                Color mcColor;
+                IconData mcIcon;
+                if (mcBull >= 65) {
+                  mcLabel = "Bullish";
+                  mcColor = Colors.green;
+                  mcIcon = Icons.trending_up;
+                } else if (mcBull >= 55) {
+                  mcLabel = "Leicht Bullish";
+                  mcColor = Colors.lightGreen;
+                  mcIcon = Icons.trending_up;
+                } else if (mcBear >= 65) {
+                  mcLabel = "Bearish";
+                  mcColor = Colors.red;
+                  mcIcon = Icons.trending_down;
+                } else if (mcBear >= 55) {
+                  mcLabel = "Leicht Bearish";
+                  mcColor = Colors.orange;
+                  mcIcon = Icons.trending_down;
+                } else {
+                  mcLabel = "Neutral";
+                  mcColor = Colors.amber;
+                  mcIcon = Icons.trending_flat;
+                }
+                return GestureDetector(
+                  onTap: () => showMonteCarloSheet(context, provider.symbol),
+                  child: Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: mcColor.withOpacity(0.1),
+                      border: Border.all(
+                          color: mcColor.withOpacity(0.3), width: 0.5),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(mcIcon, color: mcColor, size: 16),
+                        const SizedBox(width: 6),
+                        Text("MC: $mcLabel",
+                            style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: mcColor)),
+                        const Spacer(),
+                        // Mini Bull/Bear bar
+                        SizedBox(
+                          width: 80,
+                          height: 10,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(5),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                    flex: mcBull.round().clamp(1, 99),
+                                    child: Container(color: Colors.green)),
+                                Expanded(
+                                    flex: mcBear.round().clamp(1, 99),
+                                    child: Container(color: Colors.red)),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text("${mcBull.toStringAsFixed(0)}%",
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: mcColor,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 4),
+                        Icon(Icons.open_in_new,
+                            size: 12, color: mcColor.withOpacity(0.6)),
+                      ],
+                    ),
+                  ),
+                );
+              }),
 
             // --- Indikator Charts ---
             if (data != null) ...[

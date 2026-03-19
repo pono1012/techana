@@ -381,7 +381,7 @@ class DataService {
         marketCap: data['marketCap']?.toDouble(),
         currency: data['currency'],
       );
-    } catch (e, stack) {
+    } catch (e) {
       debugPrint("❌ [Yahoo] Fallback Fehler: $e");
       return null;
     }
@@ -528,6 +528,10 @@ class DataService {
     double? roe;
     double? dividendYield;
 
+    EarningsInfo? nextEarnings;
+    AnalystTarget? analystTarget;
+    List<InsiderTrade>? insiderTrades;
+
     try {
       // 1. Versuch: Profile (Stable Endpoint - bevorzugt)
       bool profileLoaded = false;
@@ -596,7 +600,7 @@ class DataService {
               marketCap = (q['marketCap'] as num?)?.toDouble() ?? marketCap;
 
             // PE aus Quote holen, falls noch null (wichtig bei 402 Error auf Ratios)
-            if (peRatio == null) peRatio = (q['pe'] as num?)?.toDouble();
+            peRatio = (q['pe'] as num?)?.toDouble();
             if (currency == null) currency = q['currency'];
 
             debugPrint("✅ [FMP] Quote geladen (Preis: $price, PE: $peRatio)");
@@ -679,6 +683,89 @@ class DataService {
         debugPrint("❌ [FMP] Ratios Fehler: $e");
       }
 
+      // 5. Analyst Target
+      final urlAnalyst = Uri.parse(
+          'https://financialmodelingprep.com/api/v4/price-target-consensus?symbol=$fmpSymbol&apikey=$apiKey');
+      try {
+        final resp =
+            await http.get(urlAnalyst).timeout(const Duration(seconds: 10));
+        if (resp.statusCode == 200) {
+          final List json = jsonDecode(resp.body);
+          if (json.isNotEmpty) {
+            final a = json[0];
+            analystTarget = AnalystTarget(
+              targetHigh: (a['targetHigh'] as num?)?.toDouble() ?? 0.0,
+              targetLow: (a['targetLow'] as num?)?.toDouble() ?? 0.0,
+              targetConsensus:
+                  (a['targetConsensus'] as num?)?.toDouble() ?? 0.0,
+              targetMedian: (a['targetMedian'] as num?)?.toDouble() ?? 0.0,
+            );
+            debugPrint("✅ [FMP] Analyst Targets geladen.");
+          }
+        }
+      } catch (e) {
+        debugPrint("Analyst Target Fehler: $e");
+      }
+
+      // 6. Insider Trading
+      final urlInsider = Uri.parse(
+          'https://financialmodelingprep.com/api/v4/insider-trading?symbol=$fmpSymbol&page=0&apikey=$apiKey');
+      try {
+        final resp =
+            await http.get(urlInsider).timeout(const Duration(seconds: 10));
+        if (resp.statusCode == 200) {
+          final List json = jsonDecode(resp.body);
+          if (json.isNotEmpty) {
+            insiderTrades = [];
+            for (int i = 0; i < math.min(10, json.length); i++) {
+              final it = json[i];
+              insiderTrades.add(InsiderTrade(
+                transactionDate: DateTime.parse(
+                    it['transactionDate'] ?? DateTime.now().toIso8601String()),
+                reportingName: it['reportingName'] ?? "Unknown",
+                typeOfOwner: it['typeOfOwner'] ?? "Unknown",
+                transactionType: it['transactionType'] ?? "Unknown",
+                securitiesTransacted:
+                    (it['securitiesTransacted'] as num?)?.toDouble() ?? 0.0,
+                price: (it['price'] as num?)?.toDouble() ?? 0.0,
+              ));
+            }
+            debugPrint("✅ [FMP] Insider Trades geladen.");
+          }
+        }
+      } catch (e) {
+        debugPrint("Insider Trading Fehler: $e");
+      }
+
+      // 7. Earnings Calendar
+      final urlEarnings = Uri.parse(
+          'https://financialmodelingprep.com/api/v3/historical/earning_calendar/$fmpSymbol?limit=10&apikey=$apiKey');
+      try {
+        final resp =
+            await http.get(urlEarnings).timeout(const Duration(seconds: 10));
+        if (resp.statusCode == 200) {
+          final List json = jsonDecode(resp.body);
+          if (json.isNotEmpty) {
+            final now = DateTime.now();
+            // JSON is usually sorted newest first. Let's find the closest future date.
+            for (var e in json) {
+              if (e['date'] != null) {
+                final dt = DateTime.parse(e['date']);
+                if (dt.isAfter(now) || dt.isAtSameMomentAs(now)) {
+                  nextEarnings =
+                      EarningsInfo(date: dt, time: e['time'] ?? 'N/A');
+                }
+              }
+            }
+            if (nextEarnings != null)
+              debugPrint(
+                  "✅ [FMP] Nächste Earnings geladen: ${nextEarnings!.date.toIso8601String()}");
+          }
+        }
+      } catch (e) {
+        debugPrint("Earnings Fehler: $e");
+      }
+
       // Mapping
       return FmpData(
         symbol: fmpSymbol,
@@ -712,8 +799,11 @@ class DataService {
         roe: roe,
         dividendYield: dividendYield,
         dcf: dcf,
+        nextEarnings: nextEarnings,
+        analystTarget: analystTarget,
+        insiderTrades: insiderTrades,
       );
-    } catch (e, stack) {
+    } catch (e) {
       debugPrint("❌ [FMP] Exception: $e");
       return null;
     }

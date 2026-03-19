@@ -175,6 +175,93 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
           ]),
           const SizedBox(height: 24),
 
+          // --- Analyst Targets ---
+          if (d.analystTarget != null) ...[
+            const Text("Analysten-Ziele (Gegenwart)",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            _buildInfoGrid([
+              _buildInfoItem("Konsens (Mittel)",
+                  "\$${d.analystTarget!.targetConsensus.toStringAsFixed(2)}"),
+              _buildInfoItem(
+                  "High", "\$${d.analystTarget!.targetHigh.toStringAsFixed(2)}",
+                  color: Colors.green),
+              _buildInfoItem(
+                  "Low", "\$${d.analystTarget!.targetLow.toStringAsFixed(2)}",
+                  color: Colors.red),
+            ]),
+            const SizedBox(height: 24),
+          ],
+
+          // --- Earnings ---
+          if (d.nextEarnings != null) ...[
+            const Text("Nächste Quartalszahlen",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.calendar_today,
+                    color: Colors.blueAccent, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                    "${d.nextEarnings!.date.day.toString().padLeft(2, '0')}.${d.nextEarnings!.date.month.toString().padLeft(2, '0')}.${d.nextEarnings!.date.year}",
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 12),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(4)),
+                  child: Text(d.nextEarnings!.time.toUpperCase(),
+                      style: const TextStyle(fontSize: 10)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          // --- Insider Trades ---
+          if (d.insiderTrades != null && d.insiderTrades!.isNotEmpty) ...[
+            const Text("Letzte Insider-Trades",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            ...d.insiderTrades!.take(5).map((t) {
+              bool isBuy =
+                  t.transactionType.toUpperCase().contains("P-PURCHASE") ||
+                      t.transactionType.toUpperCase() == "P";
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+                leading: Icon(isBuy ? Icons.arrow_upward : Icons.arrow_downward,
+                    color: isBuy ? Colors.green : Colors.red),
+                title: Text(t.reportingName,
+                    style: const TextStyle(
+                        fontSize: 13, fontWeight: FontWeight.bold)),
+                subtitle: Text(
+                    "${t.typeOfOwner} • ${t.transactionDate.day}.${t.transactionDate.month}.${t.transactionDate.year}",
+                    style: const TextStyle(fontSize: 11)),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                        "${isBuy ? '+' : '-'}${_formatLarge(t.securitiesTransacted)} Shares",
+                        style: TextStyle(
+                            color: isBuy ? Colors.green : Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12)),
+                    Text("@ \$${t.price.toStringAsFixed(2)}",
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 10)),
+                  ],
+                ),
+              );
+            }).toList(),
+            const SizedBox(height: 24),
+          ],
+
           // Link zu Aktien.guide
           Center(
             child: ElevatedButton.icon(
@@ -221,7 +308,8 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
     );
   }
 
-  Widget _buildInfoItem(String label, String? val, {bool isLink = false}) {
+  Widget _buildInfoItem(String label, String? val,
+      {bool isLink = false, Color? color}) {
     if (val == null || val.isEmpty) return const SizedBox.shrink();
     return Container(
       width: 150, // Fixed width for grid look
@@ -234,7 +322,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: isLink ? Colors.blueAccent : null)),
+                  color: isLink ? Colors.blueAccent : color)),
         ],
       ),
     );

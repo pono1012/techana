@@ -38,6 +38,10 @@ class BotSettingsService extends ChangeNotifier {
   // Randomizer Option
   bool _autoRandomizeStrategy = false;
 
+  // Monte Carlo Einstellungen
+  int _mcSimulations = 200;
+  bool _mcStrictMode = false;
+
   // Getters
   double get botBaseInvest => _botBaseInvest;
   int get maxOpenPositions => _maxOpenPositions;
@@ -66,6 +70,9 @@ class BotSettingsService extends ChangeNotifier {
   bool get enableScanNew => _enableScanNew;
 
   bool get autoRandomizeStrategy => _autoRandomizeStrategy;
+
+  int get mcSimulations => _mcSimulations;
+  bool get mcStrictMode => _mcStrictMode;
 
   BotSettingsService() {
     _loadSettings();
@@ -105,8 +112,8 @@ class BotSettingsService extends ChangeNotifier {
 
     _tp1SellFraction = 0.3 + random.nextDouble() * 0.5; // 30% bis 80%
 
-    // Zufälliger Timeframe // 15m (1) bis 1w (5)
-    _botTimeFrame = TimeFrame.values[1 + random.nextInt(5)];
+    // Zufälliger Timeframe // m15 bis w1
+    _botTimeFrame = TimeFrame.values[random.nextInt(TimeFrame.values.length)];
 
     _saveSettings();
     notifyListeners();
@@ -172,6 +179,18 @@ class BotSettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setMcSimulations(int value) {
+    _mcSimulations = value.clamp(50, 2000);
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void setMcStrictMode(bool value) {
+    _mcStrictMode = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
   void resetBotSettings() {
     _botBaseInvest = 100.0;
     _maxOpenPositions = 5;
@@ -223,6 +242,8 @@ class BotSettingsService extends ChangeNotifier {
     await prefs.setBool('bot_enable_open', _enableCheckOpen);
     await prefs.setBool('bot_enable_scan', _enableScanNew);
     await prefs.setBool('bot_auto_randomize', _autoRandomizeStrategy);
+    await prefs.setInt('bot_mc_sims', _mcSimulations);
+    await prefs.setBool('bot_mc_strict', _mcStrictMode);
   }
 
   Future<void> _loadSettings() async {
@@ -253,6 +274,8 @@ class BotSettingsService extends ChangeNotifier {
     _enableCheckOpen = prefs.getBool('bot_enable_open') ?? true;
     _enableScanNew = prefs.getBool('bot_enable_scan') ?? true;
     _autoRandomizeStrategy = prefs.getBool('bot_auto_randomize') ?? false;
+    _mcSimulations = prefs.getInt('bot_mc_sims') ?? 200;
+    _mcStrictMode = prefs.getBool('bot_mc_strict') ?? false;
     notifyListeners();
   }
 }

@@ -163,6 +163,21 @@ class BotSettingsScreen extends StatelessWidget {
                   (v) => settings.updateAdvancedSettings(
                       v.toInt(), settings.trailingMult, settings.dynamicSizing),
                   desc: "Häufigkeit der automatischen Prüfung."),
+              _sliderTile(
+                  "MC Simulationen (Scoring)",
+                  settings.mcSimulations.toDouble(),
+                  50,
+                  1000,
+                  (v) => settings.setMcSimulations(v.toInt()),
+                  desc: "Anzahl Szenarien für das Bot-Scoring. Standard: 200."),
+              SwitchListTile(
+                title: const Text("MC Strict Mode"),
+                subtitle: const Text(
+                    "Nur Trades eröffnen, wenn MC Treffer-Wahrscheinlichkeit für TP > SL ist."),
+                value: settings.mcStrictMode,
+                onChanged: (v) => settings.setMcStrictMode(v),
+                activeColor: Colors.deepPurple,
+              ),
             ],
           ),
         ),

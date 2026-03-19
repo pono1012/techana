@@ -85,6 +85,43 @@ class FundamentalData {
       this.currency});
 }
 
+class EarningsInfo {
+  final DateTime date;
+  final String time; // "bmo" (Before Market Open), "amc" (After Market Close)
+
+  EarningsInfo({required this.date, required this.time});
+}
+
+class AnalystTarget {
+  final double targetHigh;
+  final double targetLow;
+  final double targetConsensus;
+  final double targetMedian;
+
+  AnalystTarget(
+      {required this.targetHigh,
+      required this.targetLow,
+      required this.targetConsensus,
+      required this.targetMedian});
+}
+
+class InsiderTrade {
+  final DateTime transactionDate;
+  final String reportingName;
+  final String typeOfOwner;
+  final String transactionType; // "P-Purchase", "S-Sale"
+  final double securitiesTransacted;
+  final double price;
+
+  InsiderTrade(
+      {required this.transactionDate,
+      required this.reportingName,
+      required this.typeOfOwner,
+      required this.transactionType,
+      required this.securitiesTransacted,
+      required this.price});
+}
+
 class FmpData {
   final String symbol;
   final String companyName;
@@ -120,6 +157,11 @@ class FmpData {
   final double? dividendYield;
   final double? dcf; // Discounted Cash Flow
 
+  // Erweiterte Klassische API Daten
+  final EarningsInfo? nextEarnings;
+  final AnalystTarget? analystTarget;
+  final List<InsiderTrade>? insiderTrades;
+
   FmpData(
       {required this.symbol,
       required this.companyName,
@@ -149,7 +191,10 @@ class FmpData {
       this.currentRatio,
       this.roe,
       this.dividendYield,
-      this.dcf});
+      this.dcf,
+      this.nextEarnings,
+      this.analystTarget,
+      this.insiderTrades});
 }
 
 // Einstellungen für die Strategie-Berechnung
@@ -187,6 +232,7 @@ class AppSettings {
 
   final String? alphaVantageKey;
   final String? fmpKey;
+  final int mcSimulations; // Anzahl Monte Carlo Simulationen für Scoring
 
   AppSettings({
     this.themeModeIndex = 1,
@@ -219,6 +265,7 @@ class AppSettings {
     this.swingLookback = 20,
     this.alphaVantageKey,
     this.fmpKey,
+    this.mcSimulations = 200,
   });
 
   AppSettings copyWith({
@@ -252,6 +299,7 @@ class AppSettings {
     int? swingLookback,
     String? alphaVantageKey,
     String? fmpKey,
+    int? mcSimulations,
   }) {
     return AppSettings(
       themeModeIndex: themeModeIndex ?? this.themeModeIndex,
@@ -284,6 +332,7 @@ class AppSettings {
       swingLookback: swingLookback ?? this.swingLookback,
       alphaVantageKey: alphaVantageKey ?? this.alphaVantageKey,
       fmpKey: fmpKey ?? this.fmpKey,
+      mcSimulations: mcSimulations ?? this.mcSimulations,
     );
   }
 }
@@ -465,4 +514,32 @@ class PortfolioSnapshot {
         realizedPnL: (json['realizedPnL'] as num).toDouble(),
         unrealizedPnL: (json['unrealizedPnL'] as num).toDouble(),
       );
+}
+
+class MonteCarloResult {
+  final double expectedPrice;
+  final double lowerBound95;
+  final double upperBound95;
+  final List<List<double>> simulatedPaths;
+  final double historicalVolatility;
+  final double drift;
+  final double currentPrice;
+  final double? tpProbability;
+  final double? slProbability;
+  final int? medianTpDay;
+  final int? medianSlDay;
+
+  MonteCarloResult({
+    required this.expectedPrice,
+    required this.lowerBound95,
+    required this.upperBound95,
+    required this.simulatedPaths,
+    required this.historicalVolatility,
+    required this.drift,
+    required this.currentPrice,
+    this.tpProbability,
+    this.slProbability,
+    this.medianTpDay,
+    this.medianSlDay,
+  });
 }
