@@ -38,7 +38,7 @@ Erlebe das klare Dark-Mode Design, optimiert für lange Analyse-Sessions.
         <small>Alle wichtigen Assets auf einen Blick.</small>
       </td>
       <td align="center" width="50%">
-        <img width="745" height="705" alt="image" src="https://github.com/user-attachments/assets/8b845b8e-daa7-4198-85f1-5c5ca6518c4d" />
+        <img width="1261" height="1031" alt="image" src="https://github.com/user-attachments/assets/5ffba69d-c142-4056-8964-cdce4008cc4b" />
         <br />
         <b>📊 Detaillierte Filter & Listen</b><br>
         <small>Finde Top-Gainer, Verlierer und Favoriten.</small>
