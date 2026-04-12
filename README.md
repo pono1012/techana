@@ -38,7 +38,7 @@ Erlebe das klare Dark-Mode Design, optimiert für lange Analyse-Sessions.
         <small>Alle wichtigen Assets auf einen Blick.</small>
       </td>
       <td align="center" width="50%">
-        <img width="1261" height="1031" alt="image" src="https://github.com/user-attachments/assets/5ffba69d-c142-4056-8964-cdce4008cc4b" />
+        <img width="745" height="705" alt="image" src="https://github.com/user-attachments/assets/8b845b8e-daa7-4198-85f1-5c5ca6518c4d" />
         <br />
         <b>📊 Detaillierte Filter & Listen</b><br>
         <small>Finde Top-Gainer, Verlierer und Favoriten.</small>
@@ -161,7 +161,7 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ## 🚀 Neuestes Update (12.04.2026)
 
-TechAna erhält ein wichtiges Update zur Stärkung seiner intelligenten Kernfunktionen. Wir haben unsere KI-Modelle und die zugrundeliegende Infrastruktur umfassend aktualisiert. Dies sichert Ihnen noch präzisere Analysen, zuverlässigere Handelssignale und eine insgesamt leistungsstärkere KI-Erfahrung.
+TechAna präsentiert sich mit einem signifikanten "Under-the-Hood"-Update, das unsere KI-Systeme und Infrastruktur optimiert. Dies führt zu noch präziseren Marktanalysen, verlässlicheren Handelssignalen und einer gesteigerten Gesamtstabilität für Ihr Trading-Erlebnis. Entdecken Sie die verbesserte Performance und die aktualisierten Visualisierungen in unserer Dokumentation.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
