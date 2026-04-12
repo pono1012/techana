@@ -161,7 +161,7 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ## 🚀 Neuestes Update (12.04.2026)
 
-Dieses große TechAna-Update revolutioniert Ihre Handelsstrategien durch die Integration der Kronos AI und einer Monte-Carlo-Simulationsengine für präzisere, zukunftsgerichtete Prognosen. Ein neues Bot-Analyse-Dashboard bietet tiefe Einblicke zur Optimierung Ihrer automatisierten Trades, ergänzt durch erweiterte Fundamentaldaten und intelligente neue Bot-Features. Profitieren Sie von erhöhter Zuverlässigkeit, besseren Entscheidungen und mehr Transparenz in Ihren Marktanalysen.
+TechAna erhält ein wichtiges Update zur Stärkung seiner intelligenten Kernfunktionen. Wir haben unsere KI-Modelle und die zugrundeliegende Infrastruktur umfassend aktualisiert. Dies sichert Ihnen noch präzisere Analysen, zuverlässigere Handelssignale und eine insgesamt leistungsstärkere KI-Erfahrung.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
