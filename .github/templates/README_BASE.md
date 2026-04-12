@@ -1,4 +1,10 @@
+![TechAna Banner](/lib/assets/banner.svg)
+
+<div align="center">
+
 # 📈 TechAna - Advanced Trading Intelligence
+
+</div>
 
 <div align="center">
 
@@ -14,7 +20,7 @@
 
 **TechAna** ist die ultimative **All-in-One-Lösung** für Trader, die nichts dem Zufall überlassen wollen. Wir kombinieren professionelle technische Analyse, KI-gestützte Mustererkennung und automatisierte Trading-Bots in einer einzigen, leistungsstarken App – nativ entwickelt mit Flutter für maximale Performance auf jedem Gerät.
 
-![TechAna Banner](/lib/assets/banner.svg)
+
 
 ---
 
@@ -32,13 +38,13 @@ Erlebe das klare Dark-Mode Design, optimiert für lange Analyse-Sessions.
   <table>
     <tr>
       <td align="center" width="50%">
-        <img width="751" height="710" alt="image" src="https://github.com/user-attachments/assets/2ce97897-62ee-4e83-9a71-2c0655eaab1b" />
+       <img width="1257" height="1025" alt="image" src="https://github.com/user-attachments/assets/f6b3d68c-d92c-44b1-9790-738c962c3cd0" />
         <br />
         <b>🏠 Dashboard & Marktübersicht</b><br>
         <small>Alle wichtigen Assets auf einen Blick.</small>
       </td>
       <td align="center" width="50%">
-        <img width="745" height="705" alt="image" src="https://github.com/user-attachments/assets/8b845b8e-daa7-4198-85f1-5c5ca6518c4d" />
+        <img width="1254" height="1024" alt="image" src="https://github.com/user-attachments/assets/7cd30ec4-9d8e-4cf3-984b-d62055d2fc70" />
         <br />
         <b>📊 Detaillierte Filter & Listen</b><br>
         <small>Finde Top-Gainer, Verlierer und Favoriten.</small>
