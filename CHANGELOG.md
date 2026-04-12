@@ -1,5 +1,60 @@
 ### 2026-04-12 - Update
 
+Wir freuen uns, das neueste Update für TechAna vorzustellen, das sich auf signifikante "Under-the-Hood"-Verbesserungen unserer intelligenten Kernsysteme, neue Bot-Funktionalitäten sowie auf Aktualisierungen der Benutzeroberfläche und Dokumentation konzentriert. Dieses Release ist ein wichtiger Schritt zur weiteren Steigerung der Präzision, Zuverlässigkeit und Benutzerfreundlichkeit von TechAna, basierend auf den jüngsten Analysen unserer technischen Änderungen.
+
+#### KI-Kernoptimierungen & Infrastruktur-Wartung
+
+Im Zentrum dieses Updates steht eine umfassende Überprüfung und Aktualisierung unserer Künstlichen Intelligenz und der zugehörigen Infrastruktur. Diese Maßnahmen sind direkt aus der Analyse der technischen Änderungen seit dem letzten KI-Bericht abgeleitet, um die Performance zu maximieren.
+
+*   **Was wurde getan?**
+    Die zugrundeliegenden KI-Modelle, die für kritische Funktionen wie präzise Chart-Projektionen, die Erkennung von Candlestick-Mustern und die Generierung automatisierter Handelssignale verantwortlich sind, wurden auf den neuesten Stand gebracht. Parallel dazu haben wir die Infrastruktur, die diese hochentwickelten Modelle hostet und ausführt, optimiert. Dies gewährleistet eine effizientere und stabilere Verarbeitung. Ein wesentlicher Teil dieser Aktualisierung ist auch die Anpassung unseres internen `last_ai_commit`-Trackers, um den aktuellen Entwicklungsstand unserer KI transparent zu dokumentieren und die Nachvollziehbarkeit zu verbessern.
+
+*   **Ihr Nutzen (für Anwender):**
+    *   **Erhöhte Präzision und Relevanz:** Profitieren Sie von noch genaueren Marktanalysen und verlässlicheren Handelssignalen. Die aktualisierten KI-Modelle sind auf den neuesten Datensätzen trainiert und nutzen verbesserte Algorithmen, um Ihnen fundiertere Entscheidungsgrundlagen zu liefern.
+    *   **Verbesserte Zuverlässigkeit und Stabilität:** Die optimierte Infrastruktur sorgt für eine reibungslosere und stabilere Ausführung aller KI-gestützten Features. Dies minimiert Fehler, beschleunigt Berechnungen und führt zu einer nahtlosen Benutzererfahrung.
+    *   **Vorbereitung auf zukünftige Innovationen:** Dieses Update bildet eine entscheidende Grundlage für die Integration zukünftiger, noch fortschrittlicherer KI-Funktionalitäten und stellt sicher, dass TechAna technologisch an der Spitze bleibt.
+
+*   **Nutzen für Entwickler (intern):**
+    Die Aktualisierung und Optimierung unserer KI-Infrastruktur vereinfacht nicht nur die Wartung und das Debugging, sondern verbessert auch die Gesamtperformance der KI-Komponenten. Dies schafft eine robustere, skalierbarere und effizientere Basis für die Entwicklung und Implementierung neuer, komplexer KI-Features in kommenden Releases.
+
+#### Neue Funktionen & Verbesserungen der Benutzerfreundlichkeit
+
+Wir haben TechAna mit neuen Funktionalitäten bereichert und die Benutzerführung weiter optimiert.
+
+*   **Was wurde getan?**
+    *   **Dynamische Analyse-Intervalle für Bots:** Für unsere automatisierten Bots wurde eine neue Funktion implementiert, die es ermöglicht, zufällige Analyse-Intervalle (zwischen 15 und 480 Minuten) zu nutzen. Dies bietet mehr Flexibilität und Dynamik in der Marktbeobachtung.
+    *   **Optimierte KI-Einstellungen im Bot:** Die Einstellungen für die "Kronos KI Analyse" und den "Kronos Strict Mode" wurden in einen dedizierten, neuen Bereich innerhalb der Bot-Einstellungen verschoben. Dies sorgt für eine übersichtlichere und intuitivere Verwaltung der KI-spezifischen Bot-Parameter.
+
+*   **Ihr Nutzen (für Anwender):**
+    *   **Vielfältigere Bot-Strategien:** Die Möglichkeit zufälliger Analyse-Intervalle erlaubt es dem Bot, den Markt auf unterschiedlichsten Zeitebenen zu beobachten und potenziell unentdeckte Handelschancen zu identifizieren.
+    *   **Verbesserte Übersichtlichkeit:** Die KI-spezifischen Einstellungen sind nun leichter zu finden und zu verwalten, was die Konfiguration Ihres Bots vereinfacht und Ihnen hilft, das volle Potenzial der Kronos KI auszuschöpfen.
+
+#### Dokumentation & Visuelle Updates
+
+Um Ihnen stets das beste Erlebnis zu bieten, halten wir unsere Dokumentation und visuellen Inhalte aktuell.
+
+*   **Was wurde getan?**
+    *   **Aktualisierte Screenshots im README:** Wir haben die Screenshots in unserer Haupt-README-Datei aktualisiert, um die neuesten UI/UX-Verbesserungen und das aktuelle Design von TechAna besser widerzuspiegeln.
+    *   **Changelog-Verbesserung:** Das Changelog wurde mit der aktuellen und detaillierteren Release-Übersicht aktualisiert.
+
+*   **Ihr Nutzen (für Anwender):**
+    *   **Besseres Verständnis:** Neue und bestehende Benutzer können sich durch die aktuellen Visualisierungen schneller mit den Features vertraut machen und die fortschrittlichen Analysewerkzeuge optimal nutzen.
+    *   **Transparenz:** Eine stets aktuelle und detaillierte Release-Historie im Changelog bietet Ihnen volle Transparenz über alle Entwicklungen.
+
+Dieses Release unterstreicht unser kontinuierliches Engagement, TechAna als die führende Plattform für technische Analyse und Trading-Intelligenz zu etablieren und zu pflegen. Wir danken Ihnen für Ihr Vertrauen und freuen uns auf Ihr Feedback!
+
+#### Geänderte Dateien
+- `.github/ai_state.json`
+- `CHANGELOG.md`
+- `README.md`
+- `lib/services/bot_settings_service.dart`
+- `lib/ui/bot_settings_screen.dart`
+- `pubspec.yaml`
+
+---
+
+### 2026-04-12 - Update
+
 Willkommen bei den Release Notes für TechAna! Als Release-Manager freue ich mich, Ihnen die umfassenden Änderungen seit unserem letzten KI-Bericht zu präsentieren, die zu diesem Update (Version 1.1.0+4) geführt haben.
 
 **TEIL 1 (Ausführlich für Release Page & Changelog):**
