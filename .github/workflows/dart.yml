@@ -237,10 +237,13 @@ jobs:
             mkdir Payload && cp -r Runner.app Payload/
             zip -qq -r TechAna-iOS.ipa Payload && mv TechAna-iOS.ipa $GITHUB_WORKSPACE/
           elif [ "${{ matrix.platform }}" == "windows" ]; then
+            cp -r kronos_api build/windows/x64/runner/Release/
             powershell -Command "Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath TechAna-windows.zip"
           elif [ "${{ matrix.platform }}" == "macos" ]; then
-            cd build/macos/Build/Products/Release/ && zip -qq -r TechAna-macos.zip *.app && mv TechAna-macos.zip $GITHUB_WORKSPACE/
+            cp -r kronos_api build/macos/Build/Products/Release/
+            cd build/macos/Build/Products/Release/ && zip -qq -r TechAna-macos.zip *.app kronos_api && mv TechAna-macos.zip $GITHUB_WORKSPACE/
           elif [ "${{ matrix.platform }}" == "linux" ]; then
+            cp -r kronos_api build/linux/x64/release/bundle/
             cd build/linux/x64/release/bundle/
             zip -r TechAna-linux.zip .
             mv TechAna-linux.zip $GITHUB_WORKSPACE/

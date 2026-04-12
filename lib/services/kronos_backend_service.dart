@@ -86,18 +86,47 @@ class KronosBackendService {
     }
 
     try {
-      final apiDir = Directory('kronos_api');
-      if (!await apiDir.exists()) {
-        print("Kronos API directory not found.");
+      Directory? apiDir;
+      
+      // 1. Check in current directory (typical for 'flutter run')
+      if (await Directory('kronos_api').exists()) {
+        apiDir = Directory('kronos_api');
+      } 
+      // 2. Check next to the executable (typical for compiled .exe)
+      else {
+        final exeDir = File(Platform.resolvedExecutable).parent.path;
+        final releaseDir = Directory('$exeDir${Platform.pathSeparator}kronos_api');
+        
+        // MacOS: if kronos_api is shipped next to the .app bundle, 
+        // Platform.resolvedExecutable is inside TechAna.app/Contents/MacOS/
+        // so we need to go up 3 directories.
+        final macOsReleaseDir = Directory('$exeDir/../../../kronos_api');
+        
+        if (await releaseDir.exists()) {
+          apiDir = releaseDir;
+        } else if (Platform.isMacOS && await macOsReleaseDir.exists()) {
+          apiDir = macOsReleaseDir;
+        } else {
+          // 3. Optional: fallback to project root during dev if exe is in build/windows/...
+          // e.g. from build/windows/x64/runner/Debug back to project root
+          final projectRoot = Directory('$exeDir\\..\\..\\..\\..\\kronos_api');
+          if (await projectRoot.exists()) {
+             apiDir = projectRoot;
+          }
+        }
+      }
+
+      if (apiDir == null) {
+        print("Kronos API directory not found. Checked current dir and exe dir.");
         _isStarting = false;
         return false;
       }
 
-      print("Starte Kronos Python Backend...");
+      print("Starte Kronos Python Backend in Verzeichnis: ${apiDir.path}...");
       _pythonProcess = await Process.start(
         Platform.isWindows ? 'cmd' : 'python',
         Platform.isWindows ? ['/c', 'python', 'main.py'] : ['main.py'],
-        workingDirectory: 'kronos_api',
+        workingDirectory: apiDir.path,
         mode: ProcessStartMode.normal,
         environment: (hfToken != null && hfToken.trim().isNotEmpty) ? {'HF_TOKEN': hfToken.trim()} : null,
       );
