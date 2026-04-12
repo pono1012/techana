@@ -32,13 +32,13 @@ Erlebe das klare Dark-Mode Design, optimiert für lange Analyse-Sessions.
   <table>
     <tr>
       <td align="center" width="50%">
-        <img width="751" height="710" alt="image" src="https://github.com/user-attachments/assets/2ce97897-62ee-4e83-9a71-2c0655eaab1b" />
+       <img width="1263" height="1027" alt="image" src="https://github.com/user-attachments/assets/049a8e38-0031-4a28-9567-c9e36944a4da" />
         <br />
         <b>🏠 Dashboard & Marktübersicht</b><br>
         <small>Alle wichtigen Assets auf einen Blick.</small>
       </td>
       <td align="center" width="50%">
-        <img width="745" height="705" alt="image" src="https://github.com/user-attachments/assets/8b845b8e-daa7-4198-85f1-5c5ca6518c4d" />
+       <img width="1263" height="1033" alt="image" src="https://github.com/user-attachments/assets/50816605-d1ce-4355-ae9d-86a747c55c91" />
         <br />
         <b>📊 Detaillierte Filter & Listen</b><br>
         <small>Finde Top-Gainer, Verlierer und Favoriten.</small>
