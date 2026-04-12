@@ -1,5 +1,29 @@
 ### 2026-04-12 - Update
 
+Willkommen zum neuesten Update für TechAna!
+
+#### KI-Systemoptimierung & Infrastruktur-Wartung
+
+Dieses Release konzentriert sich auf eine entscheidende, doch im Hintergrund wirkende Aktualisierung unserer intelligenten Kernsysteme. Wir haben eine umfassende Überarbeitung der zugrundeliegenden KI-Modelle sowie der zugehörigen Infrastruktur durchgeführt, um die Leistungsfähigkeit und Zuverlässigkeit von TechAna weiter zu steigern.
+
+*   **Was wurde getan?** Die internen KI-Modelle, die für die Bereitstellung von Funktionen wie präzisen Chart-Projektionen, zuverlässiger Candlestick-Mustererkennung und intelligenten automatisierten Handelssignalen verantwortlich sind, wurden auf den neuesten Stand gebracht. Parallel dazu wurde die Infrastruktur, die diese Modelle hostet und ausführt, optimiert, um eine effizientere und stabilere Arbeitsweise zu gewährleisten. Dies beinhaltet auch die Aktualisierung des `last_ai_commit`-Trackers, um den aktuellen Stand unserer KI-Entwicklung transparent zu halten.
+
+*   **Nutzen für den Anwender:**
+    *   **Verbesserte Präzision und Relevanz:** Sie profitieren von noch genaueren Analysen und Handelssignalen, da die KI nun auf den aktuellsten Datensätzen und Algorithmen trainiert ist. Dies führt zu relevanteren Einblicken und fundierteren Entscheidungsgrundlagen.
+    *   **Erhöhte Zuverlässigkeit und Stabilität:** Die optimierte Infrastruktur gewährleistet eine stabilere und reibungslosere Ausführung aller KI-gestützten Features. Weniger Fehler, schnellere Berechnungen – für eine nahtlose Benutzererfahrung.
+    *   **Vorbereitung für die Zukunft:** Dieses Update ist ein wichtiger Schritt, um TechAna technologisch an der Spitze zu halten. Es schafft die Basis für zukünftige Innovationen und die Integration weiterer hochentwickelter KI-Funktionalitäten.
+
+*   **Nutzen für Entwickler (intern):** Eine aktualisierte und optimierte KI-Infrastruktur erleichtert nicht nur die Wartung und Debugging, sondern verbessert auch die Gesamtperformance der KI-Komponenten. Dies bietet eine solidere und skalierbarere Grundlage für die Entwicklung und Integration neuer, komplexer KI-Funktionalitäten in zukünftigen Releases.
+
+Dieses "Under-the-Hood"-Update (Version 1.1.0+3) ist ein wesentlicher Bestandteil unserer fortlaufenden Bemühungen, TechAna als die führende Plattform für technische Analyse und Trading-Intelligenz zu positionieren.
+
+### 📂 Geänderte Dateien
+- `pubspec.yaml`
+
+---
+
+### 2026-04-12 - Update
+
 Wir freuen uns, ein umfangreiches Update für TechAna vorstellen zu können, das die analytische Tiefe und die Intelligenz unserer automatisierten Handelssysteme maßgeblich erweitert. Dieses Release integriert eine hochmoderne Monte-Carlo-Simulationsengine, führt die wegweisende Kronos AI für präzisere Prognosen ein, verbessert die Fundamentalanalyse durch erweiterte Datenpunkte und bietet eine Reihe von "Expert Features", die Ihre Handelsstrategien adaptiver und risikobewusster machen. Zusätzlich haben wir ein umfassendes Bot-Analyse-Dashboard implementiert und einen kritischen Fehler im Stop-Loss-Management behoben, um die Zuverlässigkeit Ihrer Trades zu gewährleisten.
 
 #### 🚀 Features & Analyse-Upgrades
