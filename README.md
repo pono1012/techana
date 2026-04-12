@@ -142,15 +142,6 @@ Du willst tiefer einsteigen? Hier findest du detaillierte Anleitungen:
 
 ---
 
-## 🙏 Shoutouts & Open-Source Credits
-
-TechAna wäre nicht dasselbe ohne die großartige Arbeit der Open-Source-Community. Ein riesiges Dankeschön geht an die Entwickler folgender Projekte, die essenzielle Technologien für unsere Analysen und Engines liefern:
-
-* [**Kronos (shiyu-coder)**](https://github.com/shiyu-coder/Kronos) – Ein brillantes Foundation-Modell für die "Sprache" von Finanzmärkten. Die Architektur von Kronos war ein enormer Meilenstein für unsere KI-gestützte Zeitreihenvorhersage und K-Line-Mustererkennung.
-* [**pandas-montecarlo (ranaroussi)**](https://github.com/ranaroussi/pandas-montecarlo) – Eine unglaublich effiziente und leichtgewichtige Python-Bibliothek für Monte-Carlo-Simulationen. Dieses Projekt ist das Rückgrat unserer neu eingeführten, automatisierten Risiko-Simulationsengine für Trading-Bots.
-
----
-
 ## 🤝 Contributing
 
 Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bevor du Pull Requests einreichst. Wir suchen aktuell Unterstützung bei:
@@ -168,9 +159,9 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ---
 
-## 🚀 Neuestes Update (19.03.2026)
+## 🚀 Neuestes Update (12.04.2026)
 
-Dieses Update revolutioniert Ihre Handelsentscheidungen mit einer neuen Monte-Carlo-Simulationsengine und tiefergehender Fundamentalanalyse. Profitieren Sie von intelligenteren Bot-Strategien, die Earnings-Risiken vermeiden und Analysten- sowie Insider-Signale nutzen, für präzisere und risikobewusstere Trades. Ein wichtiger Fix verbessert zudem die Zuverlässigkeit der Stop-Loss-Anpassung nach Teilausstiegen.
+Dieses große TechAna-Update revolutioniert Ihre Handelsstrategien durch die Integration der Kronos AI und einer Monte-Carlo-Simulationsengine für präzisere, zukunftsgerichtete Prognosen. Ein neues Bot-Analyse-Dashboard bietet tiefe Einblicke zur Optimierung Ihrer automatisierten Trades, ergänzt durch erweiterte Fundamentaldaten und intelligente neue Bot-Features. Profitieren Sie von erhöhter Zuverlässigkeit, besseren Entscheidungen und mehr Transparenz in Ihren Marktanalysen.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
