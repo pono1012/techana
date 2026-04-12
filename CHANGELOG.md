@@ -64,6 +64,116 @@ Wir freuen uns, ein umfangreiches Update für TechAna vorstellen zu können, das
 *   **Neue Open-Source-Dankeschöns im README:**
     *   **Was wurde gemacht:** Der README-Datei wurden Danksagungen an die Open-Source-Projekte Kronos (shiyu-coder) und pandas-montecarlo (ranaroussi) hinzugefügt, die essenziell für die neuen Funktionen sind.
     *   **Ihr Nutzen:** Mehr Transparenz über die verwendeten Technologien und Wertschätzung der Community-Arbeit.
+*   **Verbesserte README-Generierung in der CI/CD:**
+    *   **Was wurde gemacht:** Interne Anpassungen am GitHub Actions Workflow stellen sicher, dass die generierte README.md die Release-Zusammenfassung korrekt erhält.
+    *   **Für Entwickler/Release-Manager:** Gewährleistet eine zuverlässigere und automatisierte Erstellung der Release-Dokumentation.
+
+#### 📂 Geänderte Dateien
+- `lib/models/models.dart`
+- `lib/providers/app_provider.dart`
+- `lib/services/bot_settings_service.dart`
+- `lib/services/data_service.dart`
+- `lib/services/indicator_analyzer_service.dart`
+- `lib/services/market_regime_service.dart`
+- `lib/services/strategy_optimizer_service.dart`
+- `lib/services/ta_indicators.dart`
+- `lib/services/trade_execution_service.dart`
+- `lib/ui/bot_dashboard_widgets.dart`
+- `lib/ui/bot_settings_screen.dart`
+- `lib/ui/dashboard_screen.dart`
+- `lib/ui/score_details_screen.dart`
+- `lib/ui/settings_screen.dart`
+- `pubspec.yaml`
+- `.github/ai_state.json`
+- `CHANGELOG.md`
+- `README.md`
+- `android/app/src/main/AndroidManifest.xml`
+- `docs/API.md`
+- `docs/MANUAL.md`
+- `kronos_api/Kronos`
+- `kronos_api/main.py`
+- `kronos_api/requirements.txt`
+- `lib/main.dart`
+- `lib/models/bot_analytics.dart`
+- `lib/services/bot_analytics_service.dart`
+- `lib/services/kronos_backend_service.dart`
+- `lib/services/monte_carlo_service.dart`
+- `lib/services/ta_extended.dart`
+- `lib/ui/analysis_stats_screen.dart`
+- `lib/ui/kronos_forecast_screen.dart`
+
+### 📂 Geänderte Dateien
+- `.github/workflows/dart.yml`
+- `pubspec.yaml`
+
+---
+
+### 2026-04-12 - Update
+
+Wir freuen uns, ein umfangreiches Update für TechAna vorstellen zu können, das die analytische Tiefe und die Intelligenz unserer automatisierten Handelssysteme maßgeblich erweitert. Dieses Release integriert eine hochmoderne Monte-Carlo-Simulationsengine, führt die wegweisende Kronos AI für präzisere Prognosen ein, verbessert die Fundamentalanalyse durch erweiterte Datenpunkte und bietet eine Reihe von "Expert Features", die Ihre Handelsstrategien adaptiver und risikobewusster machen. Zusätzlich haben wir ein umfassendes Bot-Analyse-Dashboard implementiert und einen kritischen Fehler im Stop-Loss-Management behoben, um die Zuverlässigkeit Ihrer Trades zu gewährleisten.
+
+#### 🚀 Features & Analyse-Upgrades
+
+*   **Integration der Kronos AI Engine für KI-gestützte Marktprognosen:**
+    *   **Was ist neu:** TechAna bindet nun das leistungsstarke Kronos Foundation-Modell ein, eine spezialisierte KI für Finanzmärkte. Dieses Modell ist in der Lage, zukünftige Kerzen (Preisverläufe) zu prognostizieren, was die Qualität der Handelssignale durch eine zukunftsgerichtete, probabilistische Bewertung erheblich steigert. Ein Python-Backend für Kronos wird unter Windows, Mac und Linux automatisch von der App verwaltet. Für mobile Nutzung ist eine Verbindung zu einem laufenden Backend auf einem PC via WLAN möglich.
+    *   **Ihr Nutzen:** Die KI-Vorhersagen fließen direkt in den Kern-Score von TechAna ein und können Trades ablehnen, wenn die Kronos-Prognose ein ungünstiges Risiko-Rendite-Profil aufzeigt. Sie erhalten präzisere Handelssignale und ein tieferes Verständnis potenzieller zukünftiger Preisbewegungen. Entwickler können die Prognosen direkt für ihre eigenen Strategien nutzen.
+
+*   **Integration der Monte-Carlo-Simulation für verbesserte Prognosen:**
+    *   **Was ist neu:** TechAna verfügt nun über eine hochmoderne Monte-Carlo-Simulationsengine. Diese Funktionalität ermöglicht die probabilistische Vorhersage von zukünftigen Kursentwicklungen und bewertet die Wahrscheinlichkeit, dass ein Trade Take-Profit- oder Stop-Loss-Niveaus innerhalb eines definierten Zeitraums erreicht.
+    *   **Ihr Nutzen:** Sowohl in der manuellen Analyse als auch in den automatisierten Bots wird die Qualität der Handelssignale durch eine zukunftsgerichtete, risikobasierte Bewertung erheblich gesteigert. Der Kern-Score von TechAna berücksichtigt diese neuen probabilistischen Einblicke für fundiertere Entscheidungen. Entwickler können die Simulation direkt nutzen, um eigene Strategien zu verfeinern.
+
+*   **Umfassendes Bot-Analyse-Dashboard:**
+    *   **Was ist neu:** Ein komplett neues Dashboard bietet detaillierte Einblicke in die Performance Ihrer automatisierten Handelsstrategien. Es visualisiert Kennzahlen wie Equity Curve, Gesamt-PnL, Gewinn-/Verlustrate, Profit Factor, maximale Drawdowns, Gewinn-/Verlustserien und die durchschnittliche Haltedauer. Analysen sind nach Symbol, Timeframe und Strategie-Parametern gruppierbar.
+    *   **Ihr Nutzen:** Sie erhalten eine transparente und tiefgehende Bewertung Ihrer Bot-Performance, können Stärken und Schwächen Ihrer Strategien identifizieren und diese gezielt optimieren, um Ihre Profitabilität zu steigern.
+
+*   **Erweiterte Fundamentalanalyse-Integration (FMP Classic Data):**
+    *   **Was ist neu:** TechAna kann nun eine Vielzahl zusätzlicher fundamentaler Daten von Financial Modeling Prep (FMP) abrufen, darunter bevorstehende Earnings-Termine, Analysten-Kursziele und jüngste Insider-Handelsaktivitäten.
+    *   **Ihr Nutzen:** Diese Daten sind direkt in die Analyse integrierbar und ermöglichen eine ganzheitlichere Bewertung von Assets. Entwickler können auf diese erweiterten Datenpunkte für komplexere Algorithmen und Filter zugreifen.
+
+*   **Intelligentere Bot-Handelsstrategien:**
+    *   **Was ist neu:** Die Automatisierungsfunktionen des Bots wurden signifikant aufgewertet, um die neuen Analysefähigkeiten zu nutzen:
+        *   **Earnings-Blocker:** Der Bot vermeidet jetzt automatisch Trades kurz vor wichtigen Unternehmens-Earnings (innerhalb von 3 Tagen), um volatile Marktbewegungen und damit verbundene Risiken zu umgehen.
+        *   **Analysten-Kursziel-Boost:** Bei Kaufsignalen erhalten Assets einen Score-Bonus von 10 Punkten, wenn Analysten ein signifikantes Kurspotenzial (>15% über dem aktuellen Kurs) prognostizieren.
+        *   **Insider-Kauf-Boost:** Wenn vermehrt Insider-Käufe festgestellt werden (mindestens 3 in der jüngsten Vergangenheit), erhalten Kaufsignale ebenfalls einen Score-Bonus von 10 Punkten.
+        *   **Monte-Carlo-Strict-Mode:** Eine neue Bot-Einstellung erlaubt es, Trades abzulehnen, wenn die Monte-Carlo-Simulation eine höhere Wahrscheinlichkeit für das Erreichen des Stop-Loss als des Take-Profit-Ziels prognostiziert.
+        *   **Kronos-Filter:** Trades können nun zusätzlich durch die Prognosen der Kronos AI gefiltert werden, um nur Signale mit einer hohen Erfolgswahrscheinlichkeit zu berücksichtigen.
+    *   **Ihr Nutzen:** Ihre automatisierten Strategien werden durch diese fundamentalen Filter, probabilistischen Risikobewertungen und KI-Prognosen deutlich intelligenter, was potenziell zu sichereren und profitableren Trades führt.
+
+*   **Neue "Experten Features" für Bots und manuelle Analyse (Optional):**
+    *   **Markt-Regime Filter:** Passt die Strategie dynamisch an bullische/bearische Trends, Seitwärtsphasen oder volatile Märkte an. **Nutzen:** Erhöht die Adaptivität der Handelsstrategien und reduziert das Risiko in ungünstigen Marktphasen.
+    *   **AI Probability Scoring:** Wendet eine dynamische Gewichtung auf Indikatoren an, basierend auf deren historischer Trefferrate unter den aktuellen Marktbedingungen. **Nutzen:** Das System fokussiert sich auf die aktuell zuverlässigsten Signale und bietet mehr Transparenz über die "Zuversicht" der KI.
+    *   **Multi-Timeframe Confluence (MTC):** Bestätigt Trends auf höheren Zeitebenen, um Trades gegen den übergeordneten Markttrend zu vermeiden. **Nutzen:** Reduziert das Risiko, indem es Trades in Konflikt mit dem breiteren Marktgeschehen herausfiltert.
+    *   **Strategy Optimizer:** Sucht automatisch nach den idealen Stop-Loss- und Take-Profit-Parametern für ein gegebenes Signal, um das erwartete Ergebnis zu maximieren. **Nutzen:** Verbessert die Exit-Strategie, maximiert potenzielle Gewinne und minimiert Verluste, indem es die Ausstiegsparameter optimiert.
+
+#### 🩹 Fixes
+
+*   **Korrektur der Stop-Loss-Anpassung nach Teilgewinnmitnahme (TP1):**
+    *   **Was war der Fehler:** Ein kritischer Fehler wurde behoben, der dazu führte, dass die Stop-Loss-Anpassung nach einer ersten Teilgewinnmitnahme (TP1) nicht korrekt funktionierte oder die konfigurierte Verkaufsfraktion nicht beachtet wurde.
+    *   **Ihr Nutzen:** Verbesserte Zuverlässigkeit und Präzision in der automatisierten Verlustbegrenzung nach Teilausstiegen, was die Risikomanagement-Strategien des Bots schützt und unbeabsichtigte Verluste verhindert.
+
+#### ⚙️ Verbesserungen & Interne Änderungen
+
+*   **Konfigurierbare Monte-Carlo-Simulationen:**
+    *   **Was wurde gemacht:** Sie können jetzt die Anzahl der Monte-Carlo-Simulationen in den App-Einstellungen (für die manuelle Analyse) und in den Bot-Einstellungen (für automatisierte Strategien) anpassen. Die Standardeinstellung beträgt 200 Simulationen.
+    *   **Ihr Nutzen:** Mehr Kontrolle über die Rechenintensität und Präzision der Monte-Carlo-Analyse, passend zu Ihren Präferenzen und der Performance Ihres Systems.
+*   **Erweiterte Timeframe-Randomisierung im Bot:**
+    *   **Was wurde gemacht:** Der Bot wählt bei der Strategie-Randomisierung nun aus einem breiteren Spektrum aller verfügbaren Timeframes aus (von 15m bis 1w).
+    *   **Ihr Nutzen:** Ermöglicht dem Bot, über eine größere Vielfalt von Marktzyklen und Trading-Stilen hinweg zu optimieren und potenziell bessere Strategien zu entdecken.
+*   **Code-Refactoring des Bot-Dashboards:**
+    *   **Was wurde gemacht:** Das Bot-Dashboard wurde intern überarbeitet, um die Code-Basis modularer und leichter wartbar zu machen.
+    *   **Für Entwickler:** Vereinfacht die Pflege und Erweiterung des UI-Codes und verbessert die Stabilität der Anwendung.
+*   **Bereinigungen von ungenutztem Code und Imports:**
+    *   **Was wurde gemacht:** Entfernung von veraltetem oder ungenutztem Code sowie von unnötigen Importen.
+    *   **Für Entwickler:** Saubere, schlankere und effizientere Code-Basis, die die Performance verbessern kann.
+*   **UI/UX Verbesserungen:**
+    *   **Was wurde gemacht:** Das Dashboard zeigt nun direkt das erkannte Markt-Regime und die AI Confidence an. Im Bot-Dashboard werden Badges für MTC und optimierte Strategien angezeigt. Die Kronos-Vorhersage wird im Score-Detail-Screen visualisiert.
+    *   **Ihr Nutzen:** Erhöhte Transparenz und Einblicke in die Entscheidungsfindung der KI und den aktuellen Marktkontext.
+*   **Automatisches Starten/Stoppen des Kronos Python-Backends:**
+    *   **Was wurde gemacht:** Die Desktop-Anwendung (Windows, Mac, Linux) startet und stoppt das Kronos Python-Backend bei Bedarf automatisch.
+    *   **Ihr Nutzen:** Deutlich vereinfachte Nutzung der Kronos AI ohne manuelle Backend-Verwaltung.
+*   **Neue Open-Source-Dankeschöns im README:**
+    *   **Was wurde gemacht:** Der README-Datei wurden Danksagungen an die Open-Source-Projekte Kronos (shiyu-coder) und pandas-montecarlo (ranaroussi) hinzugefügt, die essenziell für die neuen Funktionen sind.
+    *   **Ihr Nutzen:** Mehr Transparenz über die verwendeten Technologien und Wertschätzung der Community-Arbeit.
 
 ### 📂 Geänderte Dateien
 - `lib/models/models.dart`
