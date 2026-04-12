@@ -32,7 +32,7 @@ Erlebe das klare Dark-Mode Design, optimiert für lange Analyse-Sessions.
   <table>
     <tr>
       <td align="center" width="50%">
-        <img width="751" height="710" alt="image" src="https://github.com/user-attachments/assets/2ce97897-62ee-4e83-9a71-2c0655eaab1b" />
+        <img width="1257" height="1025" alt="image" src="https://github.com/user-attachments/assets/a184f23b-727c-4635-a9a2-e862e23e8f92" />
         <br />
         <b>🏠 Dashboard & Marktübersicht</b><br>
         <small>Alle wichtigen Assets auf einen Blick.</small>
