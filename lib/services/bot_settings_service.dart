@@ -135,6 +135,10 @@ class BotSettingsService extends ChangeNotifier {
     // Zufälliger Timeframe // m15 bis w1
     _botTimeFrame = TimeFrame.values[random.nextInt(TimeFrame.values.length)];
 
+    // Zufälliges Analyse-Intervall
+    final intervals = [15, 30, 60, 120, 240, 480];
+    _autoIntervalMinutes = intervals[random.nextInt(intervals.length)];
+
     _saveSettings();
     notifyListeners();
   }
