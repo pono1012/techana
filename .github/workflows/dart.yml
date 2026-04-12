@@ -379,9 +379,10 @@ jobs:
           fetch-depth: 0
 
       - name: 🏗 Assemble README.md
+        env:
+          SUMMARY: ${{ needs.analyze_changes.outputs.summary }}
         run: |
           # Inputs holen
-          SUMMARY="${{ needs.analyze_changes.outputs.summary }}"
           DATE=$(date +'%d.%m.%Y')
 
           # Prüfen ob Templates existieren
