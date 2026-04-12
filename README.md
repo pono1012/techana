@@ -142,6 +142,15 @@ Du willst tiefer einsteigen? Hier findest du detaillierte Anleitungen:
 
 ---
 
+## 🙏 Shoutouts & Open-Source Credits
+
+TechAna wäre nicht dasselbe ohne die großartige Arbeit der Open-Source-Community. Ein riesiges Dankeschön geht an die Entwickler folgender Projekte, die essenzielle Technologien für unsere Analysen und Engines liefern:
+
+* [**Kronos (shiyu-coder)**](https://github.com/shiyu-coder/Kronos) – Ein brillantes Foundation-Modell für die "Sprache" von Finanzmärkten. Die Architektur von Kronos war ein enormer Meilenstein für unsere KI-gestützte Zeitreihenvorhersage und K-Line-Mustererkennung.
+* [**pandas-montecarlo (ranaroussi)**](https://github.com/ranaroussi/pandas-montecarlo) – Eine unglaublich effiziente und leichtgewichtige Python-Bibliothek für Monte-Carlo-Simulationen. Dieses Projekt ist das Rückgrat unserer neu eingeführten, automatisierten Risiko-Simulationsengine für Trading-Bots.
+
+---
+
 ## 🤝 Contributing
 
 Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bevor du Pull Requests einreichst. Wir suchen aktuell Unterstützung bei:

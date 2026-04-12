@@ -1,3 +1,5 @@
+export 'bot_analytics.dart';
+
 class PriceBar {
   final DateTime date;
   final double open;
@@ -232,6 +234,8 @@ class AppSettings {
 
   final String? alphaVantageKey;
   final String? fmpKey;
+  final String? hfToken;
+  final String kronosRemoteUrl;
   final int mcSimulations; // Anzahl Monte Carlo Simulationen für Scoring
 
   // Feature Toggles (NEU)
@@ -271,6 +275,8 @@ class AppSettings {
     this.swingLookback = 20,
     this.alphaVantageKey,
     this.fmpKey,
+    this.hfToken,
+    this.kronosRemoteUrl = '',
     this.mcSimulations = 200,
     this.useMarketRegime = true,
     this.useAiProbability = true,
@@ -309,6 +315,8 @@ class AppSettings {
     int? swingLookback,
     String? alphaVantageKey,
     String? fmpKey,
+    String? hfToken,
+    String? kronosRemoteUrl,
     int? mcSimulations,
     bool? useMarketRegime,
     bool? useAiProbability,
@@ -346,6 +354,8 @@ class AppSettings {
       swingLookback: swingLookback ?? this.swingLookback,
       alphaVantageKey: alphaVantageKey ?? this.alphaVantageKey,
       fmpKey: fmpKey ?? this.fmpKey,
+      hfToken: hfToken ?? this.hfToken,
+      kronosRemoteUrl: kronosRemoteUrl ?? this.kronosRemoteUrl,
       mcSimulations: mcSimulations ?? this.mcSimulations,
       useMarketRegime: useMarketRegime ?? this.useMarketRegime,
       useAiProbability: useAiProbability ?? this.useAiProbability,
@@ -641,4 +651,22 @@ class IndicatorWinRates {
             : rates.values.reduce((a, b) => a + b) / rates.length;
 
   double getWeight(String name) => rates[name] ?? 0.5;
+}
+
+class KronosAnalysisResult {
+  final List<PriceBar> forecastBars;
+  final double tp1Probability;
+  final double tp2Probability;
+  final double slProbability;
+  final int? expectedDaysToTP1;
+  final int? expectedDaysToSL;
+  
+  KronosAnalysisResult({
+    required this.forecastBars,
+    required this.tp1Probability,
+    required this.tp2Probability,
+    required this.slProbability,
+    this.expectedDaysToTP1,
+    this.expectedDaysToSL,
+  });
 }

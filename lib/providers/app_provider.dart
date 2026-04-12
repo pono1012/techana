@@ -1,42 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import '../models/models.dart';
 import '../services/data_service.dart';
 import '../services/ta_indicators.dart';
 import '../services/ta_extended.dart';
 import '../services/monte_carlo_service.dart';
 import '../services/strategy_optimizer_service.dart';
+import '../services/kronos_backend_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final DataService _ds = DataService();
   final MonteCarloService _mc = MonteCarloService();
   final StrategyOptimizerService _optimizer = StrategyOptimizerService();
   ThemeMode _themeMode = ThemeMode.dark;
-  String _symbol = 'DAX';
-  String _yahooSymbol = '^GDAXI'; // Separater Ticker für Yahoo
-  TimeFrame _selectedTimeFrame = TimeFrame.d1; // NEU: Kerzen-Intervall
-  ChartRange _selectedChartRange = ChartRange.year1; // ALT: Anzeige-Zeitraum
-  AppSettings _settings = AppSettings(); // Default Settings
+  String _symbol = 'SAP';
+  String _yahooSymbol = 'SAP.DE';
+  TimeFrame _selectedTimeFrame = TimeFrame.d1;
+  ChartRange _selectedChartRange = ChartRange.year1;
+  AppSettings _settings = AppSettings();
   List<String> _searchHistory = [];
 
   List<PriceBar> _fullBars = [];
   FundamentalData? _fundamentalData;
   ComputedData? _computedData;
+  MonteCarloResult? _monteCarloResult;
   bool _isLoading = false;
   String? _error;
 
-  // Einzel-Aktien Strategie Einstellungen entfernt (nur noch im Bot)
+  bool _isKronosLoading = false;
+  double _kronosProgress = 0.0;
+  KronosAnalysisResult? _kronosResult;
+  Timer? _kronosProgressTimer;
+  int _kronosRequestId = 0;
 
   ThemeMode get themeMode => _themeMode;
   String get symbol => _symbol;
   String get yahooSymbol => _yahooSymbol;
-  TimeFrame get selectedTimeFrame => _selectedTimeFrame; // NEU
-  ChartRange get selectedChartRange => _selectedChartRange; // ALT
+  TimeFrame get selectedTimeFrame => _selectedTimeFrame;
+  ChartRange get selectedChartRange => _selectedChartRange;
   ComputedData? get computedData => _computedData;
+  MonteCarloResult? get monteCarloResult => _monteCarloResult;
   bool get isLoading => _isLoading;
   String? get error => _error;
   AppSettings get settings => _settings;
   List<String> get searchHistory => _searchHistory;
+
+  bool get isKronosLoading => _isKronosLoading;
+  double get kronosProgress => _kronosProgress;
+  KronosAnalysisResult? get kronosResult => _kronosResult;
 
   AppProvider() {
     _loadSettings();
@@ -44,13 +56,9 @@ class AppProvider extends ChangeNotifier {
 
   void setSymbol(String s) {
     _symbol = s.toUpperCase();
-
-    // Auto-Konvertierung: .US und .DEF entfernen für Yahoo/FMP
     String ySym = _symbol;
     if (ySym.endsWith(".US")) ySym = ySym.replaceAll(".US", "");
     if (ySym.endsWith(".DEF")) ySym = ySym.replaceAll(".DEF", ".DE");
-    // if (ySym == '^DAX') ySym = '^GDAXI'; // DAX Mapping Stooq -> Yahoo
-
     _yahooSymbol = ySym;
     fetchData();
     _addToHistory(_symbol);
@@ -59,14 +67,13 @@ class AppProvider extends ChangeNotifier {
 
   void setYahooSymbol(String s) {
     _yahooSymbol = s.toUpperCase();
-    fetchData(); // Lädt Daten neu (inkl. Fundamentals mit neuem Ticker)
+    fetchData();
   }
 
-  // NEU: Setzt das Kerzen-Intervall und lädt die Daten neu
   void setTimeFrame(TimeFrame tf) {
     if (_selectedTimeFrame == tf) return;
     _selectedTimeFrame = tf;
-    fetchData(); // Daten müssen mit neuem Intervall von der API geholt werden
+    fetchData();
     _saveState();
   }
 
@@ -85,37 +92,31 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> updateSettings(AppSettings newSettings) async {
     _settings = newSettings;
-    await _recalculate(); // Neuberechnung triggern (für Strategie/Charts)
+    _saveSettings();
+    await _recalculate();
   }
 
   Future<void> fetchData() async {
     _isLoading = true;
     _error = null;
-    _fundamentalData = null; // Reset alter Daten
+    _fundamentalData = null;
     notifyListeners();
 
     try {
-      // 1. Chart-Daten laden (Priorität) - mit dem ausgewählten Intervall
       _fullBars = await _ds.fetchBars(_symbol, interval: _selectedTimeFrame);
       if (_fullBars.isEmpty) throw Exception("Keine Daten");
 
-      // Chart sofort anzeigen
       await _recalculate();
       _isLoading = false;
       notifyListeners();
 
-      // 2. Fundamentals im Hintergrund laden
-      // Hier nutzen wir jetzt das separate Yahoo Symbol
-      // UPDATE: User möchte KEIN ständiges Laden im Hintergrund für FMP.
-      // Wir deaktivieren das automatische Laden hier komplett, um API Calls zu sparen.
-      // Die Daten werden erst geladen, wenn der User auf das "Info"-Icon klickt.
+      _runKronosBackgroundAnalysis();
+
       _fundamentalData = null;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
-    } finally {
-      // finally Block entfernt, da wir oben granular steuern
     }
   }
 
@@ -123,11 +124,8 @@ class AppProvider extends ChangeNotifier {
     if (_fullBars.isEmpty) return;
 
     try {
-      // === NEW: Multi-Timeframe Confluence (MTC) ===
       String mtcTrend = "neutral";
       if (_settings.useMtc) {
-        // Wir nutzen hier _isLoading nicht, um Flackern zu vermeiden,
-        // aber wir könnten einen kleinen Status-Indikator setzen.
         final mtcData =
             await _ds.fetchMtcData(_yahooSymbol, _selectedTimeFrame);
         mtcTrend = TA.checkMtcTrend(mtcData);
@@ -136,9 +134,6 @@ class AppProvider extends ChangeNotifier {
       final closes = _fullBars.map((b) => b.close).toList();
       final int len = _fullBars.length;
 
-      // Helper für sichere Berechnung (Smart Catching)
-      // Wenn ein Indikator fehlschlägt, wird eine leere Liste zurückgegeben,
-      // damit der Rest der App weiterläuft.
       List<T> safeCalc<T>(List<T> Function() func, T fallback) {
         try {
           final res = func();
@@ -152,15 +147,11 @@ class AppProvider extends ChangeNotifier {
         }
       }
 
-      // 1. Indikatoren berechnen (Robust)
       final sma50 = safeCalc(() => TA.sma(closes, 50), null);
       final ema20 = safeCalc(() => TA.ema(closes, 20), null);
       final rsi = safeCalc(() => TA.rsi(closes), null);
       final atr = safeCalc(() => TA.atr(_fullBars), null);
-      final bb = TA.bollinger(closes); // Returns object, safe inside?
-      // Wir wrappen die komplexen Objekte manuell
-
-      // MACD
+      
       List<double?> macd, macdSignal, macdHist;
       try {
         final m = TA.macd(closes);
@@ -173,7 +164,6 @@ class AppProvider extends ChangeNotifier {
         macdHist = List.filled(len, null);
       }
 
-      // Bollinger
       List<double?> bbUp, bbMid, bbLo;
       try {
         final b = TA.bollinger(closes);
@@ -186,7 +176,6 @@ class AppProvider extends ChangeNotifier {
         bbLo = List.filled(len, null);
       }
 
-      // Donchian
       List<double?> donUp, donMid, donLo;
       try {
         final d = TA.donchian(_fullBars);
@@ -199,7 +188,6 @@ class AppProvider extends ChangeNotifier {
         donLo = List.filled(len, null);
       }
 
-      // Supertrend
       List<double?> stLine;
       List<bool> stBull;
       try {
@@ -211,7 +199,6 @@ class AppProvider extends ChangeNotifier {
         stBull = List.filled(len, false);
       }
 
-      // ADX
       List<double?> adx;
       try {
         adx = TA.calcAdx(_fullBars).adx;
@@ -219,7 +206,6 @@ class AppProvider extends ChangeNotifier {
         adx = List.filled(len, null);
       }
 
-      // Squeeze
       List<bool> squeeze;
       try {
         squeeze = TA.squeezeFlags(_fullBars);
@@ -227,7 +213,6 @@ class AppProvider extends ChangeNotifier {
         squeeze = List.filled(len, false);
       }
 
-      // Stochastic
       List<double?> stochK, stochD;
       try {
         final s = TA.stochastic(_fullBars);
@@ -238,10 +223,8 @@ class AppProvider extends ChangeNotifier {
         stochD = List.filled(len, null);
       }
 
-      // OBV
       final obv = safeCalc(() => TA.obv(_fullBars), null);
 
-      // Projection
       ProjectionResult? proj;
       try {
         proj = TA.projectCone(closes, _settings.projectionDays);
@@ -249,7 +232,6 @@ class AppProvider extends ChangeNotifier {
         proj = null;
       }
 
-      // NEU: TAX Indikatoren
       List<double?> cciVals, psarSar, cmfVals, mfiVals, aoVals, bbPctVals;
       List<bool> psarBull;
       try {
@@ -272,7 +254,6 @@ class AppProvider extends ChangeNotifier {
         bbPctVals = List.filled(len, null);
       }
 
-      // Ichimoku
       List<double?> ichTenkan, ichKijun, ichSpanA, ichSpanB;
       try {
         final ich = TA.ichimoku(_fullBars);
@@ -287,7 +268,6 @@ class AppProvider extends ChangeNotifier {
         ichSpanB = List.filled(len, null);
       }
 
-      // Vortex, Chop
       double lastVipVim = 0, lastChop = 61.8;
       bool isTrending = false;
       try {
@@ -300,7 +280,6 @@ class AppProvider extends ChangeNotifier {
         isTrending = lastChop < 61.8;
       } catch (_) {}
 
-      // 2. Score & Strategie Logik
       final lastPrice = closes.last;
       final lastRsi = rsi.last ?? 50;
       final lastMacdHist = macdHist.last ?? 0;
@@ -320,7 +299,6 @@ class AppProvider extends ChangeNotifier {
       final lastAo = aoVals.isNotEmpty ? (aoVals.last ?? 0) : 0.0;
       final lastBbPct = bbPctVals.isNotEmpty ? (bbPctVals.last ?? 0.5) : 0.5;
 
-      // Sichere Extraktion Donchian
       double lastDonchianLo = lastPrice * 0.95;
       if (donLo.isNotEmpty) {
         for (final v in donLo.reversed) {
@@ -340,7 +318,6 @@ class AppProvider extends ChangeNotifier {
         }
       }
 
-      // Ichimoku letzte Werte
       final lastTenkan = ichTenkan.isNotEmpty ? ichTenkan.last : null;
       final lastKijun = ichKijun.isNotEmpty ? ichKijun.last : null;
       const int spanOffset = 26;
@@ -351,14 +328,12 @@ class AppProvider extends ChangeNotifier {
           ? ichSpanB[_fullBars.length - 1 - spanOffset]
           : null;
 
-      // Pattern
       String pattern = "Kein Muster";
       try {
         final cps = TAX.detectAllPatterns(_fullBars);
         pattern = cps.isNotEmpty ? cps.first.name : "Kein Muster";
       } catch (_) {}
 
-      // Divergenzen
       String divergenceType = "none";
       try {
         final divRes = TA.detectDivergences(closes, rsi);
@@ -375,14 +350,12 @@ class AppProvider extends ChangeNotifier {
         }
       } catch (_) {}
 
-      // Kategorie-Budget-Scoring
       double trendScore = 0, momentumScore = 0, volumeScore = 0;
       double patternScore = 0, volatilityScore = 0;
       List<String> reasons = [];
 
       bool strongTrend = lastAdx > 25 && isTrending;
 
-      // === TREND (max 35) ===
       if (lastStBull) {
         trendScore += 10;
         reasons.add("Supertrend Bullish");
@@ -429,7 +402,6 @@ class AppProvider extends ChangeNotifier {
         trendScore = (trendScore - 3).clamp(-35, 35);
       trendScore = trendScore.clamp(-35, 35);
 
-      // === MOMENTUM (max 25) ===
       if (strongTrend) {
         if (lastRsi > 50 && lastRsi < 80) {
           momentumScore += 8;
@@ -469,7 +441,6 @@ class AppProvider extends ChangeNotifier {
         momentumScore -= 3;
       momentumScore = momentumScore.clamp(-25, 25);
 
-      // === VOLUMEN (max 20) ===
       double prevObv5 = obv.length > 5 ? (obv[obv.length - 5] ?? 0) : 0;
       if (lastObv > prevObv5) {
         volumeScore += 8;
@@ -492,7 +463,6 @@ class AppProvider extends ChangeNotifier {
       }
       volumeScore = volumeScore.clamp(-20, 20);
 
-      // === MUSTER (max 15) ===
       if (pattern.contains("Bullish") ||
           pattern.contains("Hammer") ||
           pattern.contains("Morning") ||
@@ -519,22 +489,19 @@ class AppProvider extends ChangeNotifier {
       }
       patternScore = patternScore.clamp(-15, 15);
 
-      // === MONTE CARLO (max 10) ===
       double mcScore = 0;
       double mcBullPct = 50;
       try {
         final mcBullProb = _mc.quickBullProbability(_fullBars,
             days: 30, sims: _settings.mcSimulations);
         mcBullPct = mcBullProb * 100;
-        // >60% bull → bullish score, <40% bull → bearish score
-        mcScore = ((mcBullProb - 0.5) * 20).clamp(-10, 10); // -10 bis +10
+        mcScore = ((mcBullProb - 0.5) * 20).clamp(-10, 10);
         if (mcBullProb >= 0.60)
           reasons.add('MC Bullish (${mcBullPct.toStringAsFixed(0)}%)');
         if (mcBullProb <= 0.40)
           reasons.add('MC Bearish (${mcBullPct.toStringAsFixed(0)}%)');
       } catch (_) {}
 
-      // === VOLATILITÄT (max 5) ===
       if (squeeze.isNotEmpty && squeeze.last) {
         volatilityScore += 3;
         reasons.add("Squeeze Aktiv");
@@ -545,7 +512,6 @@ class AppProvider extends ChangeNotifier {
       } else if (lastBbPct > 0.9) volatilityScore -= 2;
       volatilityScore = volatilityScore.clamp(-5, 5);
 
-      // === MTC Score Adjustment ===
       if (mtcTrend != "neutral") {
         if (mtcTrend == "bullish") {
           reasons.add("MTC Bullish Confirmed");
@@ -556,7 +522,6 @@ class AppProvider extends ChangeNotifier {
         }
       }
 
-      // Gesamt-Score (mit MC)
       final double rawScore = 50 +
           trendScore +
           momentumScore +
@@ -575,7 +540,6 @@ class AppProvider extends ChangeNotifier {
         type = "Strong Sell";
       else if (score <= 40) type = "Sell";
 
-      // 3. Entry / SL / TP
       bool isLong = score >= 50;
       double entry = lastPrice;
 
@@ -636,7 +600,6 @@ class AppProvider extends ChangeNotifier {
         tp2 = entry - (risk * _settings.rrTp2);
       }
 
-      // === NEW: Strategy Optimizer ===
       Map<String, dynamic>? optimizedParams;
       if (_settings.useStrategyOptimizer) {
         final best = await _optimizer.optimizeExit(
@@ -705,7 +668,6 @@ class AppProvider extends ChangeNotifier {
         },
       );
 
-      // 4. Slicing für Chart
       int days = _settings.chartRangeDays;
       if (_selectedChartRange == ChartRange.week1) days = 14;
       if (_selectedChartRange == ChartRange.month1) days = 30;
@@ -747,8 +709,6 @@ class AppProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e, stack) {
       debugPrint("Kritischer Fehler in _recalculate: $e\n$stack");
-      // Fallback: Zeige zumindest den Chart ohne Indikatoren
-      // Damit der User nicht vor einem leeren Screen sitzt.
       try {
         int days = _settings.chartRangeDays;
         int start = (_fullBars.length - days).clamp(0, _fullBars.length);
@@ -790,6 +750,109 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> _runKronosBackgroundAnalysis() async {
+    final int requestId = ++_kronosRequestId;
+    final data = _computedData;
+    if (data == null || _fullBars.isEmpty || data.latestSignal == null) {
+      _kronosResult = null;
+      _isKronosLoading = false;
+      notifyListeners();
+      return;
+    }
+    
+    _isKronosLoading = true;
+    _kronosProgress = 0.0;
+    _kronosResult = null;
+    notifyListeners();
+
+    _kronosProgressTimer?.cancel();
+    _kronosProgressTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      try {
+        final progress = await KronosBackendService.getProgress(
+          remoteUrl: _settings.kronosRemoteUrl.isNotEmpty ? _settings.kronosRemoteUrl : null,
+        );
+        if (_isKronosLoading && requestId == _kronosRequestId) {
+          _kronosProgress = progress;
+          notifyListeners();
+        }
+      } catch (_) {}
+    });
+
+    try {
+      final int lookback = 200; 
+      final int predLen = 60; 
+      int startIdx = _fullBars.length > lookback ? _fullBars.length - lookback : 0;
+      final history = _fullBars.sublist(startIdx);
+
+      final forecastBars = await KronosBackendService.getForecast(
+        historicalCandles: history,
+        modelSize: "small",
+        lookback: history.length,
+        predLen: predLen,
+        hfToken: _settings.hfToken,
+        remoteUrl: _settings.kronosRemoteUrl.isNotEmpty ? _settings.kronosRemoteUrl : null,
+      );
+
+      if (requestId == _kronosRequestId && forecastBars.isNotEmpty) {
+        final signal = data.latestSignal!;
+        final bool isLong = signal.type.contains("Buy");
+        final double tp1 = signal.takeProfit1;
+        final double tp2 = signal.takeProfit2;
+        final double sl = signal.stopLoss;
+
+        double tp1Prob = 0.0, tp2Prob = 0.0, slProb = 0.0;
+        int? dayTp1, dayTp2, daySl;
+
+        for (int i=0; i<forecastBars.length; i++) {
+          final maxPrice = forecastBars[i].high;
+          final minPrice = forecastBars[i].low;
+
+          if (isLong) {
+            if (dayTp1 == null && maxPrice >= tp1) dayTp1 = i + 1;
+            if (dayTp2 == null && maxPrice >= tp2) dayTp2 = i + 1;
+            if (daySl == null && minPrice <= sl) daySl = i + 1;
+          } else {
+            if (dayTp1 == null && minPrice <= tp1) dayTp1 = i + 1;
+            if (dayTp2 == null && minPrice <= tp2) dayTp2 = i + 1;
+            if (daySl == null && maxPrice >= sl) daySl = i + 1;
+          }
+        }
+
+        double highest = forecastBars.map((e) => e.high).reduce((a,b) => a > b ? a : b);
+        double lowest = forecastBars.map((e) => e.low).reduce((a,b) => a < b ? a : b);
+        double range = highest - lowest;
+        if (range <= 0) range = 0.0001;
+
+        if (isLong) {
+          tp1Prob = ((highest - tp1) / range).clamp(0.0, 1.0);
+          tp2Prob = ((highest - tp2) / range).clamp(0.0, 1.0);
+          slProb = ((sl - lowest) / range).clamp(0.0, 1.0);
+        } else {
+          tp1Prob = ((tp1 - lowest) / range).clamp(0.0, 1.0);
+          tp2Prob = ((tp2 - lowest) / range).clamp(0.0, 1.0);
+          slProb = ((highest - sl) / range).clamp(0.0, 1.0);
+        }
+
+        _kronosResult = KronosAnalysisResult(
+          forecastBars: forecastBars,
+          tp1Probability: tp1Prob,
+          tp2Probability: tp2Prob,
+          slProbability: slProb,
+          expectedDaysToTP1: dayTp1,
+          expectedDaysToSL: daySl,
+        );
+      }
+    } catch (e) {
+      debugPrint("Fehler bei Kronos Background Task: $e");
+    } finally {
+      if (requestId == _kronosRequestId) {
+        _isKronosLoading = false;
+        _kronosProgressTimer?.cancel();
+        notifyListeners();
+      }
+    }
+  }
+
   void _addToHistory(String sym) {
     if (_searchHistory.contains(sym)) {
       _searchHistory.remove(sym);
@@ -820,6 +883,7 @@ class AppProvider extends ChangeNotifier {
     int idx = prefs.getInt('theme') ?? 1;
     String? avKey = prefs.getString('av_key');
     String? fmpKey = prefs.getString('fmp_key');
+    String? hfKey = prefs.getString('hf_token');
 
     // Load State
     String? lastSym = prefs.getString('last_symbol');
@@ -850,6 +914,9 @@ class AppProvider extends ChangeNotifier {
     _themeMode = idx == 0 ? ThemeMode.light : ThemeMode.dark;
     if (avKey != null) _settings = _settings.copyWith(alphaVantageKey: avKey);
     if (fmpKey != null) _settings = _settings.copyWith(fmpKey: fmpKey);
+    if (hfKey != null) _settings = _settings.copyWith(hfToken: hfKey);
+    String? kronosUrl = prefs.getString('kronos_remote_url');
+    if (kronosUrl != null) _settings = _settings.copyWith(kronosRemoteUrl: kronosUrl);
 
     // Load Strategy Settings
     _settings = _settings.copyWith(
@@ -903,6 +970,8 @@ class AppProvider extends ChangeNotifier {
     if (_settings.alphaVantageKey != null)
       prefs.setString('av_key', _settings.alphaVantageKey!);
     if (_settings.fmpKey != null) prefs.setString('fmp_key', _settings.fmpKey!);
+    if (_settings.hfToken != null) prefs.setString('hf_token', _settings.hfToken!);
+    prefs.setString('kronos_remote_url', _settings.kronosRemoteUrl);
 
     // Save Strategy Settings
     prefs.setInt('man_entry_strat', _settings.entryStrategy);

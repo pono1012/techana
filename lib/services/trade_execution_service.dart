@@ -13,6 +13,7 @@ import 'watchlist_service.dart';
 import 'market_regime_service.dart';
 import 'indicator_analyzer_service.dart';
 import 'strategy_optimizer_service.dart';
+import 'kronos_backend_service.dart';
 
 class TradeExecutionService extends ChangeNotifier {
   final DataService _dataService = DataService();
@@ -616,12 +617,13 @@ class TradeExecutionService extends ChangeNotifier {
     if (slHit) {
       final pnl = portfolio.calcPnL(trade, trade.stopLoss);
       portfolio.returnFunds(trade.entryPrice * trade.quantity + pnl);
+      final totalPnL = trade.realizedPnL + pnl;
       return trade.copyWith(
-        status: TradeStatus.stoppedOut,
+        status: totalPnL > 0 ? TradeStatus.takeProfit : TradeStatus.stoppedOut,
         exitDate: bar.date,
         closeExecutionDate: bar.date,
         exitPrice: trade.stopLoss,
-        realizedPnL: trade.realizedPnL + pnl,
+        realizedPnL: totalPnL,
       );
     } else if (tp2Hit) {
       final pnl = portfolio.calcPnL(trade, trade.takeProfit2);
@@ -787,6 +789,75 @@ class TradeExecutionService extends ChangeNotifier {
             );
           }
 
+          // === KRONOS AI ANALYSE ===
+          if (settings.useKronos) {
+            try {
+              _scanStatus = "Kronos KI Analyse für $symbol...";
+              notifyListeners();
+
+              final prefs = await SharedPreferences.getInstance();
+              final hfToken = prefs.getString('hf_token');
+              final kronosUrl = prefs.getString('kronos_remote_url') ?? '';
+
+              final int lookback = bars.length > 200 ? 200 : bars.length;
+              final int startIdx = bars.length > lookback ? bars.length - lookback : 0;
+              final history = bars.sublist(startIdx);
+
+              final forecastBars = await KronosBackendService.getForecast(
+                historicalCandles: history,
+                modelSize: "small",
+                lookback: history.length,
+                predLen: 60,
+                hfToken: hfToken,
+                remoteUrl: kronosUrl.isNotEmpty ? kronosUrl : null,
+              );
+
+              if (forecastBars.isNotEmpty) {
+                final bool isLong = finalSignal.type.contains("Buy");
+                final double tp1 = finalSignal.takeProfit1;
+                final double sl = finalSignal.stopLoss;
+
+                int? dayTp1, daySl;
+                for (int i = 0; i < forecastBars.length; i++) {
+                  if (isLong) {
+                    if (dayTp1 == null && forecastBars[i].high >= tp1) dayTp1 = i + 1;
+                    if (daySl == null && forecastBars[i].low <= sl) daySl = i + 1;
+                  } else {
+                    if (dayTp1 == null && forecastBars[i].low <= tp1) dayTp1 = i + 1;
+                    if (daySl == null && forecastBars[i].high >= sl) daySl = i + 1;
+                  }
+                }
+
+                if (settings.kronosStrictMode) {
+                  // Strict Mode: TP1 muss VOR SL getroffen werden
+                  if (dayTp1 == null && daySl != null) {
+                    debugPrint("🚫 [Kronos Strict] $symbol: SL wird getroffen (Tag $daySl), aber TP1 nie → Trade blockiert.");
+                    continue;
+                  }
+                  if (dayTp1 != null && daySl != null && daySl <= dayTp1) {
+                    debugPrint("🚫 [Kronos Strict] $symbol: SL (Tag $daySl) vor TP1 (Tag $dayTp1) → Trade blockiert.");
+                    continue;
+                  }
+                  debugPrint("✅ [Kronos Strict] $symbol: TP1 wird zuerst erreicht (Tag ${dayTp1 ?? '?'}) → Trade erlaubt.");
+                }
+
+                finalSignal = finalSignal.copyWith(
+                  reasons: [
+                    ...finalSignal.reasons,
+                    if (dayTp1 != null) "Kronos TP1 Tag $dayTp1",
+                    if (daySl != null) "Kronos SL Tag $daySl",
+                  ],
+                );
+              }
+            } catch (e) {
+              debugPrint("⚠️ [Kronos] Fehler für $symbol: $e");
+              if (settings.kronosStrictMode) {
+                debugPrint("🚫 [Kronos Strict] $symbol: Analyse fehlgeschlagen → Trade blockiert.");
+                continue;
+              }
+            }
+          }
+
           bool alreadyOpen = portfolio.trades
               .any((t) => t.symbol == symbol && t.status == TradeStatus.open);
           if (!alreadyOpen) {
@@ -800,6 +871,8 @@ class TradeExecutionService extends ChangeNotifier {
             }
             _executeBuy(symbol, bars.last, finalSignal, executionPrice,
                 settings, portfolio);
+          } else {
+            debugPrint("⏭️ [Bot] $symbol: Bereits offene Position, übersprungen.");
           }
         }
 

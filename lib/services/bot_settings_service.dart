@@ -48,6 +48,11 @@ class BotSettingsService extends ChangeNotifier {
   bool _useMtc = false;
   bool _useStrategyOptimizer = false;
 
+  // Kronos AI Settings
+  bool _useKronos = false;
+  bool _kronosStrictMode = false;
+  String _kronosRemoteUrl = '';
+
   // Getters
   double get botBaseInvest => _botBaseInvest;
   int get maxOpenPositions => _maxOpenPositions;
@@ -84,6 +89,10 @@ class BotSettingsService extends ChangeNotifier {
   bool get useAiProbability => _useAiProbability;
   bool get useMtc => _useMtc;
   bool get useStrategyOptimizer => _useStrategyOptimizer;
+
+  bool get useKronos => _useKronos;
+  bool get kronosStrictMode => _kronosStrictMode;
+  String get kronosRemoteUrl => _kronosRemoteUrl;
 
   BotSettingsService() {
     _loadSettings();
@@ -226,6 +235,24 @@ class BotSettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setUseKronos(bool value) {
+    _useKronos = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void setKronosStrictMode(bool value) {
+    _kronosStrictMode = value;
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void setKronosRemoteUrl(String value) {
+    _kronosRemoteUrl = value.trim();
+    _saveSettings();
+    notifyListeners();
+  }
+
   void resetBotSettings() {
     _botBaseInvest = 100.0;
     _maxOpenPositions = 5;
@@ -283,6 +310,9 @@ class BotSettingsService extends ChangeNotifier {
     await prefs.setBool('bot_use_ai_prob', _useAiProbability);
     await prefs.setBool('bot_use_mtc', _useMtc);
     await prefs.setBool('bot_use_optimizer', _useStrategyOptimizer);
+    await prefs.setBool('bot_use_kronos', _useKronos);
+    await prefs.setBool('bot_kronos_strict', _kronosStrictMode);
+    await prefs.setString('bot_kronos_remote_url', _kronosRemoteUrl);
   }
 
   Future<void> _loadSettings() async {
@@ -319,6 +349,9 @@ class BotSettingsService extends ChangeNotifier {
     _useAiProbability = prefs.getBool('bot_use_ai_prob') ?? true;
     _useMtc = prefs.getBool('bot_use_mtc') ?? false;
     _useStrategyOptimizer = prefs.getBool('bot_use_optimizer') ?? false;
+    _useKronos = prefs.getBool('bot_use_kronos') ?? false;
+    _kronosStrictMode = prefs.getBool('bot_kronos_strict') ?? false;
+    _kronosRemoteUrl = prefs.getString('bot_kronos_remote_url') ?? '';
     notifyListeners();
   }
 }

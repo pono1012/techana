@@ -793,7 +793,7 @@ class DataService {
             }
             if (nextEarnings != null)
               debugPrint(
-                  "✅ [FMP] Nächste Earnings geladen: ${nextEarnings!.date.toIso8601String()}");
+                  "✅ [FMP] Nächste Earnings geladen: ${nextEarnings.date.toIso8601String()}");
           }
         }
       } catch (e) {

@@ -11,6 +11,7 @@ import 'fundamental_analysis_screen.dart';
 import 'news_screen.dart';
 import 'bot_dashboard_screen.dart';
 import 'monte_carlo_screen.dart';
+import 'kronos_forecast_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -274,13 +275,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
 
-            // --- Monte Carlo Simulation (BottomSheet) ---
+            // --- Monte Carlo & Kronos Prognose ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-              child: FilledButton.tonalIcon(
-                onPressed: () => showMonteCarloSheet(context, provider.symbol),
-                icon: const Icon(Icons.query_stats, size: 18),
-                label: const Text("Monte Carlo Simulation"),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => showMonteCarloSheet(context, provider.symbol),
+                      icon: const Icon(Icons.query_stats, size: 18),
+                      label: const FittedBox(child: Text("Monte Carlo")),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton.tonalIcon(
+                      onPressed: () => showKronosForecastSheet(context, provider.symbol),
+                      icon: const Icon(Icons.blur_linear, size: 18),
+                      label: const FittedBox(child: Text("Kronos KI")),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.blueAccent.withOpacity(0.2),
+                        foregroundColor: Colors.blueAccent,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -622,7 +641,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (data?.latestSignal?.indicatorValues != null &&
                 (data!.latestSignal!.indicatorValues!['mtc_confirmed'] == true))
               Builder(builder: (context) {
-                final sig = data!.latestSignal!;
+                final sig = data.latestSignal!;
                 final mtcTrend =
                     sig.indicatorValues!['mtc_trend'] as String? ?? "neutral";
                 Color mtcColor = Colors.grey;
@@ -666,6 +685,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 );
               }),
+
+            // --- Kronos AI Forecast Block ---
+            if (provider.isKronosLoading || provider.kronosResult != null)
+              _buildKronosBlock(context, provider),
 
             // --- Indikator Charts ---
             if (data != null) ...[
@@ -762,6 +785,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (v.abs() > 1000000) return "${(v / 1000000).toStringAsFixed(2)}M";
     if (v.abs() > 1000) return "${(v / 1000).toStringAsFixed(1)}k";
     return v.toStringAsFixed(0);
+  }
+
+  Widget _buildProbabilityBar(String label, double prob, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          SizedBox(width: 80, child: Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey))),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: prob,
+                backgroundColor: color.withOpacity(0.1),
+                color: color,
+                minHeight: 6,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 30,
+            child: Text("${(prob * 100).toInt()}%", textAlign: TextAlign.right, style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: color)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKronosBlock(BuildContext context, AppProvider provider) {
+    if (!provider.isKronosLoading && provider.kronosResult == null) {
+      return const SizedBox();
+    }
+
+    return GestureDetector(
+      onTap: () => showKronosForecastSheet(context, provider.symbol),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.blueAccent.withOpacity(0.05),
+          border: Border.all(color: Colors.blueAccent.withOpacity(0.2), width: 0.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.blur_linear, color: Colors.blueAccent, size: 16),
+                const SizedBox(width: 6),
+                const Text("Kronos KI Analyse", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueAccent)),
+                const Spacer(),
+                const Icon(Icons.open_in_new, size: 12, color: Colors.blueGrey),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (provider.isKronosLoading) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      value: provider.kronosProgress > 0 ? provider.kronosProgress : null,
+                      backgroundColor: Colors.blueAccent.withOpacity(0.1),
+                      color: Colors.blueAccent,
+                      minHeight: 4,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text("${(provider.kronosProgress * 100).toInt()}%", style: const TextStyle(fontSize: 10, color: Colors.blueAccent)),
+                ],
+              ),
+              const SizedBox(height: 4),
+              const Text("Modell berechnet Vorhersage...", style: TextStyle(fontSize: 9, color: Colors.grey)),
+            ] else if (provider.kronosResult != null) ...[
+              _buildProbabilityBar("TP1 Hit Chance", provider.kronosResult!.tp1Probability, Colors.green),
+              _buildProbabilityBar("TP2 Hit Chance", provider.kronosResult!.tp2Probability, Colors.greenAccent),
+              _buildProbabilityBar("SL Hit Chance", provider.kronosResult!.slProbability, Colors.red),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCompactRow(String label, double val, Color color,

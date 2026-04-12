@@ -176,7 +176,7 @@ class BotSettingsScreen extends StatelessWidget {
                     "Nur Trades eröffnen, wenn MC Treffer-Wahrscheinlichkeit für TP > SL ist."),
                 value: settings.mcStrictMode,
                 onChanged: (v) => settings.setMcStrictMode(v),
-                activeColor: Colors.deepPurple,
+                activeThumbColor: Colors.deepPurple,
               ),
             ],
           ),
@@ -584,6 +584,23 @@ class BotSettingsScreen extends StatelessWidget {
                 value: settings.useStrategyOptimizer,
                 onChanged: (v) => settings.setUseStrategyOptimizer(v),
               ),
+              const Divider(height: 1),
+              SwitchListTile(
+                title: const Text("Kronos KI Analyse"),
+                subtitle: const Text("Nutzt Foundation Model für Kursvorhersage pro Symbol."),
+                value: settings.useKronos,
+                onChanged: (v) => settings.setUseKronos(v),
+                activeThumbColor: Colors.blueAccent,
+              ),
+              if (settings.useKronos)
+                SwitchListTile(
+                  title: const Text("Kronos Strict Mode"),
+                  subtitle: const Text(
+                      "Nur Trades eröffnen, wenn Kronos TP1 VOR SL vorhersagt."),
+                  value: settings.kronosStrictMode,
+                  onChanged: (v) => settings.setKronosStrictMode(v),
+                  activeThumbColor: Colors.deepPurple,
+                ),
             ],
           ),
         ),

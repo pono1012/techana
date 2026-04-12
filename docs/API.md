@@ -29,11 +29,13 @@ graph TD
     API[Börsen API / Mock Data]
     Shorebird[Shorebird Code Push]
     LocalDB[SharedPreferences / Local Storage]
+    PythonAI[Kronos FastAPI / Python Backend]
     end
     
     DS --> API
     US --> Shorebird
     PS --> LocalDB
+    DS -.-> PythonAI
 
 ```
 

@@ -6,7 +6,9 @@ import 'services/bot_settings_service.dart';
 import 'services/watchlist_service.dart';
 import 'services/trade_execution_service.dart';
 import 'services/update_service.dart';
+import 'services/kronos_backend_service.dart';
 import 'ui/dashboard_screen.dart';
+import 'dart:ui';
 
 void main() {
   runApp(
@@ -59,14 +61,34 @@ class UpdateWrapper extends StatefulWidget {
   State<UpdateWrapper> createState() => _UpdateWrapperState();
 }
 
-class _UpdateWrapperState extends State<UpdateWrapper> {
+class _UpdateWrapperState extends State<UpdateWrapper> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Nach dem ersten Frame prüfen, damit der Context bereit ist
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UpdateService().checkForUpdate(context);
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      KronosBackendService.stopBackend();
+    }
+  }
+
+  @override
+  Future<AppExitResponse> didRequestAppExit() async {
+    await KronosBackendService.stopBackend();
+    return AppExitResponse.exit;
   }
 
   @override

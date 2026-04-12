@@ -60,6 +60,12 @@ Bevor du den Bot startest, musst du Strategien festlegen:
 2.  **Stop-Loss / Take-Profit:** Lege fest, bei wie viel % Verlust/Gewinn automatisch verkauft wird.
 3.  **Asset-Allokation:** Bestimme, wie viel % deines Portfolios der Bot nutzen darf.
 
+### 🧠 Kronos AI Engine Integration
+TechAna bindet das leistungsstarke "Kronos" Foundation-Modell ein, um zukünftige Kerzen (Preisverläufe) zu prognostizieren:
+* **Desktop (Windows/Mac/Linux):** Die App verwaltet das Kronos-Python-Backend für dich völlig automatisch. Lass in den Einstellungen unter *Daten -> Kronos Server URL* das Feld einfach leer.
+* **Mobile (Android/iOS):** Smartphones haben nicht genug Leistung für das Backend. Trage in der mobilen App unter *Daten -> Kronos Server URL* die lokale IP-Adresse deines PCs ein (z.B. `http://192.168.178.139:8000`). Die App verbindet sich dann via WLAN mit dem laufenden Backend auf dem PC.
+* Hast du Kronos aktiviert, scannt der Bot alle Paare und kombiniert seine finalen Entscheidungen mit der KI-Vorhersagekraft!
+
 ### Überwachung
 * **Logs:** Im Tab "Logs" siehst du jede Entscheidung des Bots im Klartext (z.B. *"Bought BTC at 45.000 because RSI was 28"*).
 * **Not-Aus:** Mit dem großen roten Button im Dashboard kannst du alle Bot-Aktivitäten sofort stoppen.

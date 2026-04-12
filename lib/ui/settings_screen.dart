@@ -326,6 +326,37 @@ class SettingsScreen extends StatelessWidget {
                         provider.updateSettings(s.copyWith(fmpKey: v)),
                     controller: TextEditingController(text: s.fmpKey),
                   ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: "HuggingFace Token (Kronos AI)",
+                      hintText: "hf_...",
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(hfToken: v)),
+                    controller: TextEditingController(text: s.hfToken),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: "Kronos Server URL",
+                      hintText: "z.B. http://192.168.178.139:8000",
+                      helperText: "Leer = lokales Backend auf Desktop. Für Android/iOS: IP des PCs eingeben.",
+                      helperMaxLines: 2,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.cloud_outlined),
+                      suffixIcon: s.kronosRemoteUrl.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            onPressed: () => provider.updateSettings(s.copyWith(kronosRemoteUrl: '')),
+                          )
+                        : null,
+                    ),
+                    onChanged: (v) =>
+                        provider.updateSettings(s.copyWith(kronosRemoteUrl: v.trim())),
+                    controller: TextEditingController(text: s.kronosRemoteUrl),
+                  ),
                 ]),
                 const SizedBox(height: 20),
                 Center(
