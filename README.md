@@ -1,3 +1,4 @@
+![TechAna Banner](/lib/assets/banner.svg)
 # 📈 TechAna - Advanced Trading Intelligence
 
 <div align="center">
@@ -14,7 +15,7 @@
 
 **TechAna** ist die ultimative **All-in-One-Lösung** für Trader, die nichts dem Zufall überlassen wollen. Wir kombinieren professionelle technische Analyse, KI-gestützte Mustererkennung und automatisierte Trading-Bots in einer einzigen, leistungsstarken App – nativ entwickelt mit Flutter für maximale Performance auf jedem Gerät.
 
-![TechAna Banner](/lib/assets/banner.svg)
+
 
 ---
 
