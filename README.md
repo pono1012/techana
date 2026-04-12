@@ -161,7 +161,7 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ## 🚀 Neuestes Update (12.04.2026)
 
-TechAna präsentiert sich mit einem signifikanten "Under-the-Hood"-Update, das unsere KI-Systeme und Infrastruktur optimiert. Dies führt zu noch präziseren Marktanalysen, verlässlicheren Handelssignalen und einer gesteigerten Gesamtstabilität für Ihr Trading-Erlebnis. Entdecken Sie die verbesserte Performance und die aktualisierten Visualisierungen in unserer Dokumentation.
+TechAna präsentiert sich mit einem signifikanten "Under-the-Hood"-Update, das unsere KI-Systeme und Infrastruktur optimiert. Dies führt zu noch präziseren Marktanalysen, verlässlicheren Handelssignalen und einer gesteigerten Gesamtstabilität für Ihr Trading-Erlebnis. Entdecken Sie zudem neue Bot-Optionen mit dynamischen Analyse-Intervallen und eine verbesserte Übersichtlichkeit in den Einstellungen.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
