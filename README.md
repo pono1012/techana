@@ -32,13 +32,13 @@ Erlebe das klare Dark-Mode Design, optimiert für lange Analyse-Sessions.
   <table>
     <tr>
       <td align="center" width="50%">
-       <img width="1263" height="1027" alt="image" src="https://github.com/user-attachments/assets/049a8e38-0031-4a28-9567-c9e36944a4da" />
+        <img width="751" height="710" alt="image" src="https://github.com/user-attachments/assets/2ce97897-62ee-4e83-9a71-2c0655eaab1b" />
         <br />
         <b>🏠 Dashboard & Marktübersicht</b><br>
         <small>Alle wichtigen Assets auf einen Blick.</small>
       </td>
       <td align="center" width="50%">
-       <img width="1263" height="1033" alt="image" src="https://github.com/user-attachments/assets/50816605-d1ce-4355-ae9d-86a747c55c91" />
+        <img width="745" height="705" alt="image" src="https://github.com/user-attachments/assets/8b845b8e-daa7-4198-85f1-5c5ca6518c4d" />
         <br />
         <b>📊 Detaillierte Filter & Listen</b><br>
         <small>Finde Top-Gainer, Verlierer und Favoriten.</small>
@@ -160,6 +160,8 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 ---
 
 ## 🚀 Neuestes Update (12.04.2026)
+
+**TEIL 2 (Für die Front-README):**
 
 TechAna präsentiert sich mit einem signifikanten "Under-the-Hood"-Update, das unsere KI-Systeme und Infrastruktur optimiert. Dies führt zu noch präziseren Marktanalysen, verlässlicheren Handelssignalen und einer gesteigerten Gesamtstabilität für Ihr Trading-Erlebnis. Entdecken Sie zudem neue Bot-Optionen mit dynamischen Analyse-Intervallen und eine verbesserte Übersichtlichkeit in den Einstellungen.
 
