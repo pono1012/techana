@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/l10n_extension.dart';
 
 class UpdateService {
   static const String _repoUrl = "https://github.com/pono1012/techana";
@@ -31,7 +32,7 @@ class UpdateService {
       if (response.statusCode == 200) {
         final json = jsonDecode(utf8.decode(response.bodyBytes));
         String remoteVersion = json['version'];
-        String notes = json['release_notes'] ?? "Neue Version verfügbar.";
+        String notes = json['release_notes'] ?? context.l10n.updateAvailable(remoteVersion);
         debugPrint("UpdateService: Remote: $remoteVersion");
 
         // 3. Vergleich
@@ -96,7 +97,7 @@ class UpdateService {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text("Update verfügbar: v$version"),
+        title: Text(ctx.l10n.updateAvailable(version)),
         content: SizedBox(
           width: double.maxFinite,
           child: SingleChildScrollView(
@@ -106,21 +107,21 @@ class UpdateService {
               children: [
                 Text(notes),
                 const SizedBox(height: 16),
-                const Text(
-                  "Wähle deine Version zum Download:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  ctx.l10n.chooseVersionDownload,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                _buildDownloadButton(ctx, "🤖 Android (.apk)", _apkUrl),
-                _buildDownloadButton(ctx, "🪟 Windows (.zip)", _windowsUrl),
-                _buildDownloadButton(ctx, "🍏 macOS (.zip)", _macosUrl),
-                _buildDownloadButton(ctx, "🐧 Linux (.zip)", _linuxUrl),
-                _buildDownloadButton(ctx, "📱 iOS (.ipa)", _iosUrl),
+                _buildDownloadButton(ctx, ctx.l10n.androidApk, _apkUrl),
+                _buildDownloadButton(ctx, ctx.l10n.windowsZip, _windowsUrl),
+                _buildDownloadButton(ctx, ctx.l10n.macosZip, _macosUrl),
+                _buildDownloadButton(ctx, ctx.l10n.linuxZip, _linuxUrl),
+                _buildDownloadButton(ctx, ctx.l10n.iosIpa, _iosUrl),
                 const Divider(),
                 Center(
                   child: TextButton(
                     onPressed: () => _launchBrowser(),
-                    child: const Text("Zur GitHub Release Seite"),
+                    child: Text(ctx.l10n.toGithubReleasePage),
                   ),
                 ),
               ],
@@ -130,7 +131,7 @@ class UpdateService {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Später"),
+            child: Text(ctx.l10n.later),
           ),
         ],
       ),
@@ -149,7 +150,7 @@ class UpdateService {
             final uri = Uri.parse(url);
             try {
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                debugPrint("Konnte $url nicht öffnen");
+                debugPrint(context.l10n.openError(url));
               }
             } catch (e) {
               debugPrint("Fehler beim Öffnen von $url: $e");

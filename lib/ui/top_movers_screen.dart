@@ -8,6 +8,8 @@ import '../services/bot_settings_service.dart';
 import '../services/trade_execution_service.dart';
 import 'score_details_screen.dart';
 import 'top_movers_history_screen.dart';
+import '../l10n/l10n_extension.dart';
+import '../l10n/enum_localizations.dart';
 
 class TopMoversScreen extends StatefulWidget {
   const TopMoversScreen({super.key});
@@ -25,7 +27,7 @@ class _TopMover {
 class _TopMoversScreenState extends State<TopMoversScreen> {
   final DataService _dataService = DataService();
   bool _isLoading = false;
-  String _scanStatus = "Bereit zum Scannen.";
+  String? _scanStatus;
   List<_TopMover> _topLong = [];
   List<_TopMover> _topShort = [];
   TimeFrame _selectedTimeFrame = TimeFrame.d1;
@@ -36,7 +38,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
 
     setState(() {
       _isLoading = true;
-      _scanStatus = "Initialisiere...";
+      _scanStatus = context.l10n.initializing;
       _topLong = [];
       _topShort = [];
       _imageUrls.clear();
@@ -56,9 +58,11 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
 
     for (final symbol in activeSymbols) {
       count++;
-      setState(() {
-        _scanStatus = "($count/${activeSymbols.length}) Scanne $symbol...";
-      });
+      if (mounted) {
+        setState(() {
+          _scanStatus = context.l10n.scanningSymbol(count, activeSymbols.length, symbol);
+        });
+      }
 
       try {
         final bars =
@@ -90,11 +94,12 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
         .take(5)
         .toList();
 
-    setState(() {
-      _isLoading = false;
-      _scanStatus =
-          "Scan abgeschlossen. ${allSignals.length} Signale gefunden.";
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _scanStatus = context.l10n.scanCompleted(allSignals.length);
+      });
+    }
 
     // Ergebnisse in der Historie speichern
     watchlist.addTopMoversToHistory(_topLong, _topShort, _selectedTimeFrame);
@@ -130,9 +135,10 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Top Movers Scan"),
+        title: Text(l.topMoversScan),
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
@@ -140,7 +146,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
                 context,
                 MaterialPageRoute(
                     builder: (_) => const TopMoversHistoryScreen())),
-            tooltip: "Scan-Historie anzeigen",
+            tooltip: l.viewScanHistory,
           ),
           IconButton(
             icon: _isLoading
@@ -150,7 +156,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.radar),
             onPressed: _runScan,
-            tooltip: "Scan starten",
+            tooltip: l.startScan,
           )
         ],
       ),
@@ -164,7 +170,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
               alignment: WrapAlignment.center,
               children: TimeFrame.values.map((tf) {
                 return ChoiceChip(
-                  label: Text(tf.label, style: const TextStyle(fontSize: 12)),
+                  label: Text(tf.label(context), style: const TextStyle(fontSize: 12)),
                   selected: _selectedTimeFrame == tf,
                   onSelected: (selected) {
                     if (selected && !_isLoading) {
@@ -180,7 +186,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
             width: double.infinity,
             color: Colors.blueGrey.withOpacity(0.2),
             padding: const EdgeInsets.all(8),
-            child: Text(_scanStatus, textAlign: TextAlign.center),
+            child: Text(_scanStatus ?? l.readyToScan, textAlign: TextAlign.center),
           ),
           if (_isLoading && _topLong.isEmpty && _topShort.isEmpty)
             const Expanded(
@@ -190,10 +196,8 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
             Expanded(
               child: ListView(
                 children: [
-                  _buildSection(
-                      "Top 5 Long-Kandidaten", _topLong, Colors.green),
-                  _buildSection(
-                      "Top 5 Short-Kandidaten", _topShort, Colors.red),
+                  _buildSection(l.longCandidates, _topLong, Colors.green),
+                  _buildSection(l.shortCandidates, _topShort, Colors.red),
                 ],
               ),
             ),
@@ -203,6 +207,7 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
   }
 
   Widget _buildSection(String title, List<_TopMover> movers, Color color) {
+    final l = context.l10n;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -213,11 +218,10 @@ class _TopMoversScreenState extends State<TopMoversScreen> {
                   fontSize: 18, fontWeight: FontWeight.bold, color: color)),
           const SizedBox(height: 8),
           if (movers.isEmpty && !_isLoading)
-            const Card(
+            Card(
               child: ListTile(
-                title: Text("Keine Kandidaten gefunden"),
-                subtitle: Text(
-                    "Passe die Strategie an oder erweitere die Watchlist."),
+                title: Text(l.noCandidatesFound),
+                subtitle: Text(l.adjustStrategyHint),
               ),
             )
           else

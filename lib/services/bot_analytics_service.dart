@@ -88,27 +88,27 @@ class BotAnalyticsService {
     // By Group Breakdowns
     final bySymbol = _groupTrades(filtered, (t) => t.symbol);
     final byTimeFrame =
-        _groupTrades(filtered, (t) => t.botTimeFrame?.label ?? "Unbekannt");
+        _groupTrades(filtered, (t) => t.botTimeFrame?.name ?? "unknown");
     final byEntryStrategy = _groupTrades(filtered, (t) {
       int strat = t.aiAnalysisSnapshot['entryStrategy'] ?? 0;
       if (strat == 0) return "Market";
       if (strat == 1) return "Pullback";
       if (strat == 2) return "Breakout";
-      return "Unbekannt";
+      return "unknown";
     });
     final bySlMethod = _groupTrades(filtered, (t) {
       final snap = t.aiAnalysisSnapshot;
       int sm = snap['stopMethod'] ?? 2;
       if (sm == 0) return "Donchian";
-      if (sm == 1) return "Prozentual";
+      if (sm == 1) return "Percentage";
       return "ATR";
     });
     final byTpMethod = _groupTrades(filtered, (t) {
       final snap = t.aiAnalysisSnapshot;
       int tm = snap['tpMethod'] ?? 0;
       if (tm == 0) return "Risk/Reward";
-      if (tm == 1) return "Prozentual";
-      return "ATR-Ziel";
+      if (tm == 1) return "Percentage";
+      return "ATR-Target";
     });
 
     // Combinations

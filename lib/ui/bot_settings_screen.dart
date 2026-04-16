@@ -5,6 +5,8 @@ import '../services/bot_settings_service.dart';
 import '../services/trade_execution_service.dart';
 import '../services/watchlist_service.dart';
 import '../models/models.dart';
+import '../l10n/l10n_extension.dart';
+import '../l10n/enum_localizations.dart';
 
 class BotSettingsScreen extends StatelessWidget {
   const BotSettingsScreen({super.key});
@@ -15,11 +17,11 @@ class BotSettingsScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Bot Konfiguration"),
-          bottom: const TabBar(
+          title: Text(context.l10n.botConfiguration),
+          bottom: TabBar(
             tabs: [
-              Tab(text: "Allgemein", icon: Icon(Icons.tune)),
-              Tab(text: "Strategie", icon: Icon(Icons.trending_up)),
+              Tab(text: context.l10n.tabGeneral, icon: const Icon(Icons.tune)),
+              Tab(text: context.l10n.tabStrategy, icon: const Icon(Icons.trending_up)),
             ],
           ),
         ),
@@ -56,10 +58,10 @@ class BotSettingsScreen extends StatelessWidget {
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text("Bot Aktiv (Auto-Run)"),
+                title: Text(context.l10n.botActive),
                 subtitle: Text(exec.autoRun
-                    ? "Läuft im Hintergrund (Alle ${settings.autoIntervalMinutes} Min)"
-                    : "Pausiert"),
+                    ? context.l10n.runningInBackground(settings.autoIntervalMinutes)
+                    : context.l10n.paused),
                 value: exec.autoRun,
                 onChanged: (v) =>
                     exec.toggleAutoRun(v, settings, portfolio, watchlist),
@@ -77,7 +79,7 @@ class BotSettingsScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () => exec.cancelRoutine(),
                       icon: const Icon(Icons.stop),
-                      label: const Text("Laufenden Scan sofort abbrechen"),
+                      label: Text(context.l10n.cancelRunningScan),
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white),
@@ -89,27 +91,27 @@ class BotSettingsScreen extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "Routine Umfang"),
+        _buildSectionHeader(context, context.l10n.routineScope),
         Card(
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text("Pending Orders prüfen"),
-                subtitle: const Text("Prüft Limit/Stop Orders (Entry)."),
+                title: Text(context.l10n.checkPendingOrders),
+                subtitle: Text(context.l10n.checkPendingSubtitle),
                 value: settings.enableCheckPending,
                 onChanged: (v) => settings.updateRoutineFlags(pending: v),
               ),
               const Divider(height: 1),
               SwitchListTile(
-                title: const Text("Offene Positionen prüfen"),
-                subtitle: const Text("Prüft SL/TP und aktualisiert PnL."),
+                title: Text(context.l10n.checkOpenPositions),
+                subtitle: Text(context.l10n.checkOpenSubtitle),
                 value: settings.enableCheckOpen,
                 onChanged: (v) => settings.updateRoutineFlags(open: v),
               ),
               const Divider(height: 1),
               SwitchListTile(
-                title: const Text("Nach neuen Trades suchen"),
-                subtitle: const Text("Scannt Watchlist nach Signalen."),
+                title: Text(context.l10n.scanForNewTrades),
+                subtitle: Text(context.l10n.scanForNewSubtitle),
                 value: settings.enableScanNew,
                 onChanged: (v) => settings.updateRoutineFlags(scan: v),
               ),
@@ -118,27 +120,27 @@ class BotSettingsScreen extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "Money Management"),
+        _buildSectionHeader(context, context.l10n.moneyManagement),
         Card(
           child: Column(
             children: [
               _sliderTile(
-                  "Invest pro Trade (€)",
+                  context.l10n.investPerTrade,
                   settings.botBaseInvest,
                   10,
                   2000,
                   (v) => settings.updateBotSettings(v,
                       settings.maxOpenPositions, settings.unlimitedPositions),
-                  desc: "Basis-Investition pro Position."),
+                  desc: context.l10n.investPerTradeDesc),
               SwitchListTile(
-                title: const Text("Unbegrenzte Positionen"),
+                title: Text(context.l10n.unlimitedPositions),
                 value: settings.unlimitedPositions,
                 onChanged: (v) => settings.updateBotSettings(
                     settings.botBaseInvest, settings.maxOpenPositions, v),
               ),
               if (!settings.unlimitedPositions)
                 _sliderTile(
-                  "Max. offene Positionen",
+                  context.l10n.maxOpenPositions,
                   settings.maxOpenPositions.toDouble(),
                   1,
                   50,
@@ -151,29 +153,28 @@ class BotSettingsScreen extends StatelessWidget {
 
         const SizedBox(height: 16),
         // --- Merge Advanced Items Here ---
-        _buildSectionHeader(context, "Automatisierung"),
+        _buildSectionHeader(context, context.l10n.automation),
         Card(
           child: Column(
             children: [
               _sliderTile(
-                  "Scan Intervall (Min)",
+                  context.l10n.scanInterval,
                   settings.autoIntervalMinutes.toDouble(),
                   15,
                   240,
                   (v) => settings.updateAdvancedSettings(
                       v.toInt(), settings.trailingMult, settings.dynamicSizing),
-                  desc: "Häufigkeit der automatischen Prüfung."),
+                  desc: context.l10n.scanIntervalDesc),
               _sliderTile(
-                  "MC Simulationen (Scoring)",
+                  context.l10n.mcSimulationsScoring,
                   settings.mcSimulations.toDouble(),
                   50,
                   1000,
                   (v) => settings.setMcSimulations(v.toInt()),
-                  desc: "Anzahl Szenarien für das Bot-Scoring. Standard: 200."),
+                  desc: context.l10n.mcSimulationsScoringDesc),
               SwitchListTile(
-                title: const Text("MC Strict Mode"),
-                subtitle: const Text(
-                    "Nur Trades eröffnen, wenn MC Treffer-Wahrscheinlichkeit für TP > SL ist."),
+                title: Text(context.l10n.mcStrictMode),
+                subtitle: Text(context.l10n.mcStrictModeSubtitle),
                 value: settings.mcStrictMode,
                 onChanged: (v) => settings.setMcStrictMode(v),
                 activeThumbColor: Colors.deepPurple,
@@ -183,22 +184,21 @@ class BotSettingsScreen extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "Trade Management"),
+        _buildSectionHeader(context, context.l10n.tradeManagement),
         Card(
           child: Column(
             children: [
               _sliderTile(
-                  "Trailing Stop (x ATR)",
+                  context.l10n.trailingStopAtr,
                   settings.trailingMult,
                   0.5,
                   4.0,
                   (v) => settings.updateAdvancedSettings(
                       settings.autoIntervalMinutes, v, settings.dynamicSizing),
-                  desc: "Stop Loss automatisch nachziehen."),
+                  desc: context.l10n.trailingStopDesc),
               SwitchListTile(
-                title: const Text("Dynamische Positionsgröße"),
-                subtitle:
-                    const Text("Invest verdoppeln bei hohem Score (>80)."),
+                title: Text(context.l10n.dynamicPositionSize),
+                subtitle: Text(context.l10n.dynamicPositionSubtitle),
                 value: settings.dynamicSizing,
                 onChanged: (v) => settings.updateAdvancedSettings(
                     settings.autoIntervalMinutes, settings.trailingMult, v),
@@ -208,22 +208,21 @@ class BotSettingsScreen extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "KI & Analyse"),
+        _buildSectionHeader(context, context.l10n.aiAndAnalysis),
         Card(
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text("Kronos KI Analyse"),
-                subtitle: const Text("Nutzt Foundation Model für Kursvorhersage pro Symbol."),
+                title: Text(context.l10n.kronosAiAnalysisTitle),
+                subtitle: Text(context.l10n.kronosAiSubtitle),
                 value: settings.useKronos,
                 onChanged: (v) => settings.setUseKronos(v),
                 activeThumbColor: Colors.blueAccent,
               ),
               if (settings.useKronos)
                 SwitchListTile(
-                  title: const Text("Kronos Strict Mode"),
-                  subtitle: const Text(
-                      "Nur Trades eröffnen, wenn Kronos TP1 VOR SL vorhersagt."),
+                  title: Text(context.l10n.kronosStrictMode),
+                  subtitle: Text(context.l10n.kronosStrictSubtitle),
                   value: settings.kronosStrictMode,
                   onChanged: (v) => settings.setKronosStrictMode(v),
                   activeThumbColor: Colors.deepPurple,
@@ -236,19 +235,19 @@ class BotSettingsScreen extends StatelessWidget {
         Center(
             child: TextButton.icon(
           icon: const Icon(Icons.restore, size: 16),
-          label: const Text("Alle Einstellungen zurücksetzen",
-              style: TextStyle(fontSize: 12)),
+          label: Text(context.l10n.resetAllSettings,
+              style: const TextStyle(fontSize: 12)),
           onPressed: () => settings.resetBotSettings(),
           style: TextButton.styleFrom(foregroundColor: Colors.grey),
         )),
 
         const SizedBox(height: 16),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
-            "Hinweis: Änderungen werden sofort gespeichert und beim nächsten Scan angewendet.",
+            context.l10n.settingsNote,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ),
       ],
@@ -260,13 +259,13 @@ class BotSettingsScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildSectionHeader(context, "Allgemein & Zeitrahmen"),
+        _buildSectionHeader(context, context.l10n.generalAndTimeframe),
         Card(
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text("Wechselnde Strategien"),
-                subtitle: const Text("Für jeden Scan zufällige Werte testen"),
+                title: Text(context.l10n.alternatingStrategies),
+                subtitle: Text(context.l10n.alternatingStrategiesSubtitle),
                 value: settings.autoRandomizeStrategy,
                 onChanged: (v) => settings.setAutoRandomizeStrategy(v),
               ),
@@ -276,13 +275,13 @@ class BotSettingsScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Analyse Interval",
+                    Text(context.l10n.analysisInterval,
                         style: TextStyle(fontSize: 13)),
                     Wrap(
                       spacing: 4.0,
                       children: TimeFrame.values.map((tf) {
                         return ChoiceChip(
-                          label: Text(tf.label,
+                          label: Text(tf.label(context),
                               style: const TextStyle(fontSize: 10)),
                           selected: settings.botTimeFrame == tf,
                           onSelected: (selected) =>
@@ -300,17 +299,17 @@ class BotSettingsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "Entry (Einstieg)"),
+        _buildSectionHeader(context, context.l10n.entrySection),
         Card(
           child: Column(
             children: [
               _dropdownTile<int>(
-                "Strategie Typ",
+                context.l10n.strategyType,
                 settings.entryStrategy,
-                const {
-                  0: "Market (Sofort)",
-                  1: "Pullback (Limit)",
-                  2: "Breakout (Stop)"
+                {
+                  0: context.l10n.marketImmediate,
+                  1: context.l10n.pullbackLimit,
+                  2: context.l10n.breakoutStop
                 },
                 (v) => settings.updateStrategySettings(
                   entryStrategy: v!,
@@ -330,9 +329,9 @@ class BotSettingsScreen extends StatelessWidget {
               if (settings.entryStrategy != 0) ...[
                 const Divider(height: 1),
                 _dropdownTile<int>(
-                  "Padding Typ",
+                  context.l10n.paddingType,
                   settings.entryPaddingType,
-                  const {0: "Prozentual (%)", 1: "ATR Faktor"},
+                  {0: context.l10n.percentual, 1: context.l10n.atrFactor},
                   (v) => settings.updateStrategySettings(
                     entryStrategy: settings.entryStrategy,
                     entryPadding: settings.entryPadding,
@@ -350,8 +349,8 @@ class BotSettingsScreen extends StatelessWidget {
                 ),
                 _sliderTile(
                   settings.entryPaddingType == 0
-                      ? "Padding %"
-                      : "Padding (x ATR)",
+                      ? context.l10n.paddingPercent
+                      : context.l10n.paddingAtr,
                   settings.entryPadding,
                   0.1,
                   settings.entryPaddingType == 0 ? 2.0 : 5.0,
@@ -375,18 +374,18 @@ class BotSettingsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "Stop Loss (Risiko)"),
+        _buildSectionHeader(context, context.l10n.stopLossRisk),
         Card(
           child: Column(
             children: [
               _dropdownTile<int>(
-                "Methode",
+                context.l10n.method,
                 settings.stopMethod,
-                const {
-                  0: "Donchian Low/High",
-                  1: "Prozentual",
-                  2: "ATR (Volatilität)",
-                  3: "Swing-Low/High",
+                {
+                  0: context.l10n.donchianLowHigh,
+                  1: context.l10n.percentualMethod,
+                  2: context.l10n.atrVolatility,
+                  3: context.l10n.swingLowHigh,
                 },
                 (v) => settings.updateStrategySettings(
                   stopMethod: v!,
@@ -405,7 +404,7 @@ class BotSettingsScreen extends StatelessWidget {
               ),
               if (settings.stopMethod == 1)
                 _sliderTile(
-                    "Stop Abstand %",
+                    context.l10n.stopDistance,
                     settings.stopPercent,
                     1,
                     20,
@@ -425,7 +424,7 @@ class BotSettingsScreen extends StatelessWidget {
                         )),
               if (settings.stopMethod == 2)
                 _sliderTile(
-                    "ATR Multiplikator",
+                    context.l10n.atrMultiplier,
                     settings.atrMult,
                     1,
                     5,
@@ -447,18 +446,18 @@ class BotSettingsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "Take Profit (Ziele)"),
+        _buildSectionHeader(context, context.l10n.takeProfitTargets),
         Card(
           child: Column(
             children: [
               _dropdownTile<int>(
-                "Methode",
+                context.l10n.method,
                 settings.tpMethod,
-                const {
-                  0: "Risk/Reward (CRV)",
-                  1: "Prozentual",
-                  2: "ATR-Ziel",
-                  3: "Pivot Points",
+                {
+                  0: context.l10n.riskRewardCrv,
+                  1: context.l10n.percentualMethod,
+                  2: context.l10n.atrTarget,
+                  3: context.l10n.pivotPoints,
                 },
                 (v) => settings.updateStrategySettings(
                   tpMethod: v!,
@@ -477,7 +476,7 @@ class BotSettingsScreen extends StatelessWidget {
               ),
               const Divider(height: 1),
               _sliderTile(
-                "Verkauf bei TP1 (%)",
+                context.l10n.sellAtTp1,
                 settings.tp1SellFraction * 100,
                 10,
                 100,
@@ -498,7 +497,7 @@ class BotSettingsScreen extends StatelessWidget {
               ),
               if (settings.tpMethod == 0 || settings.tpMethod == 2) ...[
                 _sliderTile(
-                    "TP1 Faktor (R)",
+                    context.l10n.tp1FactorR,
                     settings.rrTp1,
                     1,
                     5,
@@ -517,7 +516,7 @@ class BotSettingsScreen extends StatelessWidget {
                           entryPaddingType: settings.entryPaddingType,
                         )),
                 _sliderTile(
-                    "TP2 Faktor (R)",
+                    context.l10n.tp2FactorR,
                     settings.rrTp2,
                     2,
                     10,
@@ -580,32 +579,32 @@ class BotSettingsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildSectionHeader(context, "Experten Features (AI/Algo)"),
+        _buildSectionHeader(context, context.l10n.expertFeaturesAi),
         Card(
           child: Column(
             children: [
               SwitchListTile(
-                title: const Text("Markt-Regime Filter"),
-                subtitle: const Text("Anpassung an Trend/Range/Volatilität."),
+                title: Text(context.l10n.marketRegimeFilter),
+                subtitle: Text(context.l10n.marketRegimeSubtitleBot),
                 value: settings.useMarketRegime,
                 onChanged: (v) => settings.setUseMarketRegime(v),
               ),
               SwitchListTile(
-                title: const Text("AI Probability Scoring"),
-                subtitle: const Text("Gewichtung nach hist. Trefferrate."),
+                title: Text(context.l10n.aiProbabilityScoring),
+                subtitle: Text(context.l10n.aiProbabilitySubtitleBot),
                 value: settings.useAiProbability,
                 onChanged: (v) => settings.setUseAiProbability(v),
               ),
               SwitchListTile(
-                title: const Text("Multi-Timeframe (MTC)"),
+                title: Text(context.l10n.multiTimeframeMtc),
                 subtitle:
-                    const Text("Trendbestätigung auf höheren Zeitebenen."),
+                    Text(context.l10n.mtcSubtitleBot),
                 value: settings.useMtc,
                 onChanged: (v) => settings.setUseMtc(v),
               ),
               SwitchListTile(
-                title: const Text("Strategy Optimizer"),
-                subtitle: const Text("Sucht ideale Indikator-Parameter."),
+                title: Text(context.l10n.strategyOptimizer),
+                subtitle: Text(context.l10n.strategyOptimizerSubtitleBot),
                 value: settings.useStrategyOptimizer,
                 onChanged: (v) => settings.setUseStrategyOptimizer(v),
               ),

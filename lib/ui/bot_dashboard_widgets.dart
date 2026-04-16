@@ -4,6 +4,7 @@ import 'dart:math';
 import '../models/trade_record.dart';
 import '../services/portfolio_service.dart';
 import '../services/trade_execution_service.dart';
+import '../l10n/l10n_extension.dart';
 import 'trade_details_screen.dart';
 
 class BotProgressWidget extends StatelessWidget {
@@ -22,11 +23,11 @@ class BotProgressWidget extends StatelessWidget {
     }
 
     if (exec.taskPhase == 1) {
-      phaseName = "Check Pending";
+      phaseName = context.l10n.checkPending;
     } else if (exec.taskPhase == 2) {
-      phaseName = "Check Open";
+      phaseName = context.l10n.checkOpen;
     } else if (exec.taskPhase == 3) {
-      phaseName = "Markt Scan";
+      phaseName = context.l10n.marketScan;
     }
 
     timeEstimate = exec.estimatedTimeRemaining;
@@ -52,7 +53,7 @@ class BotProgressWidget extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Phase ${exec.taskPhase}/3: $phaseName",
+                Text(context.l10n.phaseLabel(exec.taskPhase, phaseName),
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold)),
                 Text(percentText,
@@ -75,7 +76,7 @@ class BotProgressWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                    child: Text(exec.scanStatus,
+                    child: Text(_getLocalizedStatus(context, exec),
                         style: const TextStyle(
                             color: Colors.white70, fontSize: 12),
                         overflow: TextOverflow.ellipsis)),
@@ -84,7 +85,7 @@ class BotProgressWidget extends StatelessWidget {
                     const Icon(Icons.timer_outlined,
                         color: Colors.white54, size: 14),
                     const SizedBox(width: 4),
-                    Text(timeEstimate.isNotEmpty ? "Est: $timeEstimate" : "",
+                    Text(timeEstimate.isNotEmpty ? context.l10n.estimatedTime(timeEstimate) : "",
                         style: const TextStyle(
                             color: Colors.white54, fontSize: 12)),
                   ],
@@ -96,12 +97,35 @@ class BotProgressWidget extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4.0),
                 child: Align(
                     alignment: Alignment.centerRight,
-                    child: Text("${exec.scanCurrent} / ${exec.scanTotal} Items",
+                    child: Text(context.l10n.itemsCount(exec.scanCurrent, exec.scanTotal),
                         style: const TextStyle(
                             color: Colors.white30, fontSize: 10))),
               )
           ],
         ));
+  }
+
+  String _getLocalizedStatus(BuildContext context, TradeExecutionService exec) {
+    if (exec.scanStatusKey.isEmpty) return exec.scanStatus;
+
+    switch (exec.scanStatusKey) {
+      case "statusInitializing":
+        return context.l10n.statusInitializing;
+      case "statusCheckingPending":
+        return context.l10n.statusCheckingPending;
+      case "statusManagingOpen":
+        return context.l10n.statusManagingOpen;
+      case "statusScanningMarkets":
+        return context.l10n.statusScanningMarkets;
+      case "statusDone":
+        return context.l10n.statusDone;
+      case "statusCancelRequested":
+        return context.l10n.statusCancelRequested;
+      case "statusError":
+        return context.l10n.statusError(exec.scanStatusParam);
+      default:
+        return exec.scanStatus;
+    }
   }
 }
 
@@ -136,11 +160,11 @@ class BotPortfolioGraphWidget extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text("Portfolio Performance (PnL)",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(context.l10n.portfolioPerformance,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text(
-                "Aktuell: ${(bot.totalRealizedPnL + bot.totalUnrealizedPnL).toStringAsFixed(2)} €",
+                context.l10n.currentPnlTemplate((bot.totalRealizedPnL + bot.totalUnrealizedPnL).toStringAsFixed(2)),
                 style: TextStyle(
                     color: (bot.totalRealizedPnL + bot.totalUnrealizedPnL) >= 0
                         ? Colors.green
@@ -197,7 +221,8 @@ class BotPortfolioGraphWidget extends StatelessWidget {
                     lineTouchData: LineTouchData(touchTooltipData:
                         LineTouchTooltipData(getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
-                        return LineTooltipItem("${spot.y.toStringAsFixed(2)} €",
+                        return LineTooltipItem(
+                            context.l10n.currencyValue(spot.y.toStringAsFixed(2)),
                             const TextStyle(color: Colors.white));
                       }).toList();
                     }))),
@@ -242,16 +267,16 @@ class BotSummaryStatsWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildStatCol(
-                    "Investiert",
-                    "${bot.totalInvested.toStringAsFixed(2)} €",
+                    context.l10n.invested,
+                    context.l10n.currencyValue(bot.totalInvested.toStringAsFixed(2)),
                     Colors.white70),
                 _buildStatCol(
-                    "Unreal. PnL",
-                    "${bot.totalUnrealizedPnL.toStringAsFixed(2)} €",
+                    context.l10n.unrealizedPnl,
+                    context.l10n.currencyValue(bot.totalUnrealizedPnL.toStringAsFixed(2)),
                     bot.totalUnrealizedPnL >= 0 ? Colors.green : Colors.red),
                 _buildStatCol(
-                    "Realisiert PnL",
-                    "${bot.totalRealizedPnL.toStringAsFixed(2)} €",
+                    context.l10n.realizedPnl,
+                    context.l10n.currencyValue(bot.totalRealizedPnL.toStringAsFixed(2)),
                     bot.totalRealizedPnL >= 0 ? Colors.green : Colors.red),
               ],
             ),
@@ -261,7 +286,7 @@ class BotSummaryStatsWidget extends StatelessWidget {
               children: [
                 Column(
                   children: [
-                    const Text("Offen",
+                    Text(context.l10n.open,
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
@@ -274,7 +299,7 @@ class BotSummaryStatsWidget extends StatelessWidget {
                             style: const TextStyle(color: Colors.red)),
                       ],
                     ),
-                    Text("Gesamt: ${bot.openTradesCount}",
+                    Text("${context.l10n.total}: ${bot.openTradesCount}",
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
@@ -282,7 +307,7 @@ class BotSummaryStatsWidget extends StatelessWidget {
                 Container(height: 30, width: 1, color: Colors.white10),
                 Column(
                   children: [
-                    const Text("Geschlossen",
+                    Text(context.l10n.closed,
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
@@ -295,7 +320,7 @@ class BotSummaryStatsWidget extends StatelessWidget {
                             style: const TextStyle(color: Colors.red)),
                       ],
                     ),
-                    Text("Gesamt: ${bot.closedTradesCount}",
+                    Text("${context.l10n.total}: ${bot.closedTradesCount}",
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
@@ -303,7 +328,7 @@ class BotSummaryStatsWidget extends StatelessWidget {
                 Container(height: 30, width: 1, color: Colors.white10),
                 Column(
                   children: [
-                    const Text("Gesamt",
+                    Text(context.l10n.total,
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
@@ -316,7 +341,7 @@ class BotSummaryStatsWidget extends StatelessWidget {
                             style: const TextStyle(color: Colors.red)),
                       ],
                     ),
-                    Text("Trades: $totalCount",
+                    Text("${context.l10n.total}: $totalCount",
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
@@ -413,7 +438,8 @@ class TradeCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTradeTrailing(TradeRecord trade, bool isOpen, bool isPending) {
+  Widget _buildTradeTrailing(
+      BuildContext context, TradeRecord trade, bool isOpen, bool isPending) {
     if (!isOpen && !isPending) {
       final pnl = trade.realizedPnL;
       final pnlColor = pnl >= 0 ? Colors.green : Colors.red;
@@ -432,7 +458,7 @@ class TradeCardWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text("${pnl > 0 ? '+' : ''}${pnl.toStringAsFixed(2)} €",
+          Text(context.l10n.currencyValue(pnl.toStringAsFixed(2)),
               style: TextStyle(
                   color: pnlColor, fontWeight: FontWeight.bold, fontSize: 12)),
           Text("${pct > 0 ? '+' : ''}${pct.toStringAsFixed(1)} %",
@@ -456,9 +482,10 @@ class TradeCardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (trade.realizedPnL.abs() > 0.01)
-            Text("Real: ${trade.realizedPnL.toStringAsFixed(0)}",
+            Text(
+                "${context.l10n.realizedLabel}: ${trade.realizedPnL.toStringAsFixed(0)}",
                 style: const TextStyle(fontSize: 8, color: Colors.grey)),
-          Text("${pnl > 0 ? '+' : ''}${pnl.toStringAsFixed(2)} €",
+          Text(context.l10n.currencyValue(pnl.toStringAsFixed(2)),
               style: TextStyle(
                   color: pnlColor, fontWeight: FontWeight.bold, fontSize: 12)),
           Text("${pct > 0 ? '+' : ''}${pct.toStringAsFixed(1)} %",
@@ -480,15 +507,15 @@ class TradeCardWidget extends StatelessWidget {
             ? Colors.blue
             : (trade.realizedPnL >= 0 ? Colors.green : Colors.red));
 
-    String statusText = isOpen ? "OPEN" : "CLOSED";
+    String statusText = isOpen ? context.l10n.openStatus : context.l10n.closedStatus;
     if (trade.tp1Hit && isOpen) {
-      statusText = "OPEN (TP1 Hit)";
+      statusText = context.l10n.openTp1Hit;
     } else if (isPending) {
       bool isStop = trade.entryReasons.contains("Breakout");
       if (trade.aiAnalysisSnapshot.containsKey('entryStrategy')) {
         if (trade.aiAnalysisSnapshot['entryStrategy'] == 2) isStop = true;
       }
-      statusText = isStop ? "PENDING (Stop)" : "PENDING (Limit)";
+      statusText = isStop ? context.l10n.pendingStop : context.l10n.pendingLimit;
     }
 
     return Dismissible(
@@ -544,7 +571,7 @@ class TradeCardWidget extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "Entry: ${trade.entryPrice.toStringAsFixed(2)} | Score: ${trade.entryScore}",
+                "${context.l10n.entryPriceLabel}: ${trade.entryPrice.toStringAsFixed(2)} | ${context.l10n.entryScore}: ${trade.entryScore}",
                 style: const TextStyle(fontSize: 10, color: Colors.grey),
               ),
               if (trade.entryPattern.isNotEmpty)
@@ -554,7 +581,7 @@ class TradeCardWidget extends StatelessWidget {
                 ),
             ],
           ),
-          trailing: _buildTradeTrailing(trade, isOpen, isPending),
+          trailing: _buildTradeTrailing(context, trade, isOpen, isPending),
         ),
       ),
     );

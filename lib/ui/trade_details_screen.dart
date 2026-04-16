@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../models/trade_record.dart';
 import '../services/portfolio_service.dart';
+import '../l10n/l10n_extension.dart';
+import '../l10n/enum_localizations.dart';
 
 class TradeDetailsScreen extends StatelessWidget {
   final TradeRecord trade;
@@ -18,7 +20,7 @@ class TradeDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("${trade.symbol} Details"),
+        title: Text(context.l10n.tradeDetailsSymbol(trade.symbol)),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
@@ -43,12 +45,12 @@ class TradeDetailsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                const Text("Entry Score", style: TextStyle(fontSize: 16)),
+                Text(context.l10n.entryScore, style: const TextStyle(fontSize: 16)),
                 Text("${trade.entryScore}",
                     style: const TextStyle(
                         fontSize: 40, fontWeight: FontWeight.bold)),
                 if (trade.entryPattern.isNotEmpty)
-                  Text("Muster: ${trade.entryPattern}",
+                  Text("${context.l10n.patternLabel}: ${trade.entryPattern}",
                       style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
@@ -56,11 +58,11 @@ class TradeDetailsScreen extends StatelessWidget {
           const SizedBox(height: 20),
 
           // --- Trade Stats ---
-          _buildSectionTitle("Trade Daten"),
-          _buildInfoRow("Status", _formatStatus(trade)),
+          _buildSectionTitle(context.l10n.tradeData),
+          _buildInfoRow(context.l10n.statusLabel, _formatStatus(context, trade)),
           if (trade.botTimeFrame != null)
-            _buildInfoRow("Analyse Intervall", trade.botTimeFrame!.label),
-          _buildInfoRow("Signal Datum", df.format(trade.entryDate)),
+            _buildInfoRow(context.l10n.analysisInterval, trade.botTimeFrame!.label(context)),
+          _buildInfoRow(context.l10n.signalDate, df.format(trade.entryDate)),
           if (trade.status != TradeStatus.pending &&
               trade.entryExecutionDate != null)
             _buildInfoRow(
@@ -96,11 +98,11 @@ class TradeDetailsScreen extends StatelessWidget {
           const SizedBox(height: 20),
 
           // --- Indikatoren Snapshot ---
-          _buildSectionTitle("Indikatoren zum Kaufzeitpunkt"),
+          _buildSectionTitle(context.l10n.indicatorsAtPurchase),
           if (!hasSnap)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text("Keine Detail-Daten für diesen Trade gespeichert.",
+              child: Text(context.l10n.noDetailDataSaved,
                   style: TextStyle(color: Colors.grey)),
             )
           else ...[
@@ -110,7 +112,7 @@ class TradeDetailsScreen extends StatelessWidget {
               const SizedBox(height: 4),
               _buildCategoryBar(
                   context,
-                  "Trend",
+                  context.l10n.catTrend,
                   (snap['score_trend'] as num?)?.toDouble() ?? 0,
                   35,
                   Colors.blue, [
@@ -141,7 +143,7 @@ class TradeDetailsScreen extends StatelessWidget {
                   _buildIndicatorCard(
                     "Vortex",
                     (snap['vortex'] as num?)?.toStringAsFixed(3) ?? "-",
-                    (snap['isTrending'] == true) ? "Trending" : "Seitwärts",
+                    (snap['isTrending'] == true) ? context.l10n.trending : context.l10n.sideways,
                   ),
                   _buildIndicatorCard(
                     "Choppiness",
@@ -161,7 +163,7 @@ class TradeDetailsScreen extends StatelessWidget {
                 _buildIndicatorCard(
                   "RSI",
                   (snap['rsi'] as num?)?.toStringAsFixed(1) ?? "-",
-                  _getRsiStatus(snap['rsi'] as num?),
+                  _getRsiStatus(context, snap['rsi'] as num?),
                 ),
                 _buildIndicatorCard(
                   "MACD Hist",
@@ -315,20 +317,19 @@ class TradeDetailsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Trade löschen?"),
-        content: const Text(
-            "Dieser Trade wird unwiderruflich aus der Historie entfernt."),
+        title: Text(context.l10n.deleteTradeConfirmTitle),
+        content: Text(context.l10n.deleteTradeConfirmContent),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text("Abbrechen")),
+              child: Text(context.l10n.cancel)),
           TextButton(
             onPressed: () {
               context.read<PortfolioService>().deleteTrade(trade.id);
               Navigator.pop(ctx); // Dialog zu
               Navigator.pop(context); // Screen zu
             },
-            child: const Text("Löschen", style: TextStyle(color: Colors.red)),
+            child: Text(context.l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -383,16 +384,16 @@ class TradeDetailsScreen extends StatelessWidget {
     );
   }
 
-  String _getRsiStatus(num? rsi) => (rsi ?? 50) < 30
-      ? "Überverkauft"
-      : ((rsi ?? 50) > 70 ? "Überkauft" : "Neutral");
+  String _getRsiStatus(BuildContext context, num? rsi) => (rsi ?? 50) < 30
+      ? context.l10n.oversold
+      : ((rsi ?? 50) > 70 ? context.l10n.overbought : context.l10n.neutral);
 
   String _getEmaStatus(num? price, num? ema) {
     if (price == null || ema == null) return "-";
     return price > ema ? "Kurs > EMA (Bullish)" : "Kurs < EMA (Bearish)";
   }
 
-  String _formatStatus(TradeRecord t) {
+  String _formatStatus(BuildContext context, TradeRecord t) {
     if (t.status == TradeStatus.pending) {
       // 1. Check Snapshot for definitive strategy type
       final snap = t.aiAnalysisSnapshot;

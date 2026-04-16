@@ -9,6 +9,8 @@ import 'services/update_service.dart';
 import 'services/kronos_backend_service.dart';
 import 'ui/dashboard_screen.dart';
 import 'dart:ui';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 
 void main() {
   runApp(
@@ -36,6 +38,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TechAna',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: switch (context.select<AppProvider, String>((p) => p.settings.languageCode)) {
+        'de' => const Locale('de'),
+        'en' => const Locale('en'),
+        _ => null,
+      },
       themeMode: themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

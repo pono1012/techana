@@ -5,6 +5,7 @@ import '../services/monte_carlo_service.dart';
 import '../services/data_service.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../l10n/l10n_extension.dart';
 
 /// Öffnet ein BottomSheet mit der Monte Carlo Simulation für das aktuelle Symbol
 void showMonteCarloSheet(BuildContext context, String symbol) {
@@ -42,6 +43,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
   void _runSimulation() async {
     if (widget.symbol.isEmpty) return;
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMsg = '';
@@ -77,6 +79,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       minChildSize: 0.5,
@@ -110,8 +113,8 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Monte Carlo Simulation",
-                              style: TextStyle(
+                          Text(l.monteCarloSimulation,
+                              style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16)),
                           Text(widget.symbol,
                               style: const TextStyle(
@@ -126,7 +129,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                       items: [10, 30, 90, 180, 365].map((d) {
                         return DropdownMenuItem(
                             value: d,
-                            child: Text("$d T",
+                            child: Text(l.daysCount(d),
                                 style: const TextStyle(fontSize: 12)));
                       }).toList(),
                       onChanged: (val) {
@@ -145,7 +148,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2))
                           : const Icon(Icons.refresh),
-                      tooltip: "Neu berechnen",
+                      tooltip: l.recalculate,
                     ),
                   ],
                 ),
@@ -154,19 +157,19 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
               // Body
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text("Simulation läuft... (1000 Szenarien)",
-                              style: TextStyle(color: Colors.grey)),
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 16),
+                          Text(l.simulationRunning(1000),
+                              style: const TextStyle(color: Colors.grey)),
                         ],
                       ))
                     : _errorMsg.isNotEmpty
                         ? Center(
-                            child: Text("Fehler: $_errorMsg",
+                            child: Text("${l.errorLabel}: $_errorMsg",
                                 style: const TextStyle(color: Colors.red)))
                         : _result != null
                             ? ListView(
@@ -178,18 +181,18 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                                     const SizedBox(height: 16),
                                     _buildAnalysis(_result!),
                                     const SizedBox(height: 16),
-                                    const Text(
-                                        "Simulierte Preispfade (50 von 1000)",
-                                        style: TextStyle(
+                                    Text(
+                                        l.simulatedPricePaths(50, 1000),
+                                        style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 8),
                                     SizedBox(
                                         height: 280,
-                                        child: _buildChart(_result!)),
+                                        child: _buildChart(context, _result!)),
                                     const SizedBox(height: 24),
                                   ])
-                            : const Center(child: Text("Keine Daten")),
+                            : Center(child: Text(l.noData)),
               ),
             ],
           ),
@@ -199,17 +202,18 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
   }
 
   Widget _buildStatsCards(MonteCarloResult res) {
+    final l = context.l10n;
     final change =
         ((res.expectedPrice - res.currentPrice) / res.currentPrice * 100);
     final changeColor = change >= 0 ? Colors.green : Colors.red;
     final changeSign = change >= 0 ? '+' : '';
     return Row(
       children: [
-        _statCard("Aktuell", _fmtP(res.currentPrice), Colors.white70),
-        _statCard("Erwartet", _fmtP(res.expectedPrice), Colors.blue),
-        _statCard("Δ", "$changeSign${change.toStringAsFixed(1)}%", changeColor),
-        _statCard("95% Low", _fmtP(res.lowerBound95), Colors.red),
-        _statCard("95% High", _fmtP(res.upperBound95), Colors.green),
+        _statCard(l.current, _fmtP(res.currentPrice), Colors.white70),
+        _statCard(l.expected, _fmtP(res.expectedPrice), Colors.blue),
+        _statCard(l.delta, "$changeSign${change.toStringAsFixed(1)}%", changeColor),
+        _statCard(l.low95, _fmtP(res.lowerBound95), Colors.red),
+        _statCard(l.high95, _fmtP(res.upperBound95), Colors.green),
       ],
     );
   }
@@ -240,6 +244,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
 
   // ─── Automatische Analyse der Ergebnisse ───
   Widget _buildAnalysis(MonteCarloResult res) {
+    final l = context.l10n;
     final change =
         ((res.expectedPrice - res.currentPrice) / res.currentPrice * 100);
     final range95 =
@@ -264,23 +269,23 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
     Color outlookColor;
     IconData outlookIcon;
     if (bullPct >= 65) {
-      outlook = "Stark Bullish";
+      outlook = l.strongBullish;
       outlookColor = Colors.green;
       outlookIcon = Icons.trending_up;
     } else if (bullPct >= 55) {
-      outlook = "Leicht Bullish";
+      outlook = l.lightBullish;
       outlookColor = Colors.lightGreen;
       outlookIcon = Icons.trending_up;
     } else if (bearPct >= 65) {
-      outlook = "Stark Bearish";
+      outlook = l.strongBearish;
       outlookColor = Colors.red;
       outlookIcon = Icons.trending_down;
     } else if (bearPct >= 55) {
-      outlook = "Leicht Bearish";
+      outlook = l.lightBearish;
       outlookColor = Colors.orange;
       outlookIcon = Icons.trending_down;
     } else {
-      outlook = "Neutral / Seitwärts";
+      outlook = l.neutralSideways;
       outlookColor = Colors.amber;
       outlookIcon = Icons.trending_flat;
     }
@@ -289,16 +294,16 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
     String riskLevel;
     Color riskColor;
     if (annualVol < 15) {
-      riskLevel = "Niedrig";
+      riskLevel = l.riskLow;
       riskColor = Colors.green;
     } else if (annualVol < 30) {
-      riskLevel = "Moderat";
+      riskLevel = l.riskModerate;
       riskColor = Colors.orange;
     } else if (annualVol < 60) {
-      riskLevel = "Hoch";
+      riskLevel = l.riskHigh;
       riskColor = Colors.deepOrange;
     } else {
-      riskLevel = "Sehr Hoch";
+      riskLevel = l.riskVeryHigh;
       riskColor = Colors.red;
     }
 
@@ -312,11 +317,11 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
           children: [
             Row(
               children: [
-                Icon(Icons.auto_awesome, size: 18, color: Colors.deepPurple),
+                const Icon(Icons.auto_awesome, size: 18, color: Colors.deepPurple),
                 const SizedBox(width: 8),
-                const Text("Analyse der Simulation",
+                Text(l.simulationAnalysis,
                     style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               ],
             ),
             const Divider(),
@@ -329,8 +334,8 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Ausblick",
-                        style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    Text(l.outlook,
+                        style: const TextStyle(fontSize: 11, color: Colors.grey)),
                     Text(outlook,
                         style: TextStyle(
                             fontSize: 16,
@@ -342,8 +347,8 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text("Erwartete Δ",
-                        style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    Text(l.expectedDelta,
+                        style: const TextStyle(fontSize: 11, color: Colors.grey)),
                     Text(
                         "${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)}%",
                         style: TextStyle(
@@ -357,8 +362,8 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
             const SizedBox(height: 16),
 
             // Bull/Bear Bar
-            const Text("Wahrscheinlichkeitsverteilung",
-                style: TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(l.probabilityDistribution,
+                style: const TextStyle(fontSize: 11, color: Colors.grey)),
             const SizedBox(height: 6),
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
@@ -398,27 +403,27 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
             // Metrics Grid
             Row(
               children: [
-                _metricTile("Volatilität (p.a.)",
+                _metricTile(l.volatilityAnn,
                     "${annualVol.toStringAsFixed(1)}%", riskColor),
-                _metricTile("Risiko-Level", riskLevel, riskColor),
-                _metricTile("95% Spanne", "${range95.toStringAsFixed(1)}%",
+                _metricTile(l.riskLevel, riskLevel, riskColor),
+                _metricTile(l.span95, "${range95.toStringAsFixed(1)}%",
                     Colors.blue),
-                _metricTile("Risk/Reward", riskReward.toStringAsFixed(2),
+                _metricTile(l.riskReward, riskReward.toStringAsFixed(2),
                     riskReward >= 1.0 ? Colors.green : Colors.red),
               ],
             ),
             if (res.tpProbability != null || res.slProbability != null) ...[
               const SizedBox(height: 16),
-              const Text("Target Wahrscheinlichkeiten",
-                  style: TextStyle(fontSize: 11, color: Colors.grey)),
+              Text(l.targetProbabilities,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey)),
               const SizedBox(height: 8),
               Row(
                 children: [
                   if (res.tpProbability != null)
-                    _probabilityTile("Hit TP", res.tpProbability!,
+                    _probabilityTile(context, l.hitTp, res.tpProbability!,
                         res.medianTpDay, Colors.green),
                   if (res.slProbability != null)
-                    _probabilityTile("Hit SL", res.slProbability!,
+                    _probabilityTile(context, l.hitSl, res.slProbability!,
                         res.medianSlDay, Colors.red),
                 ],
               ),
@@ -434,7 +439,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                       const Icon(Icons.arrow_upward,
                           color: Colors.green, size: 16),
                       const SizedBox(width: 4),
-                      Text("Upside: +${upside.toStringAsFixed(1)}%",
+                      Text("${l.upside}: +${upside.toStringAsFixed(1)}%",
                           style: const TextStyle(
                               fontSize: 12,
                               color: Colors.green,
@@ -449,7 +454,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                       const Icon(Icons.arrow_downward,
                           color: Colors.red, size: 16),
                       const SizedBox(width: 4),
-                      Text("Downside: -${downside.toStringAsFixed(1)}%",
+                      Text("${l.downside}: -${downside.toStringAsFixed(1)}%",
                           style: const TextStyle(
                               fontSize: 12,
                               color: Colors.red,
@@ -475,7 +480,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      _generateRecommendation(bullPct, change, annualVol,
+                      _generateRecommendation(context, bullPct, change, annualVol,
                           riskReward, _daysToSimulate),
                       style: TextStyle(fontSize: 12, color: outlookColor),
                     ),
@@ -490,7 +495,8 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
   }
 
   Widget _probabilityTile(
-      String label, double prob, int? medianDay, Color color) {
+      BuildContext context, String label, double prob, int? medianDay, Color color) {
+    final l = context.l10n;
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -509,7 +515,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
                 style: TextStyle(
                     fontSize: 16, fontWeight: FontWeight.bold, color: color)),
             if (medianDay != null)
-              Text("~ T$medianDay Ø",
+              Text("~ ${l.dayShort(medianDay)} ${l.averageShort}",
                   style:
                       TextStyle(fontSize: 10, color: color.withOpacity(0.7))),
           ],
@@ -535,23 +541,25 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
   }
 
   String _generateRecommendation(
-      double bullPct, double change, double vol, double rr, int days) {
+      BuildContext context, double bullPct, double change, double vol, double rr, int days) {
+    final l = context.l10n;
     if (bullPct >= 65 && rr >= 1.5) {
-      return "Starkes bullishes Setup: ${bullPct.toStringAsFixed(0)}% der Szenarien steigen in $days Tagen. Risk/Reward von ${rr.toStringAsFixed(1)} spricht für eine Position.";
+      return l.mcRecStrongBullish(bullPct.toStringAsFixed(0), days, rr.toStringAsFixed(1));
     } else if (bullPct >= 55 && rr >= 1.0) {
-      return "Leicht bullishes Umfeld mit akzeptablem Risk/Reward. Ein moderater Einstieg könnte in Betracht gezogen werden.";
+      return l.mcRecLightBullish;
     } else if (bullPct <= 35) {
-      return "Bearishes Szenario: Nur ${bullPct.toStringAsFixed(0)}% der Simulationen zeigen steigende Kurse. Vorsicht ist geboten, ggf. Absicherung empfohlen.";
+      return l.mcRecBearish(bullPct.toStringAsFixed(0));
     } else if (vol > 50) {
-      return "Extrem hohe Volatilität (${vol.toStringAsFixed(0)}% p.a.) — die Preisspanne ist sehr breit. Kleinere Positionen und weite Stop-Loss Levels empfohlen.";
+      return l.mcRecHighVol(vol.toStringAsFixed(0));
     } else if (rr < 0.5) {
-      return "Ungünstiges Risk/Reward-Verhältnis (${rr.toStringAsFixed(2)}). Das Abwärtsrisiko überwiegt das Aufwärtspotenzial deutlich.";
+      return l.mcRecBadRR(rr.toStringAsFixed(2));
     } else {
-      return "Neutrales Umfeld: Die Simulation zeigt keine klare Richtung. Abwarten oder Range-Strategien könnten sinnvoll sein.";
+      return l.mcRecNeutral;
     }
   }
 
-  Widget _buildChart(MonteCarloResult res) {
+  Widget _buildChart(BuildContext context, MonteCarloResult res) {
+    final l = context.l10n;
     return LineChart(
       LineChartData(
         gridData: const FlGridData(show: true, drawVerticalLine: false),
@@ -569,7 +577,7 @@ class _MonteCarloSheetState extends State<_MonteCarloSheet> {
               showTitles: true,
               reservedSize: 24,
               interval: (_daysToSimulate / 5).ceilToDouble(),
-              getTitlesWidget: (value, meta) => Text("T${value.toInt()}",
+              getTitlesWidget: (value, meta) => Text(l.dayShort(value.toInt()),
                   style: const TextStyle(fontSize: 9)),
             ),
           ),

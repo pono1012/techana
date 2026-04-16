@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/models.dart';
+import '../l10n/l10n_extension.dart';
 import '../models/trade_record.dart';
 import '../services/portfolio_service.dart';
 import '../services/bot_analytics_service.dart';
@@ -44,7 +45,7 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Deep Dive Analyse"),
+        title: Text(context.l10n.deepDiveAnalysis),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -55,15 +56,15 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
                 dropdownColor: Theme.of(context).cardColor,
                 style: const TextStyle(
                     color: Colors.white, fontWeight: FontWeight.bold),
-                items: const [
+                items: [
                   DropdownMenuItem(
-                      value: TimeFilter.allTime, child: Text("All Time")),
+                      value: TimeFilter.allTime, child: Text(context.l10n.filterAllTime)),
                   DropdownMenuItem(
-                      value: TimeFilter.last30Days, child: Text("30 Tage")),
+                      value: TimeFilter.last30Days, child: Text(context.l10n.filter30Days)),
                   DropdownMenuItem(
-                      value: TimeFilter.last7Days, child: Text("7 Tage")),
+                      value: TimeFilter.last7Days, child: Text(context.l10n.filter7Days)),
                   DropdownMenuItem(
-                      value: TimeFilter.yearToDate, child: Text("YTD")),
+                      value: TimeFilter.yearToDate, child: Text(context.l10n.filterYtd)),
                 ],
                 onChanged: (val) {
                   if (val != null) {
@@ -78,10 +79,10 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: "Übersicht"),
-            Tab(text: "Details"),
-            Tab(text: "Top Kombis"),
+          tabs: [
+            Tab(text: context.l10n.tabOverview),
+            Tab(text: context.l10n.tabDetails),
+            Tab(text: context.l10n.tabTopCombos),
           ],
         ),
       ),
@@ -92,17 +93,17 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.analytics_outlined, size: 60, color: Colors.grey),
-          SizedBox(height: 16),
-          Text("Noch keine geschlossenen Trades für eine Analyse vorhanden."),
-          SizedBox(height: 8),
+          const Icon(Icons.analytics_outlined, size: 60, color: Colors.grey),
+          const SizedBox(height: 16),
+          Text(context.l10n.noClosedTradesForAnalysis),
+          const SizedBox(height: 8),
           Text(
-            "Warte auf erste Bot-Aktivitäten.",
-            style: TextStyle(color: Colors.grey),
+            context.l10n.waitingForBotActivity,
+            style: const TextStyle(color: Colors.grey),
           ),
         ],
       ),
@@ -114,9 +115,9 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
         closedTrades: trades, timeFilter: _selectedFilter);
 
     if (stats.totalTrades == 0) {
-      return const Center(
-        child: Text("Keine Trades in diesem Zeitraum gefunden.",
-            style: TextStyle(color: Colors.grey)),
+      return Center(
+        child: Text(context.l10n.noTradesInPeriod,
+            style: const TextStyle(color: Colors.grey)),
       );
     }
 
@@ -137,8 +138,8 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
       children: [
         _buildKpiGrid(stats),
         const SizedBox(height: 24),
-        const Text("Equity Kurve (Kapitalverlauf)",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(context.l10n.equityCurveTitle,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         _buildEquityCurve(stats),
         const SizedBox(height: 24),
@@ -151,8 +152,8 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
           ],
         ),
         const SizedBox(height: 24),
-        const Text("Top / Flop Assets",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(context.l10n.topFlopAssets,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
         _buildSymbolPerformance(stats),
       ],
@@ -169,24 +170,24 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
       crossAxisSpacing: 12,
       children: [
         _kpiBox(
-          "Net PnL",
+          context.l10n.netPnL,
           "${stats.totalPnL >= 0 ? '+' : ''}${stats.totalPnL.toStringAsFixed(2)}€",
           color: stats.totalPnL >= 0 ? Colors.green : Colors.red,
         ),
         _kpiBox(
-          "Profit Factor",
+          context.l10n.profitFactor,
           stats.profitFactor == double.infinity
               ? "∞"
               : stats.profitFactor.toStringAsFixed(2),
           color: stats.profitFactor > 1.0 ? Colors.green : Colors.orange,
         ),
         _kpiBox(
-          "Erwartungswert (EV)",
-          "${stats.expectancy >= 0 ? '+' : ''}${stats.expectancy.toStringAsFixed(2)}€/Trade",
+          context.l10n.expectancyVal,
+          context.l10n.expectancyUnit("${stats.expectancy >= 0 ? '+' : ''}${stats.expectancy.toStringAsFixed(2)}€"),
           color: stats.expectancy > 0 ? Colors.green : Colors.red,
         ),
         _kpiBox(
-          "Max Drawdown",
+          context.l10n.maxDrawdown,
           "${stats.maxDrawdown.toStringAsFixed(2)}€",
           color: Colors.redAccent,
         ),
@@ -349,13 +350,13 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Streaks & Dauer",
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(context.l10n.streaksAndDuration,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           const Divider(),
           _rowItem(
-              "Max Winning Streak", "${stats.maxWinningStreak}", Colors.green),
-          _rowItem("Max Losing Streak", "${stats.maxLosingStreak}", Colors.red),
-          _rowItem("Ø Hold Time", "${stats.averageTradeDuration.inHours}h",
+              context.l10n.maxWinningStreak, "${stats.maxWinningStreak}", Colors.green),
+          _rowItem(context.l10n.maxLosingStreak, "${stats.maxLosingStreak}", Colors.red),
+          _rowItem(context.l10n.avgHoldTime, "${stats.averageTradeDuration.inHours}h",
               Colors.blue),
         ],
       ),
@@ -372,14 +373,14 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Win / Loss Profile",
-              style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(context.l10n.winLossProfile,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
           const Divider(),
           _rowItem(
-              "Win Rate", "${stats.winRate.toStringAsFixed(1)}%", Colors.blue),
-          _rowItem("Ø Winner", "+${stats.averageWin.toStringAsFixed(2)}€",
+              context.l10n.winRate, "${stats.winRate.toStringAsFixed(1)}%", Colors.blue),
+          _rowItem(context.l10n.avgWinner, "+${stats.averageWin.toStringAsFixed(2)}€",
               Colors.green),
-          _rowItem("Ø Loser", "-${stats.averageLoss.abs().toStringAsFixed(2)}€",
+          _rowItem(context.l10n.avgLoser, "-${stats.averageLoss.abs().toStringAsFixed(2)}€",
               Colors.red),
         ],
       ),
@@ -411,11 +412,11 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: _buildSymbolList("Top Gewinner", topWinners, Colors.green),
+          child: _buildSymbolList(context.l10n.topWinners, topWinners, Colors.green),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildSymbolList("Top Verlierer", topLosers, Colors.red),
+          child: _buildSymbolList(context.l10n.topLosers, topLosers, Colors.red),
         ),
       ],
     );
@@ -431,7 +432,7 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
                 fontSize: 14, fontWeight: FontWeight.bold, color: color)),
         const SizedBox(height: 8),
         if (items.isEmpty)
-          const Text("Keine Daten", style: TextStyle(color: Colors.grey)),
+          Text(context.l10n.noDataSmall, style: const TextStyle(color: Colors.grey)),
         ...items.map((g) => Card(
               margin: const EdgeInsets.only(bottom: 6),
               elevation: 0,
@@ -462,11 +463,11 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        _buildGroupedSection("Performance nach TimeFrame", stats.byTimeFrame),
+        _buildGroupedSection(context.l10n.performanceByTimeFrame, stats.byTimeFrame),
         _buildGroupedSection(
-            "Performance nach Strategie", stats.byEntryStrategy),
-        _buildGroupedSection("Performance nach Stop-Loss", stats.bySlMethod),
-        _buildGroupedSection("Performance nach Take-Profit", stats.byTpMethod),
+            context.l10n.performanceByStrategy, stats.byEntryStrategy),
+        _buildGroupedSection(context.l10n.performanceBySl, stats.bySlMethod),
+        _buildGroupedSection(context.l10n.performanceByTp, stats.byTpMethod),
       ],
     );
   }
@@ -531,10 +532,10 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
       length: 2,
       child: Column(
         children: [
-          const TabBar(
+          TabBar(
             tabs: [
-              Tab(text: "LONG"),
-              Tab(text: "SHORT"),
+              Tab(text: context.l10n.bullish),
+              Tab(text: context.l10n.bearish),
             ],
           ),
           Expanded(
@@ -552,7 +553,7 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
 
   Widget _buildComboList(List<TopCombination> combos) {
     if (combos.isEmpty) {
-      return const Center(child: Text("Zu wenig Daten für Kombinationen."));
+      return Center(child: Text(context.l10n.tooLittleDataForCombos));
     }
 
     return ListView.builder(
@@ -579,7 +580,7 @@ class _AnalysisStatsScreenState extends State<AnalysisStatsScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Kombination #${index + 1}",
+                    Text(context.l10n.combinationNumber(index + 1),
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, color: Colors.blue)),
                     Text(

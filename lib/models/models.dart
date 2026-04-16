@@ -41,20 +41,6 @@ extension TimeFrameExtension on TimeFrame {
     }
   }
 
-  String get label {
-    switch (this) {
-      case TimeFrame.m15:
-        return '15 Min';
-      case TimeFrame.h1:
-        return '1 Std';
-      case TimeFrame.h4:
-        return '4 Std';
-      case TimeFrame.d1:
-        return 'Tag';
-      case TimeFrame.w1:
-        return 'Woche';
-    }
-  }
 }
 
 enum ChartRange { week1, month1, quarter1, year1, year2, year3, year5 }
@@ -243,6 +229,7 @@ class AppSettings {
   final bool useAiProbability;
   final bool useMtc;
   final bool useStrategyOptimizer;
+  final String languageCode;
 
   AppSettings({
     this.themeModeIndex = 1,
@@ -282,6 +269,7 @@ class AppSettings {
     this.useAiProbability = true,
     this.useMtc = false,
     this.useStrategyOptimizer = false,
+    this.languageCode = 'system',
   });
 
   AppSettings copyWith({
@@ -322,6 +310,7 @@ class AppSettings {
     bool? useAiProbability,
     bool? useMtc,
     bool? useStrategyOptimizer,
+    String? languageCode,
   }) {
     return AppSettings(
       themeModeIndex: themeModeIndex ?? this.themeModeIndex,
@@ -361,6 +350,7 @@ class AppSettings {
       useAiProbability: useAiProbability ?? this.useAiProbability,
       useMtc: useMtc ?? this.useMtc,
       useStrategyOptimizer: useStrategyOptimizer ?? this.useStrategyOptimizer,
+      languageCode: languageCode ?? this.languageCode,
     );
   }
 }
@@ -624,21 +614,6 @@ enum MarketRegime {
   ranging,
   volatile,
   unknown;
-
-  String get label {
-    switch (this) {
-      case MarketRegime.trendingBull:
-        return 'Bullischer Trend';
-      case MarketRegime.trendingBear:
-        return 'Bearischer Trend';
-      case MarketRegime.ranging:
-        return 'Seitwärts (Range)';
-      case MarketRegime.volatile:
-        return 'Volatil (Choppy)';
-      case MarketRegime.unknown:
-        return 'Unbekannt';
-    }
-  }
 }
 
 class IndicatorWinRates {

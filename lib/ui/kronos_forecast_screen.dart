@@ -5,6 +5,7 @@ import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../services/kronos_backend_service.dart';
 import '../services/data_service.dart';
+import '../l10n/l10n_extension.dart';
 import 'dart:async';
 
 void showKronosForecastSheet(BuildContext context, String symbol) {
@@ -70,6 +71,7 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
   void _runForecast() async {
     if (widget.symbol.isEmpty) return;
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _progress = 0.0;
@@ -121,6 +123,7 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
       minChildSize: 0.5,
@@ -152,8 +155,8 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Kronos KI Prognose",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(l.kronosKiPrognose,
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           Text(widget.symbol,
                               style: const TextStyle(fontSize: 12, color: Colors.grey)),
                         ],
@@ -162,10 +165,10 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
                     DropdownButton<String>(
                       value: _selectedModel,
                       underline: const SizedBox(),
-                      items: const [
-                        DropdownMenuItem(value: "mini", child: Text("Mini Modell", style: TextStyle(fontSize: 12))),
-                        DropdownMenuItem(value: "small", child: Text("Small Modell", style: TextStyle(fontSize: 12))),
-                        DropdownMenuItem(value: "base", child: Text("Base Modell", style: TextStyle(fontSize: 12))),
+                      items: [
+                        DropdownMenuItem(value: "mini", child: Text(l.miniModel, style: const TextStyle(fontSize: 12))),
+                        DropdownMenuItem(value: "small", child: Text(l.smallModel, style: const TextStyle(fontSize: 12))),
+                        DropdownMenuItem(value: "base", child: Text(l.baseModel, style: const TextStyle(fontSize: 12))),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -179,18 +182,18 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
                       icon: _isLoading
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                           : const Icon(Icons.play_arrow, color: Colors.green),
-                      tooltip: "Prognose starten",
+                      tooltip: l.prognoseStarten,
                     ),
                   ],
                 ),
               ),
               ExpansionTile(
-                title: const Text("Erweiterte Einstellungen", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                title: Text(l.erweiterteEinstellungen, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
                 childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
                 children: [
-                  _buildSliderRow("Prognose (Tage)", _predLen.toDouble(), 10, 180, (v) => setState(() => _predLen = v.toInt())),
-                  _buildSliderRow("Modell Kontext / Vorlauf (Tage)", _lookback.toDouble(), 30, 512, (v) => setState(() => _lookback = v.toInt())),
-                  _buildSliderRow("Chart Historie Anzeige (Tage)", _chartHistory.toDouble(), 10, 365, (v) => setState(() => _chartHistory = v.toInt())),
+                  _buildSliderRow(l.prognoseTage, _predLen.toDouble(), 10, 180, (v) => setState(() => _predLen = v.toInt())),
+                  _buildSliderRow(l.modellKontext, _lookback.toDouble(), 30, 512, (v) => setState(() => _lookback = v.toInt())),
+                  _buildSliderRow(l.chartHistorieAnzeige, _chartHistory.toDouble(), 10, 365, (v) => setState(() => _chartHistory = v.toInt())),
                 ],
               ),
               const Divider(),
@@ -202,14 +205,14 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
                         children: [
                           CircularProgressIndicator(value: _progress > 0 ? _progress : null),
                           const SizedBox(height: 16),
-                          Text(_progress > 0 ? "Berechne Prognose... ${(_progress * 100).toInt()}%" : "Kronos Modell generiert Prognose...", style: const TextStyle(color: Colors.grey)),
-                          const Text("Erster Start kann wegen Model-Download länger dauern.", style: TextStyle(color: Colors.grey, fontSize: 10)),
+                          Text(_progress > 0 ? l.calculatingPrognose((_progress * 100).toInt()) : l.kronosGenerating, style: const TextStyle(color: Colors.grey)),
+                          Text(l.firstStartWarning, style: const TextStyle(color: Colors.grey, fontSize: 10)),
                         ],
                       ))
                     : _errorMsg.isNotEmpty
                         ? Center(child: Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: Text("Fehler: $_errorMsg", style: const TextStyle(color: Colors.red)),
+                            child: Text("${l.errorLabel}: $_errorMsg", style: const TextStyle(color: Colors.red)),
                           ))
                         : _forecastBars.isNotEmpty
                             ? ListView(
@@ -217,16 +220,15 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
                                 children: [
                                   const SizedBox(height: 16),
-                                  const Text("Voraussichtlicher Preisverlauf", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 24),
-                                  SizedBox(
-                                    height: 350,
-                                    child: _buildChart(),
-                                  ),
+                                  Text(l.expectedPriceCourse, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                    SizedBox(
+                                      height: 350,
+                                      child: _buildChart(context),
+                                    ),
                                   const SizedBox(height: 24),
                                   _buildSummaryCards(),
                                 ])
-                            : const Center(child: Text("Drücke den Start-Button für eine Prognose")),
+                            : Center(child: Text(l.pressStartForPrognose)),
               ),
             ],
           ),
@@ -235,7 +237,8 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
     );
   }
 
-  Widget _buildChart() {
+  Widget _buildChart(BuildContext context) {
+    final l = context.l10n;
     if (_historicalBars.isEmpty || _forecastBars.isEmpty) return const SizedBox();
 
     final displayHistory = _historicalBars.sublist(_historicalBars.length > _chartHistory ? _historicalBars.length - _chartHistory : 0);
@@ -294,8 +297,8 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
               reservedSize: 24,
               interval: 10,
               getTitlesWidget: (value, meta) {
-                if (value == offset - 1) return const Text("Heute", style: TextStyle(fontSize: 9, color: Colors.blueAccent));
-                return Text("T+${(value - offset + 1).toInt()}", style: const TextStyle(fontSize: 9));
+                if (value == offset - 1) return Text(l.today, style: const TextStyle(fontSize: 9, color: Colors.blueAccent));
+                return Text(l.dayShort((value - offset + 1).toInt()), style: const TextStyle(fontSize: 9));
               },
             ),
           ),
@@ -345,6 +348,7 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
   }
 
   Widget _buildSummaryCards() {
+    final l = context.l10n;
     double startPrice = _historicalBars.last.close;
     double endPrice = _forecastBars.last.close;
     double change = ((endPrice - startPrice) / startPrice) * 100;
@@ -354,11 +358,11 @@ class _KronosForecastSheetState extends State<_KronosForecastSheet> {
 
     return Row(
       children: [
-        _statCard("Aktuell", _fmt(startPrice), Colors.white70),
-        _statCard("Ziel (T+${_predLen})", _fmt(endPrice), change >= 0 ? Colors.green : Colors.red),
-        _statCard("Δ", "${change >= 0 ? '+' : ''}${change.toStringAsFixed(1)}%", change >= 0 ? Colors.green : Colors.red),
-        _statCard("Max Hoch", _fmt(maxTarget), Colors.green),
-        _statCard("Min Tief", _fmt(minTarget), Colors.red),
+        _statCard(l.current, _fmt(startPrice), Colors.white70),
+        _statCard(l.targetTPlus(_predLen), _fmt(endPrice), change >= 0 ? Colors.green : Colors.red),
+        _statCard(l.delta, "${change >= 0 ? '+' : ''}${change.toStringAsFixed(1)}%", change >= 0 ? Colors.green : Colors.red),
+        _statCard(l.maxHigh, _fmt(maxTarget), Colors.green),
+        _statCard(l.minLow, _fmt(minTarget), Colors.red),
       ],
     );
   }

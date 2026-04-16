@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../providers/app_provider.dart';
+import '../l10n/l10n_extension.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -10,75 +11,96 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
     final s = provider.settings;
+    final l = context.l10n;
 
     return DefaultTabController(
       length: 4,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Einstellungen"),
-          bottom: const TabBar(
+          title: Text(l.settings),
+          bottom: TabBar(
             tabs: [
-              Tab(text: "Ansicht", icon: Icon(Icons.visibility)),
-              Tab(text: "Chart", icon: Icon(Icons.show_chart)),
-              Tab(text: "Strategie", icon: Icon(Icons.settings_applications)),
-              Tab(text: "Daten", icon: Icon(Icons.data_usage)),
+              Tab(text: l.tabView, icon: const Icon(Icons.visibility)),
+              Tab(text: l.tabChart, icon: const Icon(Icons.show_chart)),
+              Tab(text: l.tabStrategy, icon: const Icon(Icons.settings_applications)),
+              Tab(text: l.tabData, icon: const Icon(Icons.data_usage)),
             ],
           ),
         ),
         body: TabBarView(
           children: [
-            // Tab 1: Ansicht & Allgemein
+            // Tab 1: View & General
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildGroupCard(context, "Ansicht & Allgemein", [
+                _buildGroupCard(context, l.viewAndGeneral, [
                   SwitchListTile(
-                    title: const Text("Dunkles Design"),
+                    title: Text(l.darkTheme),
                     value: provider.themeMode == ThemeMode.dark,
                     onChanged: (_) => provider.toggleTheme(),
                   ),
                   SwitchListTile(
-                    title: const Text("Candlesticks anzeigen"),
-                    subtitle: const Text("Zeigt Kerzen statt Linie"),
+                    title: Text(l.showCandlesticks),
+                    subtitle: Text(l.showCandlesticksSubtitle),
                     value: s.showCandles,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showCandles: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("Muster-Marker"),
+                    title: Text(l.patternMarkers),
                     value: s.showPatternMarkers,
                     onChanged: (v) => provider
                         .updateSettings(s.copyWith(showPatternMarkers: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("Trading-Linien (TP/SL)"),
+                    title: Text(l.tradingLines),
                     value: s.showTradeLines,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showTradeLines: v)),
                   ),
                 ]),
+                const SizedBox(height: 16),
+                _buildGroupCard(context, l.language, [
+                  ListTile(
+                    title: Text(l.language),
+                    trailing: DropdownButton<String>(
+                      value: s.languageCode,
+                      onChanged: (v) {
+                        if (v != null) {
+                          provider.updateSettings(s.copyWith(languageCode: v));
+                        }
+                      },
+                      underline: Container(),
+                      items: [
+                        DropdownMenuItem(value: 'system', child: Text(l.systemLanguage)),
+                        const DropdownMenuItem(value: 'de', child: Text('Deutsch')),
+                        const DropdownMenuItem(value: 'en', child: Text('English')),
+                      ],
+                    ),
+                  ),
+                ]),
               ],
             ),
 
-            // Tab 2: Chart (Indikatoren und Zusatz-Graphen)
+            // Tab 2: Chart (Indicators)
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildGroupCard(context, "Indikatoren im Chart", [
+                _buildGroupCard(context, l.chartIndicators, [
                   SwitchListTile(
-                    title: const Text("EMA 20 Linie"),
+                    title: Text(l.ema20Line),
                     value: s.showEMA,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showEMA: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("Bollinger Bands"),
+                    title: Text(l.bollingerBands),
                     value: s.showBB,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showBB: v)),
                   ),
                   _sliderTile(
-                      "Projektion (Tage)",
+                      l.projectionDays,
                       s.projectionDays.toDouble(),
                       5,
                       90,
@@ -86,39 +108,39 @@ class SettingsScreen extends StatelessWidget {
                           s.copyWith(projectionDays: v.toInt()))),
                 ]),
                 const SizedBox(height: 16),
-                _buildGroupCard(context, "Zusatz-Graphen (unten)", [
+                _buildGroupCard(context, l.additionalCharts, [
                   SwitchListTile(
-                    title: const Text("Volumen Chart"),
+                    title: Text(l.volumeChart),
                     value: s.showVolume,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showVolume: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("RSI Indikator"),
+                    title: Text(l.rsiIndicator),
                     value: s.showRSI,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showRSI: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("MACD Indikator"),
+                    title: Text(l.macdIndicator),
                     value: s.showMACD,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showMACD: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("Stochastic Oszillator"),
+                    title: Text(l.stochasticOscillator),
                     value: s.showStochastic,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showStochastic: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("On-Balance Volume (OBV)"),
+                    title: Text(l.obvIndicator),
                     value: s.showOBV,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showOBV: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("ADX (Trendstärke)"),
+                    title: Text(l.adxIndicator),
                     value: s.showAdx,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(showAdx: v)),
@@ -127,169 +149,160 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
 
-            // Tab 3: Strategie
+            // Tab 3: Strategy
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildGroupCard(context, "Manuelle Analyse Strategie", [
+                _buildGroupCard(context, l.manualAnalysisStrategy, [
                   _dropdownTile<int>(
-                    "Entry Strategie",
+                    l.entryStrategy,
                     s.entryStrategy,
-                    const {
-                      0: "Market (Sofort)",
-                      1: "Pullback (Limit)",
-                      2: "Breakout (Stop)"
+                    {
+                      0: l.marketImmediate,
+                      1: l.pullbackLimit,
+                      2: l.breakoutStop,
                     },
                     (v) =>
                         provider.updateSettings(s.copyWith(entryStrategy: v)),
-                    subtitle:
-                        "Wann einsteigen? 'Market' kauft sofort. 'Pullback' wartet auf günstigeren Preis. 'Breakout' kauft bei Ausbruch nach oben (teurer). Empfohlen: Market oder Pullback.",
+                    subtitle: l.entryStrategyDesc,
                   ),
                   if (s.entryStrategy != 0) ...[
                     _dropdownTile<int>(
-                      "Entry Padding Typ",
+                      l.entryPaddingType,
                       s.entryPaddingType,
-                      const {0: "Prozentual (%)", 1: "ATR Faktor"},
+                      {0: l.percentual, 1: l.atrFactor},
                       (v) => provider
                           .updateSettings(s.copyWith(entryPaddingType: v)),
                     ),
                     _sliderTile(
                       s.entryPaddingType == 0
-                          ? "Entry Padding %"
-                          : "Entry Padding (x ATR)",
+                          ? l.entryPaddingPercent
+                          : l.entryPaddingAtr,
                       s.entryPadding,
                       0.1,
                       s.entryPaddingType == 0 ? 2.0 : 5.0,
                       (v) =>
                           provider.updateSettings(s.copyWith(entryPadding: v)),
-                      desc:
-                          "Abstand zum aktuellen Kurs für die Order. Standard: 0.2% oder 0.5x ATR.",
+                      desc: l.entryPaddingDesc,
                     ),
                   ],
                   const Divider(),
                   _dropdownTile<int>(
-                    "Stop Loss Methode",
+                    l.stopLossMethod,
                     s.stopMethod,
-                    const {
-                      0: "Donchian Low",
-                      1: "Prozentual",
-                      2: "ATR (Volatilität)",
-                      3: "Swing-Low/High"
+                    {
+                      0: l.donchianLow,
+                      1: l.percentualMethod,
+                      2: l.atrVolatility,
+                      3: l.swingLowHigh,
                     },
                     (v) => provider.updateSettings(s.copyWith(stopMethod: v)),
-                    subtitle:
-                        "Wie wird der Stop Loss gesetzt? ATR passt sich der Marktschwankung an (Profi-Standard). Swing nutzt das letzte signifikante Tief/Hoch.",
+                    subtitle: l.stopLossDesc,
                   ),
                   if (s.stopMethod == 1)
                     _sliderTile(
-                        "Stop Loss %",
+                        l.stopLossPercent,
                         s.stopPercent,
                         1,
                         20,
                         (v) =>
                             provider.updateSettings(s.copyWith(stopPercent: v)),
-                        desc: "Fester prozentualer Abstand. Standard: 5-8%."),
+                        desc: l.stopLossPercentDesc),
                   if (s.stopMethod == 2 || s.tpMethod == 2)
-                    _sliderTile("ATR Multiplikator", s.atrMult, 1, 5,
+                    _sliderTile(l.atrMultiplier, s.atrMult, 1, 5,
                         (v) => provider.updateSettings(s.copyWith(atrMult: v)),
-                        desc:
-                            "Wie viel 'Luft' hat der Trade? 2.0x ATR ist Standard für Swing-Trading. Kleiner = engerer Stop."),
+                        desc: l.atrMultiplierDesc),
                   if (s.stopMethod == 3)
                     _sliderTile(
-                        "Swing Lookback (Kerzen)",
+                        l.swingLookbackCandles,
                         s.swingLookback.toDouble(),
                         5,
                         50,
                         (v) => provider.updateSettings(
                             s.copyWith(swingLookback: v.toInt())),
-                        desc:
-                            "Wie viele Kerzen zurückschauen um das letzte Swing-Tief/Hoch zu finden. Standard: 20."),
+                        desc: l.swingLookbackDesc),
                   const Divider(),
                   _dropdownTile<int>(
-                    "Take Profit Methode",
+                    l.takeProfitMethod,
                     s.tpMethod,
-                    const {
-                      0: "Risk/Reward (CRV)",
-                      1: "Prozentual",
-                      2: "ATR-Ziel",
-                      3: "Pivot Points"
+                    {
+                      0: l.riskRewardCrv,
+                      1: l.percentualMethod,
+                      2: l.atrTarget,
+                      3: l.pivotPoints,
                     },
                     (v) => provider.updateSettings(s.copyWith(tpMethod: v)),
-                    subtitle:
-                        "Wann Gewinne mitnehmen? Pivot Points nutzt klassische Floor-Pivot-Levels als Ziele. CRV empfohlen für Anfänger.",
+                    subtitle: l.takeProfitDesc,
                   ),
                   if (s.tpMethod == 0 || s.tpMethod == 2) ...[
-                    _sliderTile("TP1 Faktor", s.rrTp1, 1, 5,
+                    _sliderTile(l.tp1Factor, s.rrTp1, 1, 5,
                         (v) => provider.updateSettings(s.copyWith(rrTp1: v)),
-                        desc:
-                            "Erstes Ziel: Vielfaches des Risikos. Standard: 1.5x (bei 100€ Risiko -> 150€ Gewinn)."),
-                    _sliderTile("TP2 Faktor", s.rrTp2, 2, 10,
+                        desc: l.tp1FactorDesc),
+                    _sliderTile(l.tp2Factor, s.rrTp2, 2, 10,
                         (v) => provider.updateSettings(s.copyWith(rrTp2: v)),
-                        desc: "Zweites Ziel (Moonbag). Standard: 3.0x."),
+                        desc: l.tp2FactorDesc),
                   ],
                   if (s.tpMethod == 1) ...[
                     _sliderTile(
-                        "TP1 %",
+                        l.tp1Percent,
                         s.tpPercent1,
                         1,
                         20,
                         (v) =>
                             provider.updateSettings(s.copyWith(tpPercent1: v)),
-                        desc: "Fester Gewinn in %. Standard: 5-10%."),
+                        desc: l.tp1PercentDesc),
                     _sliderTile(
-                        "TP2 %",
+                        l.tp2Percent,
                         s.tpPercent2,
                         2,
                         50,
                         (v) =>
                             provider.updateSettings(s.copyWith(tpPercent2: v)),
-                        desc: "Fernes Ziel in %. Standard: 10-20%."),
+                        desc: l.tp2PercentDesc),
                   ],
                   const Divider(),
                   _sliderTile(
-                      "MC Simulationen",
+                      l.mcSimulations,
                       s.mcSimulations.toDouble(),
                       50,
                       1000,
                       (v) => provider
                           .updateSettings(s.copyWith(mcSimulations: v.toInt())),
-                      desc:
-                          "Anzahl der Szenarien für das Scoring. Höher = genauer, aber langsamer. Standard: 200."),
+                      desc: l.mcSimulationsDesc),
                   const SizedBox(height: 12),
                   Center(
                       child: TextButton.icon(
                     icon: const Icon(Icons.restore),
-                    label: const Text("Auf Standardwerte zurücksetzen"),
+                    label: Text(l.resetToDefaults),
                     onPressed: () => provider.resetStrategySettings(),
                   )),
                 ]),
                 const SizedBox(height: 16),
-                _buildGroupCard(context, "Experten Features (AI/Algo)", [
+                _buildGroupCard(context, l.expertFeaturesAi, [
                   SwitchListTile(
-                    title: const Text("Markt-Regime Filter"),
-                    subtitle:
-                        const Text("Anpassung an Trend/Range/Volatilität"),
+                    title: Text(l.marketRegimeFilter),
+                    subtitle: Text(l.marketRegimeSubtitle),
                     value: s.useMarketRegime,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(useMarketRegime: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("AI Probability Scoring"),
-                    subtitle: const Text("Gewichtung nach hist. Trefferrate"),
+                    title: Text(l.aiProbabilityScoring),
+                    subtitle: Text(l.aiProbabilitySubtitle),
                     value: s.useAiProbability,
                     onChanged: (v) => provider
                         .updateSettings(s.copyWith(useAiProbability: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("Multi-Timeframe (MTC)"),
-                    subtitle: const Text("Bestätigung auf höheren Zeitebenen"),
+                    title: Text(l.multiTimeframeMtc),
+                    subtitle: Text(l.mtcSubtitle),
                     value: s.useMtc,
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(useMtc: v)),
                   ),
                   SwitchListTile(
-                    title: const Text("Strategy Optimizer"),
-                    subtitle: const Text("Sucht ideale Indikator-Parameter"),
+                    title: Text(l.strategyOptimizer),
+                    subtitle: Text(l.strategyOptimizerSubtitle),
                     value: s.useStrategyOptimizer,
                     onChanged: (v) => provider
                         .updateSettings(s.copyWith(useStrategyOptimizer: v)),
@@ -298,18 +311,18 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
 
-            // Tab 4: Daten & Info
+            // Tab 4: Data & Info
             ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                _buildGroupCard(context, "Datenquellen", [
-                  const Text("Chart: Stooq.com (Frei)"),
+                _buildGroupCard(context, l.dataSources, [
+                  Text(l.chartDataSource),
                   const SizedBox(height: 8),
                   TextField(
-                    decoration: const InputDecoration(
-                      labelText: "Alpha Vantage API Key (für Fundamentals)",
-                      hintText: "Hier Key eingeben (optional)",
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.alphaVantageLabel,
+                      hintText: l.alphaVantageHint,
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(alphaVantageKey: v)),
@@ -317,10 +330,10 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   TextField(
-                    decoration: const InputDecoration(
-                      labelText: "FMP API Key (Financial Modeling Prep)",
-                      hintText: "Key eingeben",
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.fmpLabel,
+                      hintText: l.fmpHint,
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(fmpKey: v)),
@@ -328,10 +341,10 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   TextField(
-                    decoration: const InputDecoration(
-                      labelText: "HuggingFace Token (Kronos AI)",
+                    decoration: InputDecoration(
+                      labelText: l.hfTokenLabel,
                       hintText: "hf_...",
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (v) =>
                         provider.updateSettings(s.copyWith(hfToken: v)),
@@ -340,9 +353,9 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   TextField(
                     decoration: InputDecoration(
-                      labelText: "Kronos Server URL",
-                      hintText: "z.B. http://192.168.178.139:8000",
-                      helperText: "Leer = lokales Backend auf Desktop. Für Android/iOS: IP des PCs eingeben.",
+                      labelText: l.kronosServerUrl,
+                      hintText: l.kronosServerHint,
+                      helperText: l.kronosServerHelper,
                       helperMaxLines: 2,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.cloud_outlined),
@@ -365,7 +378,7 @@ class SettingsScreen extends StatelessWidget {
                     builder: (context, snapshot) {
                       final ver = snapshot.data?.version ?? "1.0.0";
                       final build = snapshot.data?.buildNumber ?? "0";
-                      return Text("Version $ver+$build",
+                      return Text(l.version(ver, build),
                           style: const TextStyle(color: Colors.grey));
                     },
                   ),
@@ -408,9 +421,9 @@ class SettingsScreen extends StatelessWidget {
       {String? desc}) {
     int divisions = 100;
     if (max - min <= 10) {
-      divisions = ((max - min) * 10).toInt(); // 0.1 Schritte
+      divisions = ((max - min) * 10).toInt();
     } else if (max - min <= 100) {
-      divisions = (max - min).toInt(); // 1.0 Schritte
+      divisions = (max - min).toInt();
     }
 
     return Column(

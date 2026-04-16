@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../services/watchlist_service.dart';
 import '../models/models.dart';
-import 'analysis_settings_dialog.dart'; // Import hinzufügen
+import 'analysis_settings_dialog.dart';
+import '../l10n/l10n_extension.dart';
+import '../l10n/enum_localizations.dart';
 
 class ScoreDetailsScreen extends StatelessWidget {
   final TradeSignal? externalSignal;
@@ -23,7 +25,7 @@ class ScoreDetailsScreen extends StatelessWidget {
     final data = externalSignal != null ? null : appProvider.computedData;
 
     if (sig == null) {
-      return const Scaffold(body: Center(child: Text("Keine Daten")));
+      return Scaffold(body: Center(child: Text(context.l10n.noData)));
     }
 
     final snapshot = sig.indicatorValues ?? {};
@@ -63,15 +65,16 @@ class ScoreDetailsScreen extends StatelessWidget {
     final scoreVolume = snapshot['score_volume'] as double? ?? 0;
     final scorePattern = snapshot['score_pattern'] as double? ?? 0;
     final scoreVolatility = snapshot['score_volatility'] as double? ?? 0;
+    final l = context.l10n;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Analyse Details"),
+        title: Text(context.l10n.analysisDetails),
         actions: [
           // NEU: Einstellungen Button
           IconButton(
             icon: const Icon(Icons.tune),
-            tooltip: "Strategie Einstellungen",
+            tooltip: context.l10n.strategySettings,
             onPressed: () => showDialog(
                 context: context, builder: (_) => AnalysisSettingsDialog()),
           ),
@@ -83,15 +86,15 @@ class ScoreDetailsScreen extends StatelessWidget {
                   ? Icons.playlist_add_check
                   : Icons.playlist_add),
               tooltip: isInWatchlist
-                  ? "Bereits in Bot Watchlist"
-                  : "Zur Bot Watchlist hinzufügen",
+                  ? context.l10n.alreadyInWatchlist
+                  : context.l10n.addToWatchlist,
               onPressed: isInWatchlist
                   ? null
                   : () {
                       watchlist.addWatchlistSymbol(symbol);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content:
-                              Text("$symbol zur Bot-Watchlist hinzugefügt!")));
+                              Text(context.l10n.addedToWatchlist(symbol))));
                     },
             );
           })
@@ -110,7 +113,7 @@ class ScoreDetailsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                Text("Trading Score",
+                Text(context.l10n.tradingScore,
                     style: Theme.of(context).textTheme.titleMedium),
                 Text("${sig.score}/100",
                     style: TextStyle(
@@ -137,7 +140,7 @@ class ScoreDetailsScreen extends StatelessWidget {
                         const Icon(Icons.layers_outlined,
                             size: 16, color: Colors.blueGrey),
                         const SizedBox(width: 8),
-                        Text("Regime: ${sig.marketRegime!.label}",
+                        Text(context.l10n.regimePrefix(sig.marketRegime!.label(context)),
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blueGrey)),
@@ -151,8 +154,8 @@ class ScoreDetailsScreen extends StatelessWidget {
 
           // AI Probability Insights
           if (sig.aiConfidence != null) ...[
-            const Text("AI Probability Insights",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(context.l10n.aiProbabilityInsights,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
@@ -166,7 +169,7 @@ class ScoreDetailsScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Durchschnittliche Konfidenz"),
+                      Text(context.l10n.avgConfidence),
                       Text("${(sig.aiConfidence! * 100).toStringAsFixed(1)}%",
                           style: const TextStyle(
                               fontWeight: FontWeight.bold,
@@ -174,19 +177,19 @@ class ScoreDetailsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                      "Indikator-Gewichtung (Erfolgsrate letzte 50 Bars):",
-                      style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                      context.l10n.indicatorWeighting,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 8),
-                  _buildAiWeightRow("EMA Trend", snapshot['weight_ema'] ?? 0.5),
+                  _buildAiWeightRow(l.indicatorEMA, snapshot['weight_ema'] ?? 0.5),
                   _buildAiWeightRow(
-                      "RSI Momentum", snapshot['weight_rsi'] ?? 0.5),
+                      l.indicatorRSI, snapshot['weight_rsi'] ?? 0.5),
                   _buildAiWeightRow(
-                      "MACD Volume", snapshot['weight_macd'] ?? 0.5),
+                      l.indicatorMACD, snapshot['weight_macd'] ?? 0.5),
                   _buildAiWeightRow(
-                      "Bollinger Bands", snapshot['weight_bb'] ?? 0.5),
+                      l.indicatorBB, snapshot['weight_bb'] ?? 0.5),
                   _buildAiWeightRow(
-                      "Stochastic", snapshot['weight_stoch'] ?? 0.5),
+                      l.indicatorStoch, snapshot['weight_stoch'] ?? 0.5),
                 ],
               ),
             ),
@@ -194,82 +197,82 @@ class ScoreDetailsScreen extends StatelessWidget {
           ],
 
           // Kategorie-Scoring Aufschlüsselung
-          const Text("Score-Aufschlüsselung (Tippbar für Details):",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(context.l10n.scoreBreakdown,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 8),
 
-          _buildCategoryBar(context, "🔴 Trend", scoreTrend, 35, Colors.blue, [
+          _buildCategoryBar(context, "🔴 ${context.l10n.catTrend}", scoreTrend, 35, Colors.blue, [
             _buildIndicatorCard(
                 context,
-                "Supertrend",
-                lastStBull ? "Grün" : "Rot",
-                lastStBull ? "Bullish" : "Bearish",
-                "Der Supertrend zeigt die Hauptrichtung basierend auf ATR-Volatilität.",
+                l.indicatorSupertrend,
+                lastStBull ? l.positive : l.negative,
+                lastStBull ? l.bullish : l.bearish,
+                l.stDesc,
                 lastStBull ? Colors.green : Colors.red),
             _buildIndicatorCard(
                 context,
                 "EMA 20 / EMA 50",
                 "${lastEma20.toStringAsFixed(2)} / ${lastEma50.toStringAsFixed(2)}",
-                lastPrice > lastEma20 ? "Kurs über EMA" : "Kurs unter EMA",
-                "Kurzfristiger und mittelfristiger Trendfilter.",
+                lastPrice > lastEma20 ? l.priceAboveEma : l.priceBelowEma,
+                l.emaDesc,
                 lastPrice > lastEma20 ? Colors.green : Colors.red),
             _buildIndicatorCard(
                 context,
-                "Parabolic SAR",
-                lastPsarBull ? "Bullish" : "Bearish",
-                lastPsarBull ? "Trend aufwärts" : "Trend abwärts",
-                "PSAR platziert Punkte unter/über dem Preis. Preisüberschreitung = Trendwechsel.",
+                l.indicatorSAR,
+                lastPsarBull ? l.bullish : l.bearish,
+                lastPsarBull ? l.trendUp : l.trendDown,
+                l.psarDesc,
                 lastPsarBull ? Colors.green : Colors.red),
             _buildIndicatorCard(
                 context,
-                "Ichimoku Analyse",
-                isCrossBullish ? "Tenkan > Kijun" : "Tenkan < Kijun",
-                isCloudBullish ? "Über der Wolke" : "Unter der Wolke",
-                "Wolke = dynamische S/R Zone. Tenkan/Kijun-Cross = Momentumsignal.",
+                l.indicatorIchimoku,
+                isCrossBullish ? l.tenkanAboveKijun : l.tenkanBelowKijun,
+                isCloudBullish ? l.aboveCloud : l.belowCloud,
+                l.ichimokuDesc,
                 isCloudBullish ? Colors.green : Colors.red),
             _buildIndicatorCard(
                 context,
-                "Vortex + Choppiness",
+                l.indicatorVortexChoppiness,
                 "VX: ${lastVortex.toStringAsFixed(3)} | CHOP: ${lastChop.toStringAsFixed(1)}",
-                isTrending ? "Trending (< 61.8)" : "Seitwärts (> 61.8)",
-                "Vortex misst Trendbewegungen. Choppiness Index: < 61.8 = Trend, > 61.8 = Range.",
+                isTrending ? l.trending : l.sideways,
+                l.vortexChopDesc,
                 isTrending ? Colors.blue : Colors.grey),
           ]),
           _buildCategoryBar(
-              context, "🟡 Momentum", scoreMomentum, 25, Colors.orange, [
+              context, "🟡 ${context.l10n.catMomentum}", scoreMomentum, 25, Colors.orange, [
             _buildIndicatorCard(
                 context,
                 "RSI (${lastRsi.toStringAsFixed(1)})",
                 lastRsi.toStringAsFixed(1),
                 lastRsi < 30
-                    ? "Überverkauft"
-                    : (lastRsi > 70 ? "Überkauft" : "Neutral"),
-                "RSI misst Überverkauft (<30) / Überkauft (>70). Im starken Trend (ADX>25) ist RSI>70 kein Warnsignal.",
+                    ? context.l10n.rsiOversold
+                    : (lastRsi > 70 ? context.l10n.rsiOverbought : context.l10n.rsiNeutral),
+                context.l10n.rsiDesc,
                 lastRsi < 30
                     ? Colors.green
                     : (lastRsi > 70 ? Colors.red : Colors.grey)),
             _buildIndicatorCard(
                 context,
-                "MACD Histogramm",
+                l.indicatorMACDHist,
                 lastMacdHist.toStringAsFixed(4),
-                lastMacdHist > 0 ? "Positives Momentum" : "Negatives Momentum",
-                "Histogramm > 0 = bullisches Momentum. Steigende Balken = stärker werdendes Signal.",
+                lastMacdHist > 0 ? l.posMomentum : l.negMomentum,
+                l.macdDesc,
                 lastMacdHist > 0 ? Colors.green : Colors.red),
             _buildIndicatorCard(
                 context,
-                "ADX (Trendstärke)",
+                l.indicatorADX,
                 lastAdx.toStringAsFixed(1),
-                lastAdx > 25 ? "Starker Trend" : "Seitwärts",
-                "ADX > 25 = etablierter Trend. Verstärkt andere Momentum-Signale.",
+                lastAdx > 25 ? l.strongTrend : l.sideways,
+                l.adxDesc,
                 lastAdx > 25 ? Colors.blue : Colors.grey),
             _buildIndicatorCard(
                 context,
                 "CCI (Commodity Channel)",
                 lastCci.toStringAsFixed(1),
                 lastCci < -100
-                    ? "Überverkauft"
-                    : (lastCci > 100 ? "Überkauft" : "Neutral"),
-                "CCI < -100 = stark überverkauft (Kaufgelegenheit). CCI > 100 = überkauft.",
+                    ? context.l10n.rsiOversold
+                    : (lastCci > 100 ? context.l10n.rsiOverbought : context.l10n.rsiNeutral),
+                context.l10n.cciDesc,
                 lastCci < -100
                     ? Colors.green
                     : (lastCci > 100 ? Colors.red : Colors.grey)),
@@ -278,83 +281,83 @@ class ScoreDetailsScreen extends StatelessWidget {
                 "Stochastic (${lastStochK.toStringAsFixed(1)})",
                 lastStochK.toStringAsFixed(1),
                 lastStochK > 80
-                    ? "Überkauft"
-                    : (lastStochK < 20 ? "Überverkauft" : "Neutral"),
-                "Stochastic vergleicht Schlusskurs mit Preisspanne. <20 = oversold, >80 = overbought.",
+                    ? context.l10n.rsiOverbought
+                    : (lastStochK < 20 ? context.l10n.rsiOversold : context.l10n.rsiNeutral),
+                context.l10n.stochDesc,
                 lastStochK > 80
                     ? Colors.red
                     : (lastStochK < 20 ? Colors.green : Colors.grey)),
             _buildIndicatorCard(
                 context,
-                "Awesome Oscillator",
+                l.indicatorAO,
                 lastAo.toStringAsFixed(4),
-                lastAo > 0 ? "Bullish" : "Bearish",
-                "AO = SMA(5) - SMA(34) der Mittelpunkte. Zeigt Marktmomentum.",
+                lastAo > 0 ? l.bullish : l.bearish,
+                l.aoDesc,
                 lastAo > 0 ? Colors.green : Colors.red),
           ]),
           _buildCategoryBar(
-              context, "🟢 Volumen", scoreVolume, 20, Colors.teal, [
+              context, "🟢 ${context.l10n.catVolume}", scoreVolume, 20, Colors.teal, [
             _buildIndicatorCard(
                 context,
-                "On-Balance Volume",
+                l.indicatorOBV,
                 _formatObv(lastObv),
-                "Volumen-Momentum",
-                "OBV steigt = Kaufdruck. Divergenz mit Preis = mögliche Umkehr.",
+                l.volMomentum,
+                l.obvDesc,
                 Colors.teal),
             _buildIndicatorCard(
                 context,
-                "CMF (Chaikin Money Flow)",
+                l.indicatorCMF,
                 lastCmf.toStringAsFixed(3),
                 lastCmf > 0.05
-                    ? "Positiver Geldfluss"
-                    : (lastCmf < -0.05 ? "Negativer Geldfluss" : "Neutral"),
-                "CMF > 0.05 = Kaufdruck über 20 Tage. CMF < -0.05 = Verkaufsdruck.",
+                    ? l.posMoneyFlow
+                    : (lastCmf < -0.05 ? l.negMoneyFlow : l.rsiNeutral),
+                l.cmfDesc,
                 lastCmf > 0.05
                     ? Colors.green
                     : (lastCmf < -0.05 ? Colors.red : Colors.grey)),
             _buildIndicatorCard(
                 context,
-                "MFI (Money Flow Index)",
+                l.indicatorMFI,
                 lastMfi.toStringAsFixed(1),
                 lastMfi < 20
-                    ? "Überverkauft"
-                    : (lastMfi > 80 ? "Überkauft" : "Neutral"),
-                "MFI = volumengewichteter RSI. < 20 = stark überverkauft (Kaufsignal).",
+                    ? l.rsiOversold
+                    : (lastMfi > 80 ? l.rsiOverbought : l.rsiNeutral),
+                l.mfiDesc,
                 lastMfi < 20
                     ? Colors.green
                     : (lastMfi > 80 ? Colors.red : Colors.grey)),
           ]),
           _buildCategoryBar(
-              context, "🟣 Muster", scorePattern, 15, Colors.purple, [
+              context, "🟣 ${context.l10n.catPattern}", scorePattern, 15, Colors.purple, [
             if (divergenceType != 'none')
               _buildIndicatorCard(
                   context,
-                  "RSI Divergenz",
+                  l.indicatorDiv,
                   divergenceType == 'bullish'
-                      ? "Bullish erkannt"
-                      : "Bearish erkannt",
-                  "Starkes Umkehrsignal",
-                  "Preis und RSI bewegen sich in entgegengesetzte Richtungen = bevorstehende Trendumkehr.",
+                      ? l.bullishDetected
+                      : l.bearishDetected,
+                  l.strongReversal,
+                  l.divDesc,
                   divergenceType == 'bullish' ? Colors.green : Colors.red),
           ]),
           _buildCategoryBar(
-              context, "⚪ Volatilität", scoreVolatility, 5, Colors.grey, [
+              context, "⚪ ${context.l10n.catVolatility}", scoreVolatility, 5, Colors.grey, [
             if (squeeze)
               _buildIndicatorCard(
                   context,
-                  "TTM Squeeze",
-                  "Aktiv",
-                  "Ausbruch steht bevor",
-                  "Bollinger Bands innerhalb Keltner Channels = Energie wird aufgebaut vor Ausbruch.",
+                  l.indicatorSqueeze,
+                  l.active,
+                  l.breakoutPending,
+                  l.squeezeDesc,
                   Colors.orange),
             _buildIndicatorCard(
                 context,
-                "BB %B (Bollinger)",
+                l.indicatorBBPercent,
                 lastBbPct.toStringAsFixed(2),
                 lastBbPct < 0.1
-                    ? "Oversold"
-                    : (lastBbPct > 0.9 ? "Overbought" : "Mid Range"),
-                "%B zeigt Position innerhalb der Bollinger Bands. <0.1 = unteres Band (Kaufgelegenheit).",
+                    ? l.oversold
+                    : (lastBbPct > 0.9 ? l.overbought : l.midRange),
+                l.bbPctDesc,
                 lastBbPct < 0.1
                     ? Colors.green
                     : (lastBbPct > 0.9 ? Colors.red : Colors.grey)),
@@ -365,18 +368,18 @@ class ScoreDetailsScreen extends StatelessWidget {
 
           // Setup Daten
           _buildRow(
-              "Entry Preis", sig.entryPrice.toStringAsFixed(2), Colors.blue),
-          _buildRow("Stop Loss", sig.stopLoss.toStringAsFixed(2), Colors.red),
+              context.l10n.entryPrice, sig.entryPrice.toStringAsFixed(2), Colors.blue),
+          _buildRow(context.l10n.stopLoss, sig.stopLoss.toStringAsFixed(2), Colors.red),
           _buildRow(
-              "Take Profit 1",
+              context.l10n.takeProfit1,
               "${sig.takeProfit1.toStringAsFixed(2)} (+${sig.tp1Percent?.toStringAsFixed(1)}%)",
               Colors.green),
           _buildRow(
-              "Take Profit 2",
+              context.l10n.takeProfit2,
               "${sig.takeProfit2.toStringAsFixed(2)} (+${sig.tp2Percent?.toStringAsFixed(1)}%)",
               Colors.green),
           const SizedBox(height: 8),
-          _buildRow("Risk/Reward (CRV)", sig.riskRewardRatio.toStringAsFixed(2),
+          _buildRow(context.l10n.riskRewardShort, sig.riskRewardRatio.toStringAsFixed(2),
               Colors.orange),
         ],
       ),
@@ -391,6 +394,7 @@ class ScoreDetailsScreen extends StatelessWidget {
 
   Widget _buildCategoryBar(BuildContext context, String label, double score,
       double maxScore, Color color, List<Widget> indicators) {
+    final l = context.l10n;
     final pct = ((score + maxScore) / (2 * maxScore)).clamp(0.0, 1.0);
     final displaySign =
         score > 0 ? "+${score.toStringAsFixed(1)}" : score.toStringAsFixed(1);
@@ -412,7 +416,7 @@ class ScoreDetailsScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("$label Details",
+                Text("${label.split(' ').last} ${l.details}",
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
@@ -458,8 +462,8 @@ class ScoreDetailsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            const Text("Tippen für Indikatoren",
-                style: TextStyle(fontSize: 10, color: Colors.grey)),
+            Text(context.l10n.tapForIndicators,
+                style: const TextStyle(fontSize: 10, color: Colors.grey)),
             const SizedBox(height: 8),
           ],
         ),
@@ -497,7 +501,7 @@ class ScoreDetailsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            Text("Wert: $value",
+            Text(context.l10n.indicatorValue(value),
                 style: const TextStyle(fontFamily: "monospace")),
             const SizedBox(height: 8),
             Text(desc, style: Theme.of(context).textTheme.bodySmall),

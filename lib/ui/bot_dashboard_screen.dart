@@ -10,6 +10,7 @@ import 'analysis_stats_screen.dart';
 
 import 'top_movers_screen.dart';
 import 'bot_dashboard_widgets.dart';
+import '../l10n/l10n_extension.dart';
 
 class BotDashboardScreen extends StatefulWidget {
   const BotDashboardScreen({super.key});
@@ -20,14 +21,13 @@ class BotDashboardScreen extends StatefulWidget {
 
 class _BotDashboardScreenState extends State<BotDashboardScreen> {
   // Filter für die "Alle Positionen" Liste (Legacy)
-  String _filter =
-      "Alle"; // Alle, Offen, Offen +, Offen -, Pending, Geschlossen, Geschlossen +, Geschlossen -
+  String _filter = "all";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Bot Dashboard", style: TextStyle(fontSize: 16)),
+        title: Text(context.l10n.botDashboard, style: const TextStyle(fontSize: 16)),
         actions: [
           Consumer4<PortfolioService, BotSettingsService, TradeExecutionService,
                   WatchlistService>(
@@ -44,29 +44,29 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                 }
               },
               tooltip:
-                  exec.isScanning ? "Scan abbrechen" : "Scan jetzt starten",
+                  exec.isScanning ? context.l10n.cancelScan : context.l10n.startScan,
             );
           }),
           IconButton(
             icon: const Icon(Icons.trending_up),
-            tooltip: "Top Movers Scan",
+            tooltip: context.l10n.topMoversScan,
             onPressed: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const TopMoversScreen())),
           ),
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: "Bot Einstellungen",
+            tooltip: context.l10n.botSettings,
             onPressed: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => BotSettingsScreen())),
           ),
           IconButton(
             icon: const Icon(Icons.list),
-            tooltip: "Watchlist bearbeiten",
+            tooltip: context.l10n.editWatchlist,
             onPressed: () => _showWatchlistDialog(context),
           ),
           IconButton(
             icon: const Icon(Icons.delete_forever),
-            tooltip: "Portfolio Reset",
+            tooltip: context.l10n.portfolioReset,
             onPressed: () => _confirmReset(context),
           ),
         ],
@@ -100,7 +100,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                         MaterialPageRoute(
                             builder: (_) => const AnalysisStatsScreen())),
                     icon: const Icon(Icons.analytics),
-                    label: const Text("Detaillierte Bot Analyse öffnen"),
+                    label: Text(context.l10n.openDetailedAnalysis),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
@@ -111,7 +111,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                   // --- 4. Scanner Status Bar (Legacy / Bottom - removed or kept minimal?) ---
 
                   const SizedBox(height: 16),
-                  const Text("Positionen nach Kategorie",
+                  Text(context.l10n.positionsByCategory,
                       style:
                           TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
@@ -123,9 +123,9 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
 
                   // --- 6. All Positions (Expandable) ---
                   ExpansionTile(
-                    title: const Text("Alle Positionen (Rohdaten)",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text("${portfolio.trades.length} Trades gesamt"),
+                    title: Text(context.l10n.allPositionsRaw,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(context.l10n.tradesTotal(portfolio.trades.length)),
                     initiallyExpanded: false,
                     children: [
                       // Filter Bar inside
@@ -134,54 +134,54 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Row(
                           children: [
-                            _buildFilterChip("Alle"),
-                            _buildFilterChip("Offen"),
-                            _buildFilterChip("Offen +"),
-                            _buildFilterChip("Offen -"),
-                            _buildFilterChip("Pending"),
-                            _buildFilterChip("Geschlossen"),
-                            _buildFilterChip("Geschlossen +"),
-                            _buildFilterChip("Geschlossen -"),
+                            _buildFilterChip(context.l10n.filterAll, "all"),
+                            _buildFilterChip(context.l10n.filterOpen, "open"),
+                            _buildFilterChip(context.l10n.filterOpenPositive, "openPos"),
+                            _buildFilterChip(context.l10n.filterOpenNegative, "openNeg"),
+                            _buildFilterChip(context.l10n.filterPending, "pending"),
+                            _buildFilterChip(context.l10n.filterClosed, "closed"),
+                            _buildFilterChip(context.l10n.filterClosedPositive, "closedPos"),
+                            _buildFilterChip(context.l10n.filterClosedNegative, "closedNeg"),
                           ],
                         ),
                       ),
                       const Divider(),
                       // List items
                       if (portfolio.trades.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text("Keine Trades vorhanden."),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(context.l10n.noTrades),
                         )
                       else
                         ...portfolio.trades.reversed.map((trade) {
                           // Apply Filter
-                          if (_filter == "Offen" &&
+                          if (_filter == "open" &&
                               trade.status != TradeStatus.open)
                             return const SizedBox.shrink();
-                          if (_filter == "Offen +" &&
+                          if (_filter == "openPos" &&
                               (trade.status != TradeStatus.open ||
                                   trade.calcUnrealizedPnL(trade.lastPrice ??
                                           trade.entryPrice) <=
                                       0)) return const SizedBox.shrink();
-                          if (_filter == "Offen -" &&
+                          if (_filter == "openNeg" &&
                               (trade.status != TradeStatus.open ||
                                   trade.calcUnrealizedPnL(trade.lastPrice ??
                                           trade.entryPrice) >=
                                       0)) return const SizedBox.shrink();
-                          if (_filter == "Pending" &&
+                          if (_filter == "pending" &&
                               trade.status != TradeStatus.pending)
                             return const SizedBox.shrink();
-                          if (_filter == "Geschlossen" &&
+                          if (_filter == "closed" &&
                               (trade.status == TradeStatus.open ||
                                   trade.status == TradeStatus.pending))
                             return const SizedBox.shrink();
-                          if (_filter == "Geschlossen +") {
+                          if (_filter == "closedPos") {
                             if (trade.status == TradeStatus.open ||
                                 trade.status == TradeStatus.pending ||
                                 trade.realizedPnL <= 0)
                               return const SizedBox.shrink();
                           }
-                          if (_filter == "Geschlossen -") {
+                          if (_filter == "closedNeg") {
                             if (trade.status == TradeStatus.open ||
                                 trade.status == TradeStatus.pending ||
                                 trade.realizedPnL >= 0)
@@ -247,14 +247,14 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
 
     if (otherTrades.isNotEmpty) {
       widgets
-          .add(_buildCategoryTile(context, "Sonstige", otherTrades, portfolio));
+          .add(_buildCategoryTile(context, context.l10n.otherCategory, otherTrades, portfolio));
     }
 
     if (widgets.isEmpty) {
       return [
-        const Center(
-            child: Text("Keine kategorisierten Trades vorhanden.",
-                style: TextStyle(color: Colors.grey)))
+        Center(
+            child: Text(context.l10n.noCategorizedTrades,
+                style: const TextStyle(color: Colors.grey)))
       ];
     }
 
@@ -317,13 +317,13 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
 
   /// Kleiner farbiger Chip für das Kerzenmuster
 
-  Widget _buildFilterChip(String label) {
+  Widget _buildFilterChip(String label, String key) {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: ChoiceChip(
         label: Text(label, style: const TextStyle(fontSize: 11)),
-        selected: _filter == label,
-        onSelected: (v) => setState(() => _filter = label),
+        selected: _filter == key,
+        onSelected: (v) => setState(() => _filter = key),
         visualDensity: VisualDensity.compact,
       ),
     );
@@ -333,20 +333,19 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Portfolio zurücksetzen?"),
-        content: const Text(
-            "Dies löscht ALLE Trades und setzt das investierte Kapital auf 0 zurück. Bist du sicher?"),
+        title: Text(context.l10n.resetPortfolioTitle),
+        content: Text(context.l10n.resetPortfolioContent),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text("Abbrechen")),
+              child: Text(context.l10n.cancel)),
           TextButton(
             onPressed: () {
               context.read<PortfolioService>().resetPortfolio();
               Navigator.pop(ctx);
             },
-            child: const Text("Alles Löschen",
-                style: TextStyle(color: Colors.red)),
+            child: Text(context.l10n.deleteAll,
+                style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -361,7 +360,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text("Bot Watchlist"),
+          title: Text(context.l10n.botWatchlist),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return SizedBox(
@@ -375,8 +374,8 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                         Expanded(
                             child: TextField(
                           controller: textCtrl,
-                          decoration: const InputDecoration(
-                              hintText: "Symbol (z.B. BTC-USD)"),
+                          decoration: InputDecoration(
+                              hintText: context.l10n.symbolHint),
                           onSubmitted: (val) {
                             if (val.isNotEmpty) {
                               watchlist.addWatchlistSymbol(val);
@@ -424,7 +423,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                                         }
                                         setState(() {});
                                       },
-                                      child: const Text("Alle",
+                                      child: Text(context.l10n.selectAll,
                                           style: TextStyle(fontSize: 12)),
                                     ),
                                     TextButton(
@@ -435,7 +434,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                                         }
                                         setState(() {});
                                       },
-                                      child: const Text("Keine",
+                                      child: Text(context.l10n.selectNone,
                                           style: TextStyle(fontSize: 12)),
                                     ),
                                   ],
@@ -476,7 +475,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("Fertig")),
+                child: Text(context.l10n.done)),
           ],
         );
       },

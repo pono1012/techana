@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../services/data_service.dart';
 import '../services/watchlist_service.dart';
+import '../l10n/l10n_extension.dart';
+import '../l10n/enum_localizations.dart';
 
 class TopMoversHistoryScreen extends StatefulWidget {
   const TopMoversHistoryScreen({super.key});
@@ -70,7 +72,7 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Top Movers Historie"),
+        title: Text(context.l10n.topMoversHistory),
         actions: [
           IconButton(
             icon: _isLoading
@@ -78,13 +80,13 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
                     width: 20, height: 20, child: CircularProgressIndicator())
                 : const Icon(Icons.refresh),
             onPressed: _fetchCurrentPrices,
-            tooltip: "Aktuelle Kurse laden",
+            tooltip: context.l10n.refreshPrices,
           )
         ],
       ),
       body: history.isEmpty
-          ? const Center(
-              child: Text("Keine Scan-Ergebnisse in der Historie vorhanden."))
+          ? Center(
+              child: Text(context.l10n.noScanHistory))
           : ListView.builder(
               itemCount: history.length,
               itemBuilder: (context, index) {
@@ -100,8 +102,8 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
       margin: const EdgeInsets.all(12),
       child: ExpansionTile(
         title: Text(
-            "Scan vom ${result.scanDate.day}.${result.scanDate.month}.${result.scanDate.year} ${result.scanDate.hour}:${result.scanDate.minute.toString().padLeft(2, '0')}"),
-        subtitle: Text("Intervall: ${result.timeFrame.label}"),
+            "${context.l10n.scanFrom} ${result.scanDate.day}.${result.scanDate.month}.${result.scanDate.year} ${result.scanDate.hour}:${result.scanDate.minute.toString().padLeft(2, '0')}"),
+        subtitle: Text("${context.l10n.intervalLabel}: ${result.timeFrame.label(context)}"),
         initiallyExpanded: index == 0,
         children: result.topMovers.map((mover) {
           final currentPrice = _currentPrices[mover.symbol];
@@ -132,7 +134,7 @@ class _TopMoversHistoryScreenState extends State<TopMoversHistoryScreen> {
             title: Text(mover.symbol,
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle:
-                Text("Kurs damals: ${mover.priceAtScan.toStringAsFixed(2)}"),
+                Text("${context.l10n.priceThen}: ${mover.priceAtScan.toStringAsFixed(2)}"),
             trailing: _isLoading && change == null
                 ? const SizedBox(
                     width: 20,

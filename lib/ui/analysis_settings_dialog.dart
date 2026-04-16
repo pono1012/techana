@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../models/models.dart';
+import '../l10n/l10n_extension.dart';
 
 class AnalysisSettingsDialog extends StatefulWidget {
   const AnalysisSettingsDialog({super.key});
@@ -29,14 +30,14 @@ class _AnalysisSettingsDialogState extends State<AnalysisSettingsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Chart & Analyse Einstellungen"),
+      title: Text(context.l10n.chartSettings),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Indikatoren Sichtbarkeit",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(context.l10n.indicatorVisibility,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             _switchTile(
                 "EMA 20",
@@ -44,33 +45,33 @@ class _AnalysisSettingsDialogState extends State<AnalysisSettingsDialog> {
                 (v) => setState(
                     () => _tempSettings = _tempSettings.copyWith(showEMA: v))),
             _switchTile(
-                "Supertrend",
+                context.l10n.supertrend,
                 _tempSettings.showSupertrend,
                 (v) => setState(() =>
                     _tempSettings = _tempSettings.copyWith(showSupertrend: v))),
             _switchTile(
-                "Donchian Channel",
+                context.l10n.donchianChannel,
                 _tempSettings.showDonchian,
                 (v) => setState(() =>
                     _tempSettings = _tempSettings.copyWith(showDonchian: v))),
             _switchTile(
-                "Bollinger Bands",
+                context.l10n.bollingerBands,
                 _tempSettings.showBB,
                 (v) => setState(
                     () => _tempSettings = _tempSettings.copyWith(showBB: v))),
             _switchTile(
-                "Pattern Marker",
+                context.l10n.patternMarkers,
                 _tempSettings.showPatternMarkers,
                 (v) => setState(() => _tempSettings =
                     _tempSettings.copyWith(showPatternMarkers: v))),
             _switchTile(
-                "Trade Linien",
+                context.l10n.tradingLines,
                 _tempSettings.showTradeLines,
                 (v) => setState(() =>
                     _tempSettings = _tempSettings.copyWith(showTradeLines: v))),
             const Divider(),
-            const Text("Oszillatoren (unter Chart)",
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(context.l10n.oscillators,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             _switchTile(
                 "RSI",
                 _tempSettings.showRSI,
@@ -82,12 +83,12 @@ class _AnalysisSettingsDialogState extends State<AnalysisSettingsDialog> {
                 (v) => setState(
                     () => _tempSettings = _tempSettings.copyWith(showMACD: v))),
             _switchTile(
-                "Stochastic",
+                context.l10n.stochasticOscillator,
                 _tempSettings.showStochastic,
                 (v) => setState(() =>
                     _tempSettings = _tempSettings.copyWith(showStochastic: v))),
             _switchTile(
-                "Volumen",
+                context.l10n.volume,
                 _tempSettings.showVolume,
                 (v) => setState(() =>
                     _tempSettings = _tempSettings.copyWith(showVolume: v))),
@@ -103,14 +104,14 @@ class _AnalysisSettingsDialogState extends State<AnalysisSettingsDialog> {
                     () => _tempSettings = _tempSettings.copyWith(showOBV: v))),
             const Divider(),
             _sliderTile(
-                "Chart Zeitraum (Tage)",
+                context.l10n.chartRangeDays,
                 _tempSettings.chartRangeDays.toDouble(),
                 30,
                 1000,
                 (v) => setState(() => _tempSettings =
                     _tempSettings.copyWith(chartRangeDays: v.toInt()))),
             _sliderTile(
-                "Projektion (Tage)",
+                context.l10n.projectionDays,
                 _tempSettings.projectionDays.toDouble(),
                 0,
                 60,
@@ -122,8 +123,8 @@ class _AnalysisSettingsDialogState extends State<AnalysisSettingsDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text("Abbrechen")),
-        FilledButton(onPressed: _save, child: const Text("Speichern")),
+            child: Text(context.l10n.cancel)),
+        FilledButton(onPressed: _save, child: Text(context.l10n.save)),
       ],
     );
   }

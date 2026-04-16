@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/models.dart';
 import '../services/data_service.dart';
+import '../l10n/l10n_extension.dart';
 
 class NewsScreen extends StatefulWidget {
   final String symbol;
@@ -35,12 +36,12 @@ class _NewsScreenState extends State<NewsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("News: ${widget.symbol}")),
+      appBar: AppBar(title: Text(context.l10n.newsTitle(widget.symbol))),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _news.isEmpty
-              ? const Center(
-                  child: Text("Keine aktuellen Nachrichten gefunden."))
+              ? Center(
+                  child: Text(context.l10n.noNewsFound))
               : ListView.separated(
                   itemCount: _news.length,
                   separatorBuilder: (_, __) => const Divider(),

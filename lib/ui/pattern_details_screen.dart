@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../l10n/l10n_extension.dart';
+
 
 class PatternDetailsScreen extends StatelessWidget {
   final String patternName;
@@ -7,14 +9,15 @@ class PatternDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final info = _getPatternInfo(patternName);
-    final isBullish = info['type'] == 'Bullish';
+    final info = _getPatternInfo(context, patternName);
+    final localizedName = _getLocalizedPatternName(context, patternName);
+    final isBullish = info['type'] == context.l10n.bullish;
     final color = isBullish
         ? Colors.green
-        : (info['type'] == 'Bearish' ? Colors.red : Colors.grey);
+        : (info['type'] == context.l10n.bearish ? Colors.red : Colors.grey);
 
     return Scaffold(
-      appBar: AppBar(title: Text(patternName)),
+      appBar: AppBar(title: Text(localizedName)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -41,7 +44,8 @@ class PatternDetailsScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // --- Titel & Typ ---
-            Text(patternName,
+            Text(localizedName,
+                textAlign: TextAlign.center,
                 style:
                     const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -67,9 +71,9 @@ class PatternDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Erklärung",
+                  Text(context.l10n.explanation,
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   Text(info['desc']!,
                       style: const TextStyle(fontSize: 16, height: 1.5)),
@@ -82,184 +86,116 @@ class PatternDetailsScreen extends StatelessWidget {
     );
   }
 
-  Map<String, String> _getPatternInfo(String name) {
-    // ---- Divergenzen ----
+  String _getLocalizedPatternName(BuildContext context, String name) {
+    switch (name) {
+      case 'Bullish Divergenz': return context.l10n.patternBullishDivergence;
+      case 'Bearish Divergenz': return context.l10n.patternBearishDivergence;
+      case 'Doji': return context.l10n.patternDoji;
+      case 'Long-Legged Doji': return context.l10n.patternLongLeggedDoji;
+      case 'Spinning Top': return context.l10n.patternSpinningTop;
+      case 'Marubozu Bullish': return context.l10n.patternMarubozuBullish;
+      case 'Marubozu Bearish': return context.l10n.patternMarubozuBearish;
+      case 'Hammer': return context.l10n.patternHammer;
+      case 'Inverted Hammer': return context.l10n.patternInvertedHammer;
+      case 'Shooting Star': return context.l10n.patternShootingStar;
+      case 'Hanging Man': return context.l10n.patternHangingMan;
+      case 'Bullish Engulfing': return context.l10n.patternBullishEngulfing;
+      case 'Bearish Engulfing': return context.l10n.patternBearishEngulfing;
+      case 'Piercing Line': return context.l10n.patternPiercingLine;
+      case 'Dark Cloud Cover': return context.l10n.patternDarkCloudCover;
+      case 'Bullish Harami': return context.l10n.patternBullishHarami;
+      case 'Bearish Harami': return context.l10n.patternBearishHarami;
+      case 'Tweezers Bottom': return context.l10n.patternTweezersBottom;
+      case 'Tweezers Top': return context.l10n.patternTweezersTop;
+      case 'Kicking Bullish': return context.l10n.patternKickingBullish;
+      case 'Morning Star': return context.l10n.patternMorningStar;
+      case 'Evening Star': return context.l10n.patternEveningStar;
+      case '3 White Soldiers': return context.l10n.pattern3WhiteSoldiers;
+      case '3 Black Crows': return context.l10n.pattern3BlackCrows;
+      default: return name;
+    }
+  }
+
+  Map<String, String> _getPatternInfo(BuildContext context, String name) {
+    final l = context.l10n;
+    String type = l.neutral;
+    String desc = l.noData;
+
     if (name == 'Bullish Divergenz') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Eine Bullish Divergenz tritt auf, wenn der Preis ein neues Tief macht, der RSI aber ein HÖHERES Tief bildet. Dies zeigt, dass der Verkaufsdruck nachlässt — obwohl der Kurs fällt, verliert die Abwärtsbewegung an Kraft. Oft ein starkes Warnsignal für eine bevorstehende Umkehr nach oben. Besonders zuverlässig in überverkauften Zonen (RSI < 30).'
-      };
+      type = l.bullish;
+      desc = l.patternBullishDivergenceDesc;
+    } else if (name == 'Bearish Divergenz') {
+      type = l.bearish;
+      desc = l.patternBearishDivergenceDesc;
+    } else if (name == 'Doji') {
+      type = l.neutral;
+      desc = l.patternDojiDesc;
+    } else if (name == 'Long-Legged Doji') {
+      type = l.neutral;
+      desc = l.patternLongLeggedDojiDesc;
+    } else if (name == 'Spinning Top') {
+      type = l.neutral;
+      desc = l.patternSpinningTopDesc;
+    } else if (name == 'Marubozu Bullish') {
+      type = l.bullish;
+      desc = l.patternMarubozuBullishDesc;
+    } else if (name == 'Marubozu Bearish') {
+      type = l.bearish;
+      desc = l.patternMarubozuBearishDesc;
+    } else if (name == 'Hammer') {
+      type = l.bullish;
+      desc = l.patternHammerDesc;
+    } else if (name == 'Inverted Hammer') {
+      type = l.bullish;
+      desc = l.patternInvertedHammerDesc;
+    } else if (name == 'Shooting Star') {
+      type = l.bearish;
+      desc = l.patternShootingStarDesc;
+    } else if (name == 'Hanging Man') {
+      type = l.bearish;
+      desc = l.patternHangingManDesc;
+    } else if (name == 'Bullish Engulfing') {
+      type = l.bullish;
+      desc = l.patternBullishEngulfingDesc;
+    } else if (name == 'Bearish Engulfing') {
+      type = l.bearish;
+      desc = l.patternBearishEngulfingDesc;
+    } else if (name == 'Piercing Line') {
+      type = l.bullish;
+      desc = l.patternPiercingLineDesc;
+    } else if (name == 'Dark Cloud Cover') {
+      type = l.bearish;
+      desc = l.patternDarkCloudCoverDesc;
+    } else if (name == 'Bullish Harami') {
+      type = l.bullish;
+      desc = l.patternBullishHaramiDesc;
+    } else if (name == 'Bearish Harami') {
+      type = l.bearish;
+      desc = l.patternBearishHaramiDesc;
+    } else if (name == 'Tweezers Bottom') {
+      type = l.bullish;
+      desc = l.patternTweezersBottomDesc;
+    } else if (name == 'Tweezers Top') {
+      type = l.bearish;
+      desc = l.patternTweezersTopDesc;
+    } else if (name == 'Kicking Bullish') {
+      type = l.bullish;
+      desc = l.patternKickingBullishDesc;
+    } else if (name == 'Morning Star') {
+      type = l.bullish;
+      desc = l.patternMorningStarDesc;
+    } else if (name == 'Evening Star') {
+      type = l.bearish;
+      desc = l.patternEveningStarDesc;
+    } else if (name == '3 White Soldiers') {
+      type = l.bullish;
+      desc = l.pattern3WhiteSoldiersDesc;
+    } else if (name == '3 Black Crows') {
+      type = l.bearish;
+      desc = l.pattern3BlackCrowsDesc;
     }
-    if (name == 'Bearish Divergenz') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Eine Bearish Divergenz tritt auf, wenn der Preis ein neues Hoch macht, der RSI aber ein NIEDRIGERES Hoch bildet. Dies zeigt, dass der Kaufdruck nachlässt — die Rally verliert intern an Kraft, auch wenn der Kurs noch steigt. Ein Frühwarnsignal für eine mögliche Trendwende nach unten. Besonders zuverlässig in überkauften Zonen (RSI > 70).'
-      };
-    }
-    // ---- Einzelne Kerzen ----
-    if (name == 'Doji') {
-      return {
-        'type': 'Neutral',
-        'desc':
-            'Ein Doji hat fast den gleichen Eröffnungs- und Schlusskurs und sieht aus wie ein Kreuz. Er signalisiert Unentschlossenheit im Markt — weder Käufer noch Verkäufer hatten die Kontrolle. Oft ein Vorbote einer Trendumkehr, besonders nach einem starken Trend.'
-      };
-    }
-    if (name == 'Long-Legged Doji') {
-      return {
-        'type': 'Neutral',
-        'desc':
-            'Ein Long-Legged Doji hat besonders lange obere und untere Schatten, fast kein Körper. Er zeigt extreme Unentschlossenheit — der Kurs schwankte stark in beide Richtungen, schloss aber fast unverändert. Ein starkes Signal für eine bevorstehende Richtungsentscheidung.'
-      };
-    }
-    if (name == 'Spinning Top') {
-      return {
-        'type': 'Neutral',
-        'desc':
-            'Ein Spinning Top hat einen kleinen Körper in der Mitte und moderate Schatten auf beiden Seiten. Er zeigt Gleichgewicht zwischen Käufern und Verkäufern. Im Kontext eines bestehenden Trends kann er eine Erschöpfung und bevorstehende Korrektur ankündigen.'
-      };
-    }
-    if (name == 'Marubozu Bullish') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Ein Bullischer Marubozu ist eine große grüne Kerze ohne oder fast ohne Schatten. Der Kurs eröffnete auf dem Tief und schloss auf dem Hoch — absolutes Käufer-Dominanz durch die gesamte Periode. Ein sehr starkes Kaufsignal, besonders nach einem Rückgang.'
-      };
-    }
-    if (name == 'Marubozu Bearish') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Ein Bärischer Marubozu ist eine große rote Kerze ohne oder fast ohne Schatten. Der Kurs eröffnete auf dem Hoch und schloss auf dem Tief — absolute Verkäufer-Dominanz. Ein sehr starkes Verkaufssignal, besonders nach einem Aufwärtstrend.'
-      };
-    }
-    if (name == 'Hammer') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Ein Hammer tritt nach einem Abwärtstrend auf. Er hat einen kleinen Körper am oberen Ende und einen langen unteren Schatten (Lunte). Dies zeigt, dass Verkäufer den Preis stark drückten, aber Käufer ihn wieder hochkauften. Ein klassisches Umkehrsignal für eine mögliche Bodenbildung.'
-      };
-    }
-    if (name == 'Inverted Hammer') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Der Inverted Hammer (umgekehrter Hammer) hat einen kleinen Körper unten und einen langen oberen Schatten. Er erscheint nach einem Abwärtstrend und zeigt, dass Käufer versuchten, den Kurs hochzutreiben — auch wenn sie es nicht ganz schafften. Bestätigung durch die nächste Kerze wichtig.'
-      };
-    }
-    if (name == 'Shooting Star') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Der Shooting Star ist das Pendant zum Inverted Hammer, aber nach einem Aufwärtstrend. Er hat einen langen oberen Schatten und einen kleinen Körper unten. Käufer trieben den Kurs hoch, aber Verkäufer übernahmen die Kontrolle und drückten ihn wieder runter. Ein Warnsignal für eine bevorstehende Korrektur.'
-      };
-    }
-    if (name == 'Hanging Man') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Der Hanging Man sieht aus wie ein Hammer, erscheint aber nach einem Aufwärtstrend. Der lange untere Schatten zeigt, dass Verkäufer kurzfristig die Kontrolle hatten — ein Warnsignal, dass der Aufwärtstrend nachlassen könnte. Bestätigung durch eine rote Kerze am nächsten Tag verstärkt das Signal.'
-      };
-    }
-    // ---- Zwei-Kerzen-Muster ----
-    if (name == 'Bullish Engulfing') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Eine große grüne Kerze umschließt die vorherige rote Kerze komplett. Dies zeigt massive Kaufkraftübernahme — Käufer haben alle Verluste des Vortages wettgemacht und mehr. Eines der zuverlässigsten bullishen Umkehrsignale.'
-      };
-    }
-    if (name == 'Bearish Engulfing') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Eine große rote Kerze umschließt die vorherige grüne Kerze komplett. Die Verkäufer haben alle Gewinne des Vortages vernichtet und treiben den Kurs tiefer. Eines der zuverlässigsten bärischen Umkehrsignale, besonders auf Widerstandsniveaus.'
-      };
-    }
-    if (name == 'Piercing Line') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Die Piercing Line ist ein 2-Kerzen-Umkehrmuster. Nach einer langen roten Kerze eröffnet die grüne Kerze tiefer (Gap Down), schließt aber über der Mitte der vorigen roten Kerze. Dies zeigt, dass Käufer die Kontrolle übernehmen. Ein bullishes Signal nach einem Abwärtstrend.'
-      };
-    }
-    if (name == 'Dark Cloud Cover') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Das Gegenteil der Piercing Line. Nach einer langen grünen Kerze eröffnet die rote Kerze höher (Gap Up), schließt aber unter der Mitte der vorigen grünen Kerze. Verkäufer übernehmen die Kontrolle. Ein bärisches Umkehrsignal nach einem Aufwärtstrend.'
-      };
-    }
-    if (name == 'Bullish Harami') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Beim Bullish Harami (japanisch: schwanger) wird eine kleine grüne Kerze komplett vom Körper der vorigen großen roten Kerze eingeschlossen. Dies signalisiert eine Verlangsamung des Abwärtsdrucks und eine mögliche Trendwende. Weniger stark als Engulfing, aber ein gutes Warnsignal.'
-      };
-    }
-    if (name == 'Bearish Harami') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Beim Bearish Harami wird eine kleine rote Kerze komplett vom Körper der vorigen großen grünen Kerze eingeschlossen. Dies signalisiert eine Verlangsamung des Aufwärtsdrucks. Der Markt verliert Momentum — ein erstes Warnsignal für eine mögliche Korrektur.'
-      };
-    }
-    if (name == 'Tweezers Bottom') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Tweezers Bottom (Pinzettenboden): Zwei Kerzen mit (fast) identischen Tiefs. Die erste ist rot (Abwärtsbewegung), die zweite grün (Erholung). Dies zeigt einen starken Unterstützungslevel — Käufer sind bereit, genau auf diesem Preisniveau zu kaufen. Ein bullishes Umkehrsignal.'
-      };
-    }
-    if (name == 'Tweezers Top') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Tweezers Top (Pinzettenspitze): Zwei Kerzen mit (fast) identischen Hochs. Die erste ist grün (Aufwärtsbewegung), die zweite rot (Abgabe). Dies zeigt einen starken Widerstandslevel — Verkäufer treten genau auf diesem Niveau auf. Ein bärisches Umkehrsignal.'
-      };
-    }
-    if (name == 'Kicking Bullish') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Das Kicking-Muster ist eines der stärksten Signale überhaupt. Eine bärische Marubozu-Kerze wird abrupt von einer bullischen Marubozu-Kerze gefolgt (Gap Up). Der komplette Richtungswechsel mit starkem Volumen zeigt einen massiven Stimmungsumschwung — von Panikverkauf zu starkem Kaufinteresse.'
-      };
-    }
-    // ---- Drei-Kerzen-Muster ----
-    if (name == 'Morning Star') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Der Morning Star ist ein starkes 3-Kerzen-Umkehrmuster nach einem Abwärtstrend: 1) Große rote Kerze (starker Verkauf), 2) Kleine Kerze (Unentschlossenheit), 3) Große grüne Kerze die über die Mitte der ersten schließt. Einer der zuverlässigsten Bodenbildungs-Indikatoren.'
-      };
-    }
-    if (name == 'Evening Star') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Der Evening Star ist das Gegenstück zum Morning Star, nach einem Aufwärtstrend: 1) Große grüne Kerze (starker Kauf), 2) Kleine Kerze (Unentschlossenheit am Hoch), 3) Große rote Kerze die unter die Mitte der ersten schließt. Ein zuverlässiges Topping-Signal.'
-      };
-    }
-    if (name == '3 White Soldiers') {
-      return {
-        'type': 'Bullish',
-        'desc':
-            'Drei aufeinanderfolgende grüne Kerzen mit höheren Hochs und höheren Schlusskursen. Jede Kerze eröffnet innerhalb oder knapp unter dem vorherigen Körper. Zeigt nachhaltiges Kaufinteresse und anhaltenden Aufwärtstrend — eines der stärksten Trendfortsetzungs- oder Umkehrsignale.'
-      };
-    }
-    if (name == '3 Black Crows') {
-      return {
-        'type': 'Bearish',
-        'desc':
-            'Drei aufeinanderfolgende rote Kerzen mit tieferen Tiefs und tieferen Schlusskursen. Das Gegenstück zu den 3 White Soldiers. Zeigt nachhaltigen Verkaufsdruck — oft ein Signal für den Beginn eines stärkeren Abwärtstrends oder das Ende einer Aufwärtsbewegung.'
-      };
-    }
-    return {
-      'type': 'Neutral',
-      'desc':
-          'Kein spezifisches Muster erkannt oder das Muster ist weniger signifikant. Achte auf andere Indikatoren wie RSI, MACD und Volumen für die Marktrichtung.'
-    };
+
+    return {'type': type, 'desc': desc};
   }
 }
 

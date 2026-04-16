@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/app_provider.dart';
 import '../models/models.dart';
+import '../l10n/l10n_extension.dart';
+import '../l10n/enum_localizations.dart';
 import 'chart_widget.dart';
 import 'score_details_screen.dart';
 import 'settings_screen.dart';
@@ -62,19 +64,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-              icon: Icon(Icons.analytics_outlined),
-              selectedIcon: Icon(Icons.analytics),
-              label: "Analyse"),
+              icon: const Icon(Icons.analytics_outlined),
+              selectedIcon: const Icon(Icons.analytics),
+              label: context.l10n.navAnalysis),
           NavigationDestination(
-              icon: Icon(Icons.smart_toy_outlined),
-              selectedIcon: Icon(Icons.smart_toy),
-              label: "AutoBot"),
+              icon: const Icon(Icons.smart_toy_outlined),
+              selectedIcon: const Icon(Icons.smart_toy),
+              label: context.l10n.navAutoBot),
           NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: "Settings"),
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: context.l10n.navSettings),
         ],
       ),
     );
@@ -103,9 +105,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Expanded(
                       child: TextField(
                         controller: _searchCtrl,
-                        decoration: const InputDecoration(
-                            hintText: "Symbol suchen (z.B. AAPL.US)",
-                            prefixIcon: Icon(Icons.search),
+                        decoration: InputDecoration(
+                            hintText: context.l10n.searchHint,
+                            prefixIcon: const Icon(Icons.search),
                             isDense: true,
                             border: OutlineInputBorder(
                                 borderRadius:
@@ -131,7 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           final isSelected =
                               provider.selectedTimeFrame == interval;
                           return ChoiceChip(
-                            label: Text(interval.label),
+                            label: Text(interval.label(context)),
                             labelStyle: TextStyle(
                                 fontSize: 12,
                                 color: isSelected
@@ -157,21 +159,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       icon: const Icon(Icons.date_range),
                       value: provider.selectedChartRange,
                       onChanged: (v) => provider.setChartRange(v!),
-                      items: const [
+                      items: [
                         DropdownMenuItem(
-                            value: ChartRange.week1, child: Text("1W")),
+                            value: ChartRange.week1, child: Text(context.l10n.range1W)),
                         DropdownMenuItem(
-                            value: ChartRange.month1, child: Text("1M")),
+                            value: ChartRange.month1, child: Text(context.l10n.range1M)),
                         DropdownMenuItem(
-                            value: ChartRange.quarter1, child: Text("3M")),
+                            value: ChartRange.quarter1, child: Text(context.l10n.range3M)),
                         DropdownMenuItem(
-                            value: ChartRange.year1, child: Text("1Y")),
+                            value: ChartRange.year1, child: Text(context.l10n.range1Y)),
                         DropdownMenuItem(
-                            value: ChartRange.year2, child: Text("2Y")),
+                            value: ChartRange.year2, child: Text(context.l10n.range2Y)),
                         DropdownMenuItem(
-                            value: ChartRange.year3, child: Text("3Y")),
+                            value: ChartRange.year3, child: Text(context.l10n.range3Y)),
                         DropdownMenuItem(
-                            value: ChartRange.year5, child: Text("5Y")),
+                            value: ChartRange.year5, child: Text(context.l10n.range5Y)),
                       ],
                     )
                   ],
@@ -221,14 +223,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       padding: const EdgeInsets.all(16),
                       constraints: const BoxConstraints(maxHeight: 200),
                       child: SingleChildScrollView(
-                          child: Text("Fehler: ${provider.error}",
+                          child: Text(context.l10n.errorPrefix(provider.error!),
                               style: const TextStyle(color: Colors.red),
                               textAlign: TextAlign.center)),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => provider.fetchData(),
-                      child: const Text("Erneut versuchen"),
+                      child: Text(context.l10n.retryButton),
                     )
                   ],
                 ),
@@ -254,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     apiKey: provider.settings.fmpKey ?? "")));
                       },
                       icon: const Icon(Icons.analytics_outlined, size: 18),
-                      label: const Text("Fundamentals"),
+                      label: Text(context.l10n.fundamentals),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -268,7 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     NewsScreen(symbol: provider.yahooSymbol)));
                       },
                       icon: const Icon(Icons.newspaper, size: 18),
-                      label: const Text("News (Yahoo)"),
+                      label: Text(context.l10n.newsYahoo),
                     ),
                   ),
                 ],
@@ -284,7 +286,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: FilledButton.tonalIcon(
                       onPressed: () => showMonteCarloSheet(context, provider.symbol),
                       icon: const Icon(Icons.query_stats, size: 18),
-                      label: const FittedBox(child: Text("Monte Carlo")),
+                      label: FittedBox(child: Text(context.l10n.monteCarlo)),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -292,7 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: FilledButton.tonalIcon(
                       onPressed: () => showKronosForecastSheet(context, provider.symbol),
                       icon: const Icon(Icons.blur_linear, size: 18),
-                      label: const FittedBox(child: Text("Kronos KI")),
+                      label: FittedBox(child: Text(context.l10n.kronosAi)),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.blueAccent.withOpacity(0.2),
                         foregroundColor: Colors.blueAccent,
@@ -323,7 +325,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: Theme.of(context).dividerColor.withOpacity(0.1)),
                 ),
                 child: data?.latestSignal == null
-                    ? const Center(child: Text("Keine Analyse"))
+                    ? Center(child: Text(context.l10n.noAnalysis))
                     : Row(
                         children: [
                           // Linke Seite: Score & Typ
@@ -346,8 +348,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       const SizedBox(width: 4),
                                       Text(
                                           data!.latestSignal!.marketRegime
-                                                  ?.label ??
-                                              "Unbekannt",
+                                                  ?.label(context) ??
+                                              context.l10n.unknown,
                                           style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
@@ -355,7 +357,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 2),
-                                  const Text("Trading Score",
+                                  Text(context.l10n.tradingScore,
                                       style: TextStyle(
                                           fontSize: 12, color: Colors.grey)),
                                   // Fix für RenderFlex Overflow: FittedBox skaliert den Inhalt herunter, wenn er zu breit ist
@@ -378,8 +380,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             null)
                                           Column(
                                             children: [
-                                              const Text("AI-Conf.",
-                                                  style: TextStyle(
+                                              Text(context.l10n.aiConfidence,
+                                                  style: const TextStyle(
                                                       fontSize: 8,
                                                       color: Colors.blueGrey)),
                                               Text(
@@ -440,23 +442,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   _buildCompactRow(
-                                      "Entry",
+                                      context.l10n.entry,
                                       data.latestSignal!.entryPrice,
                                       Colors.blue),
-                                  _buildCompactRow("SL",
+                                  _buildCompactRow(context.l10n.stopLossShort,
                                       data.latestSignal!.stopLoss, Colors.red,
                                       isOptimized:
                                           data.latestSignal!.optimizedParams !=
                                               null),
                                   _buildCompactRow(
-                                      "TP1",
+                                      context.l10n.takeProfit1Short,
                                       data.latestSignal!.takeProfit1,
                                       Colors.green,
                                       isOptimized:
                                           data.latestSignal!.optimizedParams !=
                                               null),
                                   _buildCompactRow(
-                                      "TP2",
+                                      context.l10n.takeProfit2Short,
                                       data.latestSignal!.takeProfit2,
                                       Colors.green.withOpacity(0.7),
                                       isOptimized:
@@ -475,14 +477,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     as String? ??
                                 'none';
                             final hasCandlePattern =
-                                pattern.isNotEmpty && pattern != 'Kein Muster';
+                                pattern.isNotEmpty && pattern != 'Kein Muster' && pattern != context.l10n.noPattern;
                             if (!hasCandlePattern && divType != 'none') {
                               pattern = divType == 'bullish'
-                                  ? 'Bullish Divergenz'
-                                  : 'Bearish Divergenz';
+                                  ? context.l10n.bullishDivergence
+                                  : context.l10n.bearishDivergence;
                             }
                             final hasPattern =
-                                pattern.isNotEmpty && pattern != 'Kein Muster';
+                                pattern.isNotEmpty && pattern != 'Kein Muster' && pattern != 'No Pattern' && pattern != context.l10n.noPattern;
                             final bullishKeywords = [
                               'Bullish',
                               'Hammer',
@@ -528,7 +530,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         color: patternColor,
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(hasPattern ? pattern : 'Kein Muster',
+                                      Text(hasPattern ? pattern : context.l10n.noPattern,
                                           style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: hasPattern
@@ -561,23 +563,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Color mcColor;
                 IconData mcIcon;
                 if (mcBull >= 65) {
-                  mcLabel = "Bullish";
+                  mcLabel = context.l10n.mcBullish;
                   mcColor = Colors.green;
                   mcIcon = Icons.trending_up;
                 } else if (mcBull >= 55) {
-                  mcLabel = "Leicht Bullish";
+                  mcLabel = context.l10n.mcSlightlyBullish;
                   mcColor = Colors.lightGreen;
                   mcIcon = Icons.trending_up;
                 } else if (mcBear >= 65) {
-                  mcLabel = "Bearish";
+                  mcLabel = context.l10n.mcBearish;
                   mcColor = Colors.red;
                   mcIcon = Icons.trending_down;
                 } else if (mcBear >= 55) {
-                  mcLabel = "Leicht Bearish";
+                  mcLabel = context.l10n.mcSlightlyBearish;
                   mcColor = Colors.orange;
                   mcIcon = Icons.trending_down;
                 } else {
-                  mcLabel = "Neutral";
+                  mcLabel = context.l10n.mcNeutral;
                   mcColor = Colors.amber;
                   mcIcon = Icons.trending_flat;
                 }
@@ -598,7 +600,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Icon(mcIcon, color: mcColor, size: 16),
                         const SizedBox(width: 6),
-                        Text("MC: $mcLabel",
+                        Text("MC: ${mcLabel}",
                             style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -646,16 +648,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     sig.indicatorValues!['mtc_trend'] as String? ?? "neutral";
                 Color mtcColor = Colors.grey;
                 IconData mtcIcon = Icons.unfold_more;
-                String mtcText = "MTC: Neutral";
+                String mtcText = context.l10n.mtcNeutral;
 
                 if (mtcTrend == "bullish") {
                   mtcColor = Colors.cyanAccent;
                   mtcIcon = Icons.verified;
-                  mtcText = "MTC: Bullish Bestätigt (H1, H4, D1)";
+                  mtcText = context.l10n.mtcBullishConfirmed;
                 } else if (mtcTrend == "bearish") {
                   mtcColor = Colors.orangeAccent;
                   mtcIcon = Icons.verified;
-                  mtcText = "MTC: Bearish Bestätigt (H1, H4, D1)";
+                  mtcText = context.l10n.mtcBearishConfirmed;
                 }
 
                 return Container(
@@ -698,7 +700,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     flex: 2,
                     child: _buildIndicatorWrapper(
                         context,
-                        "Volumen",
+                        context.l10n.volume,
                         _formatVolume(data.bars.last.volume),
                         _buildVolumeChart(data))),
 
@@ -707,7 +709,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                     flex: 2,
                     child: _buildIndicatorWrapper(context, "RSI (14)",
-                        _formatRsi(data.rsi.last), _buildRSIChart(data))),
+                        _formatRsi(context, data.rsi.last), _buildRSIChart(data))),
 
               // MACD
               if (provider.settings.showMACD)
@@ -716,7 +718,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: _buildIndicatorWrapper(
                         context,
                         "MACD",
-                        _formatMacd(data.macdHist.last),
+                        _formatMacd(context, data.macdHist.last),
                         _buildMACDChart(data))),
 
               // Stochastic
@@ -726,7 +728,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: _buildIndicatorWrapper(
                         context,
                         "Stochastic",
-                        _formatStochastic(data.stochK.last),
+                        _formatStochastic(context, data.stochK.last),
                         _buildStochasticChart(data))),
 
               // OBV
@@ -742,7 +744,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     flex: 2,
                     child: _buildIndicatorWrapper(
                         context,
-                        "ADX (Trendstärke)",
+                        context.l10n.adxTrendStrength,
                         "${data.adx.last?.toStringAsFixed(1)}",
                         _buildADXChart(data))),
             ],
@@ -758,25 +760,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return "$v";
   }
 
-  String _formatRsi(double? rsi) {
+  String _formatRsi(BuildContext context, double? rsi) {
     if (rsi == null) return "-";
-    String status = "Neutral";
-    if (rsi > 70) status = "Überkauft";
-    if (rsi < 30) status = "Überverkauft";
+    String status = context.l10n.neutral;
+    if (rsi > 70) status = context.l10n.overbought;
+    if (rsi < 30) status = context.l10n.oversold;
     return "${rsi.toStringAsFixed(1)} ($status)";
   }
 
-  String _formatMacd(double? hist) {
+  String _formatMacd(BuildContext context, double? hist) {
     if (hist == null) return "-";
-    String status = hist > 0 ? "Positiv" : "Negativ";
+    String status = hist > 0 ? context.l10n.positive : context.l10n.negative;
     return "${hist.toStringAsFixed(4)} ($status)";
   }
 
-  String _formatStochastic(double? k) {
+  String _formatStochastic(BuildContext context, double? k) {
     if (k == null) return "-";
-    String status = "Neutral";
-    if (k > 80) status = "Überkauft";
-    if (k < 20) status = "Überverkauft";
+    String status = context.l10n.neutral;
+    if (k > 80) status = context.l10n.overbought;
+    if (k < 20) status = context.l10n.oversold;
     return "${k.toStringAsFixed(1)} ($status)";
   }
 
@@ -836,7 +838,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 const Icon(Icons.blur_linear, color: Colors.blueAccent, size: 16),
                 const SizedBox(width: 6),
-                const Text("Kronos KI Analyse", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueAccent)),
+                Text(context.l10n.kronosAiAnalysis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blueAccent)),
                 const Spacer(),
                 const Icon(Icons.open_in_new, size: 12, color: Colors.blueGrey),
               ],
@@ -858,11 +860,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              const Text("Modell berechnet Vorhersage...", style: TextStyle(fontSize: 9, color: Colors.grey)),
+              Text(context.l10n.modelCalculatingForecast, style: const TextStyle(fontSize: 9, color: Colors.grey)),
             ] else if (provider.kronosResult != null) ...[
-              _buildProbabilityBar("TP1 Hit Chance", provider.kronosResult!.tp1Probability, Colors.green),
-              _buildProbabilityBar("TP2 Hit Chance", provider.kronosResult!.tp2Probability, Colors.greenAccent),
-              _buildProbabilityBar("SL Hit Chance", provider.kronosResult!.slProbability, Colors.red),
+              _buildProbabilityBar(context.l10n.tp1HitChance, provider.kronosResult!.tp1Probability, Colors.green),
+              _buildProbabilityBar(context.l10n.tp2HitChance, provider.kronosResult!.tp2Probability, Colors.greenAccent),
+              _buildProbabilityBar(context.l10n.slHitChance, provider.kronosResult!.slProbability, Colors.red),
             ],
           ],
         ),
@@ -884,7 +886,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (isOptimized)
                 Padding(
                   padding: const EdgeInsets.only(left: 4),
-                  child: Text("OPT",
+                  child: Text(context.l10n.optimizedLabel,
                       style: TextStyle(
                           fontSize: 7,
                           fontWeight: FontWeight.bold,
@@ -918,14 +920,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       style: const TextStyle(
                           fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
-                  Text("Aktueller Wert: $value",
+                  Text("${context.l10n.currentValue(value)}",
                       style: const TextStyle(fontSize: 16, color: Colors.grey)),
                   const SizedBox(height: 16),
-                  Expanded(child: chart), // Wiederverwendung des Chart Widgets
+                  Expanded(child: chart),
                   const SizedBox(height: 16),
                   TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: const Text("Schließen"))
+                      child: Text(context.l10n.close))
                 ],
               ),
             ),

@@ -936,6 +936,7 @@ class AppProvider extends ChangeNotifier {
       useAiProbability: prefs.getBool('man_use_ai_prob') ?? true,
       useMtc: prefs.getBool('man_use_mtc') ?? false,
       useStrategyOptimizer: prefs.getBool('man_use_optimizer') ?? false,
+      languageCode: prefs.getString('language_code') ?? 'system',
     );
     notifyListeners();
   }
@@ -959,6 +960,7 @@ class AppProvider extends ChangeNotifier {
       useAiProbability: true,
       useMtc: false,
       useStrategyOptimizer: false,
+      languageCode: 'system',
     );
     _saveSettings();
     notifyListeners();
@@ -990,5 +992,6 @@ class AppProvider extends ChangeNotifier {
     prefs.setBool('man_use_ai_prob', _settings.useAiProbability);
     prefs.setBool('man_use_mtc', _settings.useMtc);
     prefs.setBool('man_use_optimizer', _settings.useStrategyOptimizer);
+    prefs.setString('language_code', _settings.languageCode);
   }
 }

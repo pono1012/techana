@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/data_service.dart';
 import '../models/models.dart';
+import '../l10n/l10n_extension.dart';
+import 'package:intl/intl.dart';
 
 class FundamentalAnalysisScreen extends StatefulWidget {
   final String symbol;
@@ -29,7 +31,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
   Future<void> _loadData() async {
     if (widget.apiKey.isEmpty) {
       setState(() {
-        _error = "Kein FMP API Key in den Einstellungen gefunden.";
+        _error = context.l10n.noFmpKeyError;
         _isLoading = false;
       });
       return;
@@ -43,8 +45,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
         _data = data;
         _isLoading = false;
         if (data == null)
-          _error =
-              "Konnte Daten für ${widget.symbol} nicht laden (Limit erreicht oder Symbol falsch).";
+          _error = context.l10n.loadFmpDataError(widget.symbol);
       });
     }
   }
@@ -52,7 +53,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Fundamentalanalyse: ${widget.symbol}")),
+      appBar: AppBar(title: Text(context.l10n.fundamentalAnalysis(widget.symbol))),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -64,6 +65,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
   }
 
   Widget _buildContent(BuildContext context, FmpData d) {
+    final l = context.l10n;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -144,50 +146,50 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
           const SizedBox(height: 24),
 
           // --- Company Profile ---
-          const Text("Unternehmensprofil",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(l.companyProfile,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text(d.description,
               style: const TextStyle(color: Colors.grey, height: 1.4)),
           const SizedBox(height: 16),
           _buildInfoGrid([
-            _buildInfoItem("CEO", d.ceo),
-            _buildInfoItem("Sektor", d.sector),
-            _buildInfoItem("Industrie", d.industry),
-            _buildInfoItem("Land", d.country),
-            _buildInfoItem("Mitarbeiter", d.fullTimeEmployees),
-            _buildInfoItem("IPO Datum", d.ipoDate),
-            _buildInfoItem("Webseite", d.website, isLink: true),
+            _buildInfoItem(l.ceo, d.ceo),
+            _buildInfoItem(l.sector, d.sector),
+            _buildInfoItem(l.industry, d.industry),
+            _buildInfoItem(l.country, d.country),
+            _buildInfoItem(l.employees, d.fullTimeEmployees),
+            _buildInfoItem(l.ipoDate, d.ipoDate),
+            _buildInfoItem(l.website, d.website, isLink: true),
           ]),
           const SizedBox(height: 24),
 
           // --- Market Data ---
-          const Text("Marktdaten",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(l.marketData,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           _buildInfoGrid([
-            _buildInfoItem("Marktkap.", _formatLarge(d.marketCap)),
-            _buildInfoItem("Volumen (Avg)", _formatLarge(d.volAvg ?? 0)),
-            _buildInfoItem("Beta (Vola)", d.beta.toStringAsFixed(2)),
-            _buildInfoItem("52W Range", d.range),
-            _buildInfoItem("Letzte Div.", d.lastDiv?.toStringAsFixed(2)),
-            _buildInfoItem("ETF?", d.isEtf ? "Ja" : "Nein"),
+            _buildInfoItem(l.marketCap, _formatLarge(context, d.marketCap)),
+            _buildInfoItem(l.volAvg, _formatLarge(context, d.volAvg ?? 0)),
+            _buildInfoItem(l.beta, d.beta.toStringAsFixed(2)),
+            _buildInfoItem(l.fiftyTwoWeekRange, d.range),
+            _buildInfoItem(l.lastDiv, d.lastDiv?.toStringAsFixed(2)),
+            _buildInfoItem(l.isEtf, d.isEtf ? l.yes : l.no),
           ]),
           const SizedBox(height: 24),
 
           // --- Analyst Targets ---
           if (d.analystTarget != null) ...[
-            const Text("Analysten-Ziele (Gegenwart)",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(l.analystTargets,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             _buildInfoGrid([
-              _buildInfoItem("Konsens (Mittel)",
+              _buildInfoItem(l.targetConsensus,
                   "\$${d.analystTarget!.targetConsensus.toStringAsFixed(2)}"),
               _buildInfoItem(
-                  "High", "\$${d.analystTarget!.targetHigh.toStringAsFixed(2)}",
+                  l.targetHigh, "\$${d.analystTarget!.targetHigh.toStringAsFixed(2)}",
                   color: Colors.green),
               _buildInfoItem(
-                  "Low", "\$${d.analystTarget!.targetLow.toStringAsFixed(2)}",
+                  l.targetLow, "\$${d.analystTarget!.targetLow.toStringAsFixed(2)}",
                   color: Colors.red),
             ]),
             const SizedBox(height: 24),
@@ -195,8 +197,8 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
 
           // --- Earnings ---
           if (d.nextEarnings != null) ...[
-            const Text("Nächste Quartalszahlen",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(l.nextEarningsDate,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -204,7 +206,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
                     color: Colors.blueAccent, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                    "${d.nextEarnings!.date.day.toString().padLeft(2, '0')}.${d.nextEarnings!.date.month.toString().padLeft(2, '0')}.${d.nextEarnings!.date.year}",
+                    DateFormat.yMd(Localizations.localeOf(context).languageCode).format(d.nextEarnings!.date),
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(width: 12),
@@ -224,8 +226,8 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
 
           // --- Insider Trades ---
           if (d.insiderTrades != null && d.insiderTrades!.isNotEmpty) ...[
-            const Text("Letzte Insider-Trades",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(l.recentInsiderTrades,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             ...d.insiderTrades!.take(5).map((t) {
               bool isBuy =
@@ -247,7 +249,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                        "${isBuy ? '+' : '-'}${_formatLarge(t.securitiesTransacted)} Shares",
+                        "${isBuy ? '+' : '-'}${_formatLarge(context, t.securitiesTransacted)} ${l.shares}",
                         style: TextStyle(
                             color: isBuy ? Colors.green : Colors.red,
                             fontWeight: FontWeight.bold,
@@ -282,7 +284,7 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
                 }
               },
               icon: const Icon(Icons.open_in_new),
-              label: const Text("Mehr Infos auf Aktien.guide"),
+              label: Text(l.moreInfoOnAktienGuide),
               style: ElevatedButton.styleFrom(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -292,9 +294,9 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          const Center(
-              child: Text("Daten bereitgestellt von Financial Modeling Prep",
-                  style: TextStyle(fontSize: 10, color: Colors.grey))),
+          Center(
+              child: Text(l.dataProvidedByFmp,
+                  style: const TextStyle(fontSize: 10, color: Colors.grey))),
         ],
       ),
     );
@@ -328,10 +330,11 @@ class _FundamentalAnalysisScreenState extends State<FundamentalAnalysisScreen> {
     );
   }
 
-  String _formatLarge(double val) {
-    if (val > 1e12) return "${(val / 1e12).toStringAsFixed(2)} Bio.";
-    if (val > 1e9) return "${(val / 1e9).toStringAsFixed(2)} Mrd.";
-    if (val > 1e6) return "${(val / 1e6).toStringAsFixed(2)} Mio.";
+  String _formatLarge(BuildContext context, double val) {
+    final l = context.l10n;
+    if (val > 1e12) return "${(val / 1e12).toStringAsFixed(2)} ${l.thousandBillionShort}";
+    if (val > 1e9) return "${(val / 1e9).toStringAsFixed(2)} ${l.billionShort}";
+    if (val > 1e6) return "${(val / 1e6).toStringAsFixed(2)} ${l.millionShort}";
     return val.toStringAsFixed(0);
   }
 }

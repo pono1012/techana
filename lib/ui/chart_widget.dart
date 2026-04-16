@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../l10n/l10n_extension.dart';
 
 class ChartWidget extends StatelessWidget {
   const ChartWidget({super.key});
@@ -18,7 +19,7 @@ class ChartWidget extends StatelessWidget {
           child:
               Text(provider.error!, style: const TextStyle(color: Colors.red)));
     if (data == null || data.bars.isEmpty)
-      return const Center(child: Text("Keine Daten für Chart"));
+      return Center(child: Text(context.l10n.noChartData));
 
     final bars = data.bars;
     // Min/Max Berechnung für Y-Achse
@@ -59,7 +60,7 @@ class ChartWidget extends StatelessWidget {
             strokeWidth: 1,
             dashArray: [5, 5],
             label: HorizontalLineLabel(
-                show: true, labelResolver: (l) => "Entry")));
+                show: true, labelResolver: (l) => context.l10n.entry)));
       // SL
       if (sig.stopLoss.isFinite)
         extraLines.add(HorizontalLine(
@@ -67,7 +68,7 @@ class ChartWidget extends StatelessWidget {
             color: Colors.red,
             strokeWidth: 2,
             label:
-                HorizontalLineLabel(show: true, labelResolver: (l) => "SL")));
+                HorizontalLineLabel(show: true, labelResolver: (l) => context.l10n.stopLossShort)));
       // TP
       if (sig.takeProfit1.isFinite)
         extraLines.add(HorizontalLine(
@@ -75,14 +76,14 @@ class ChartWidget extends StatelessWidget {
             color: Colors.green,
             strokeWidth: 2,
             label:
-                HorizontalLineLabel(show: true, labelResolver: (l) => "TP1")));
+                HorizontalLineLabel(show: true, labelResolver: (l) => context.l10n.takeProfit1Short)));
       if (sig.takeProfit2.isFinite)
         extraLines.add(HorizontalLine(
             y: sig.takeProfit2,
             color: Colors.green.withOpacity(0.5),
             strokeWidth: 1,
             label:
-                HorizontalLineLabel(show: true, labelResolver: (l) => "TP2")));
+                HorizontalLineLabel(show: true, labelResolver: (l) => context.l10n.takeProfit2Short)));
     }
 
     // --- Candle Logic ---

@@ -26,6 +26,10 @@ class TradeExecutionService extends ChangeNotifier {
   bool get isScanning => _isScanning;
   String _scanStatus = "";
   String get scanStatus => _scanStatus;
+  String _scanStatusKey = "";
+  String get scanStatusKey => _scanStatusKey;
+  String _scanStatusParam = "";
+  String get scanStatusParam => _scanStatusParam;
   bool _cancelRequested = false;
 
   int _scanCurrent = 0;
@@ -95,6 +99,7 @@ class TradeExecutionService extends ChangeNotifier {
     if (_isScanning) return;
     _isScanning = true;
     _cancelRequested = false;
+    _scanStatusKey = "statusInitializing";
     _scanStatus = "Initialisiere...";
     _scanCurrent = 0;
     _scanTotal = 1; // avoid div by zero
@@ -104,6 +109,7 @@ class TradeExecutionService extends ChangeNotifier {
 
     try {
       _taskPhase = 1;
+      _scanStatusKey = "statusCheckingPending";
       _scanStatus = "Prüfe Pending Orders...";
       notifyListeners();
       if (settings.enableCheckPending) {
@@ -111,6 +117,7 @@ class TradeExecutionService extends ChangeNotifier {
       }
 
       _taskPhase = 2;
+      _scanStatusKey = "statusManagingOpen";
       _scanStatus = "Manage offene Positionen...";
       notifyListeners();
       if (settings.enableCheckOpen) {
@@ -118,6 +125,7 @@ class TradeExecutionService extends ChangeNotifier {
       }
 
       _taskPhase = 3;
+      _scanStatusKey = "statusScanningMarkets";
       _scanStatus = "Scanne Märkte nach Signalen...";
       _scanCurrent = 0;
       notifyListeners();
@@ -126,8 +134,11 @@ class TradeExecutionService extends ChangeNotifier {
         await _scanForNewTrades(settings, portfolio, watchlist);
       }
 
+      _scanStatusKey = "statusDone";
       _scanStatus = "Fertig.";
     } catch (e) {
+      _scanStatusKey = "statusError";
+      _scanStatusParam = e.toString();
       _scanStatus = "Fehler: $e";
       debugPrint("❌ [Bot] Critical Error: $e");
     } finally {
@@ -144,6 +155,7 @@ class TradeExecutionService extends ChangeNotifier {
   void cancelRoutine() {
     if (_isScanning) {
       _cancelRequested = true;
+      _scanStatusKey = "statusCancelRequested";
       _scanStatus = "Abbruch angefordert...";
       notifyListeners();
     }
@@ -1363,7 +1375,7 @@ class TradeExecutionService extends ChangeNotifier {
       'score_volatility': volatilityScore,
       'score_mc': mcScore,
       'mc_bull_pct': mcBullPct,
-      'market_regime': regime.label,
+      'market_regime': regime.name,
       'ai_confidence': aiConfidence,
       'weight_ema': winRates.getWeight("ema"),
       'weight_rsi': winRates.getWeight("rsi"),
