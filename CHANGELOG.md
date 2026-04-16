@@ -1,3 +1,68 @@
+### 2026-04-16 - Update
+
+#### Wichtige Neuerungen & Optimierungen bei TechAna
+
+Wir freuen uns, ein weiteres Update für TechAna zu veröffentlichen, das die Benutzerfreundlichkeit deutlich erhöht und die Kernintelligenz unserer Marktanalyse weiter verfeinert. Dieses Release bringt nicht nur wichtige Sprachunterstützung, sondern auch spürbare Verbesserungen an unseren KI-Modellen.
+
+#### Highlights
+
+*   **Umfassende Mehrsprachigkeit:** TechAna spricht jetzt fließend Deutsch und Englisch! Alle Oberflächentexte, Beschreibungen und Analysen sind nun in beiden Sprachen verfügbar, was eine intuitivere Nutzung für eine breitere Nutzerbasis ermöglicht.
+*   **Verbesserte KI-Modellpräzision:** Unsere zugrundeliegenden KI-Modelle und die Infrastruktur wurden optimiert, um eine höhere Präzision und Stabilität bei der Marktanalyse zu gewährleisten.
+
+#### Neue Features
+
+*   **Internationale Benutzererfahrung (I18n):**
+    *   **Nutzen für den User:** Die Anwendung kann nun vollständig auf Deutsch und Englisch genutzt werden. Dies eliminiert Sprachbarrieren und ermöglicht eine komfortablere und verständlichere Interaktion mit TechAna in der bevorzugten Sprache. Die gesamten UI-Texte, von Navigationspunkten bis hin zu komplexen Strategiebeschreibungen und Indikatoren-Erklärungen, wurden übersetzt und sind umschaltbar.
+    *   **Technische Details:** Einführung der Localization-Framework-Konfiguration (`l10n.yaml`) und Bereitstellung umfangreicher Sprachressourcen für Deutsch (`app_de.arb`) und Englisch (`app_en.arb`). Dies legt den Grundstein für eine einfache Erweiterung um weitere Sprachen in der Zukunft.
+
+#### Verbesserungen & Fixes
+
+*   **Kernoptimierungen der KI-Modelle:**
+    *   **Nutzen für den User:** Die Präzision und Stabilität der KI-gesteuerten Marktanalyse wurde durch tiefgreifende Optimierungen signifikant verbessert. Dies führt zu zuverlässigeren Prognosen, einem genaueren Trading Score und fundierteren Handelssignalen, die Ihnen helfen, bessere Entscheidungen zu treffen.
+    *   **Nutzen für den Entwickler:** Die Infrastruktur wurde robuster gestaltet, was die Wartung vereinfacht und die Leistung der KI-Services verbessert. Dies ermöglicht schnellere und effizientere Modell-Updates in der Zukunft.
+    *   **Referenz:** Dieser Fix entspricht dem Patch vom 12.04.2026.
+
+#### Sonstiges
+
+*   **Interne Systemaktualisierungen:** Der `ai_state.json` wurde aktualisiert, um den neuesten Stand unserer KI-Entwicklung zu reflektieren. Dokumentationsanpassungen in `current_patch_notes.md` und `CHANGELOG.md` wurden vorgenommen.
+
+### 📂 Geänderte Dateien
+- `l10n.yaml`
+- `lib/l10n/app_de.arb`
+- `lib/l10n/app_en.arb`
+- `lib/l10n/app_localizations.dart`
+- `lib/l10n/app_localizations_de.dart`
+- `lib/l10n/app_localizations_en.dart`
+- `lib/l10n/enum_localizations.dart`
+- `lib/l10n/l10n_extension.dart`
+- `lib/main.dart`
+- `lib/models/models.dart`
+- `lib/providers/app_provider.dart`
+- `lib/services/bot_analytics_service.dart`
+- `lib/services/trade_execution_service.dart`
+- `lib/services/update_service.dart`
+- `lib/ui/analysis_settings_dialog.dart`
+- `lib/ui/analysis_stats_screen.dart`
+- `lib/ui/bot_dashboard_screen.dart`
+- `lib/ui/bot_dashboard_widgets.dart`
+- `lib/ui/bot_settings_screen.dart`
+- `lib/ui/chart_widget.dart`
+- `lib/ui/dashboard_screen.dart`
+- `lib/ui/fundamental_analysis_screen.dart`
+- `lib/ui/kronos_forecast_screen.dart`
+- `lib/ui/monte_carlo_screen.dart`
+- `lib/ui/news_screen.dart`
+- `lib/ui/pattern_details_screen.dart`
+- `lib/ui/score_details_screen.dart`
+- `lib/ui/settings_screen.dart`
+- `lib/ui/top_movers_history_screen.dart`
+- `lib/ui/top_movers_screen.dart`
+- `lib/ui/trade_details_screen.dart`
+- `pubspec.lock`
+- `pubspec.yaml`
+
+---
+
 ### 2026-04-12 - Update
 
 Wir freuen uns, das neueste Update für TechAna vorzustellen, das sich auf signifikante "Under-the-Hood"-Verbesserungen unserer intelligenten Kernsysteme, neue Bot-Funktionalitäten sowie auf Aktualisierungen der Benutzeroberfläche und Dokumentation konzentriert. Dieses Release ist ein wichtiger Schritt zur weiteren Steigerung der Präzision, Zuverlässigkeit und Benutzerfreundlichkeit von TechAna, basierend auf den jüngsten Analysen unserer technischen Änderungen.
