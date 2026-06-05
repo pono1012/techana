@@ -1321,3 +1321,5 @@ Mit v1.0.0 haben wir den Grundstein gelegt. Dies ist nur der Anfang. Wir werden 
 * 🐛 Fix: Aktualisierung der zugrundeliegenden KI-Modelle und Infrastruktur für optimierte KI-Komponenten.
 
 * 🐛 Fix: Kernoptimierungen der KI-Modelle und Infrastruktur für verbesserte Präzision und Stabilität der Marktanalyse.
+
+* 🐛 Fix: Stellt sicher, dass die tatsächlichen Top-Kaufempfehlungen des Bots im Dashboard nach Score sortiert angezeigt werden.
