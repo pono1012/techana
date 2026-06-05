@@ -595,7 +595,9 @@ class BotLiveScannerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topRecs = exec.liveScanRecommendations.take(5).toList();
+    final recsList = exec.liveScanRecommendations.entries.toList();
+    recsList.sort((a, b) => b.value.score.compareTo(a.value.score));
+    final topRecs = recsList.take(5).toList();
     if (topRecs.isEmpty) return const SizedBox.shrink();
 
     return Card(
@@ -619,7 +621,9 @@ class BotLiveScannerWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ...topRecs.map((signal) {
+            ...topRecs.map((entry) {
+              final symbol = entry.key;
+              final signal = entry.value;
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
@@ -636,13 +640,13 @@ class BotLiveScannerWidget extends StatelessWidget {
                         CircleAvatar(
                           backgroundColor: Colors.green.withOpacity(0.2),
                           radius: 18,
-                          child: Text(signal.symbol.substring(0, min(2, signal.symbol.length)), style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+                          child: Text(symbol.substring(0, min(2, symbol.length)), style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
                         ),
                         const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(signal.symbol, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text(symbol, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             Text("Score: ${signal.score}/100", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
                           ],
                         ),

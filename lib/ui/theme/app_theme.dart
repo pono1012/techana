@@ -38,7 +38,7 @@ class AppTheme {
         bodyLarge: GoogleFonts.inter(color: textPrimary),
         bodyMedium: GoogleFonts.inter(color: textSecondary),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceColor.withOpacity(0.5),
         elevation: 0,
         shape: RoundedRectangleBorder(

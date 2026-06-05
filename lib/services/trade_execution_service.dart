@@ -32,8 +32,8 @@ class TradeExecutionService extends ChangeNotifier {
   String _scanStatusParam = "";
   String get scanStatusParam => _scanStatusParam;
   bool _cancelRequested = false;
-  final List<TradeSignal> _liveScanRecommendations = [];
-  List<TradeSignal> get liveScanRecommendations => _liveScanRecommendations;
+  final Map<String, TradeSignal> _liveScanRecommendations = {};
+  Map<String, TradeSignal> get liveScanRecommendations => _liveScanRecommendations;
   String _currentlyScanningSymbol = "";
   String get currentlyScanningSymbol => _currentlyScanningSymbol;
 
