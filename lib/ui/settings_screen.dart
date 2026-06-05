@@ -16,22 +16,49 @@ class SettingsScreen extends StatelessWidget {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(l.settings),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: l.tabView, icon: const Icon(Icons.visibility)),
-              Tab(text: l.tabChart, icon: const Icon(Icons.show_chart)),
-              Tab(text: l.tabStrategy, icon: const Icon(Icons.settings_applications)),
-              Tab(text: l.tabData, icon: const Icon(Icons.data_usage)),
-            ],
-          ),
-        ),
-        body: TabBarView(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.settings, color: Theme.of(context).colorScheme.primary, size: 28),
+                    const SizedBox(width: 12),
+                    Text(
+                      l.settings.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: 'Outfit',
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Theme.of(context).colorScheme.primary,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TabBar(
+                dividerColor: Colors.transparent,
+                indicatorColor: Theme.of(context).colorScheme.primary,
+                labelColor: Theme.of(context).colorScheme.primary,
+                unselectedLabelColor: Colors.white54,
+                indicatorWeight: 3,
+                tabs: [
+                  Tab(icon: const Icon(Icons.visibility), text: l.tabView),
+                  Tab(icon: const Icon(Icons.show_chart), text: l.tabChart),
+                  Tab(icon: const Icon(Icons.settings_applications), text: l.tabStrategy),
+                  Tab(icon: const Icon(Icons.data_usage), text: l.tabData),
+                ],
+              ),
+              Expanded(
+                child: TabBarView(
           children: [
             // Tab 1: View & General
             ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 120),
               children: [
                 _buildGroupCard(context, l.viewAndGeneral, [
                   SwitchListTile(
@@ -84,7 +111,7 @@ class SettingsScreen extends StatelessWidget {
 
             // Tab 2: Chart (Indicators)
             ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 120),
               children: [
                 _buildGroupCard(context, l.chartIndicators, [
                   SwitchListTile(
@@ -151,7 +178,7 @@ class SettingsScreen extends StatelessWidget {
 
             // Tab 3: Strategy
             ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 120),
               children: [
                 _buildGroupCard(context, l.manualAnalysisStrategy, [
                   _dropdownTile<int>(
@@ -313,7 +340,7 @@ class SettingsScreen extends StatelessWidget {
 
             // Tab 4: Data & Info
             ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 120),
               children: [
                 _buildGroupCard(context, l.dataSources, [
                   Text(l.chartDataSource),
@@ -387,27 +414,37 @@ class SettingsScreen extends StatelessWidget {
             ),
           ],
         ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildGroupCard(
       BuildContext context, String title, List<Widget> children) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
-              child: Text(title,
+              child: Text(title.toUpperCase(),
                   style: TextStyle(
+                      fontFamily: 'Outfit',
                       color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                      fontSize: 14)),
             ),
             ...children
           ],

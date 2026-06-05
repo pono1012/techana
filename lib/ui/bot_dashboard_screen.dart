@@ -65,7 +65,7 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
           body: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 100),
+              padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 140),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
