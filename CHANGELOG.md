@@ -1325,3 +1325,5 @@ Mit v1.0.0 haben wir den Grundstein gelegt. Dies ist nur der Anfang. Wir werden 
 * 🐛 Fix: Stellt sicher, dass die tatsächlichen Top-Kaufempfehlungen des Bots im Dashboard nach Score sortiert angezeigt werden.
 
 * 🐛 Fix: Stellt sicher, dass die tatsächlichen Top-Kaufempfehlungen des Bots im Dashboard nach Score sortiert angezeigt werden.
+
+* 🐛 Fix: Überarbeitet das Design und Layout des Einstellungsbildschirms zur Behebung von Darstellungsfehlern und Verbesserung der Benutzerfreundlichkeit.
