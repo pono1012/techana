@@ -598,28 +598,72 @@ class BotLiveScannerWidget extends StatelessWidget {
     final recsList = exec.liveScanRecommendations.entries.toList();
     recsList.sort((a, b) => b.value.score.compareTo(a.value.score));
     final topRecs = recsList.take(5).toList();
-    if (topRecs.isEmpty) return const SizedBox.shrink();
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16, top: 4),
-      color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.4), width: 1.5),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            blurRadius: 40,
+            spreadRadius: -10,
+          )
+        ]
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                Text("Top Kauf-Empfehlungen (Live Scanner)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.primary)),
-              ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.radar, color: Theme.of(context).colorScheme.primary, size: 28),
+                  const SizedBox(width: 12),
+                  Text("LIVE SCANNER", style: TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.w900, fontSize: 18, color: Theme.of(context).colorScheme.primary, letterSpacing: 2)),
+                ],
+              ),
+              if (exec.isScanning)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.greenAccent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 8, height: 8, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.greenAccent)),
+                      const SizedBox(width: 8),
+                      Text("ACTIVE", style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    ],
+                  ),
+                )
+            ],
+          ),
+          const SizedBox(height: 24),
+          if (exec.isScanning) ...[
+            Text("ANALYZING", style: TextStyle(color: Colors.white30, fontSize: 10, letterSpacing: 2)),
+            const SizedBox(height: 4),
+            Text(
+              exec.currentlyScanningSymbol.isEmpty ? "..." : exec.currentlyScanningSymbol,
+              style: TextStyle(fontFamily: 'Outfit', fontSize: 32, fontWeight: FontWeight.w300, color: Colors.white, letterSpacing: 4),
             ),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: exec.scanTotal > 0 ? exec.scanCurrent / exec.scanTotal : 0,
+              backgroundColor: Colors.white.withOpacity(0.05),
+              color: Theme.of(context).colorScheme.primary,
+              minHeight: 2,
+            ),
+            const SizedBox(height: 24),
+          ],
+          if (topRecs.isNotEmpty) ...[
+            Text("TOP TARGETS", style: TextStyle(color: Colors.white30, fontSize: 10, letterSpacing: 2)),
             const SizedBox(height: 12),
             ...topRecs.map((entry) {
               final symbol = entry.key;
@@ -628,55 +672,44 @@ class BotLiveScannerWidget extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withOpacity(0.02)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.green.withOpacity(0.2),
-                          radius: 18,
-                          child: Text(symbol.substring(0, min(2, symbol.length)), style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.greenAccent.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+                          ),
+                          child: Text(
+                            "${signal.score}",
+                            style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.w900, fontSize: 14),
+                          ),
                         ),
                         const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(symbol, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text("Score: ${signal.score}/100", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
-                          ],
-                        ),
+                        Text(symbol, style: const TextStyle(fontFamily: 'Outfit', fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1)),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text("Kaufen bei: ${signal.entryPrice.toStringAsFixed(2)}", style: const TextStyle(fontSize: 12)),
-                        Text("TP: ${signal.takeProfit1.toStringAsFixed(2)} | SL: ${signal.stopLoss.toStringAsFixed(2)}", style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text("BUY: ${signal.entryPrice.toStringAsFixed(2)}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text("TP: ${signal.takeProfit1.toStringAsFixed(2)}", style: const TextStyle(fontSize: 10, color: Colors.white54)),
                       ],
                     ),
                   ],
                 ),
               );
             }).toList(),
-            if (exec.isScanning)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
-                    const SizedBox(width: 8),
-                    Text("Scanne weiter: ${exec.currentlyScanningSymbol}...", style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                  ],
-                ),
-              ),
-          ],
-        ),
+          ]
+        ],
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:provider/provider.dart';
 import '../services/portfolio_service.dart';
 import '../services/bot_settings_service.dart';
@@ -20,329 +21,258 @@ class BotDashboardScreen extends StatefulWidget {
 }
 
 class _BotDashboardScreenState extends State<BotDashboardScreen> {
-  // Filter für die "Alle Positionen" Liste (Legacy)
   String _filter = "all";
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.botDashboard, style: const TextStyle(fontSize: 16)),
-        actions: [
-          Consumer4<PortfolioService, BotSettingsService, TradeExecutionService,
-                  WatchlistService>(
-              builder: (context, portfolio, settings, exec, watchlist, _) {
-            return IconButton(
-              icon: exec.isScanning
-                  ? const Icon(Icons.pause_circle_filled, color: Colors.orange)
-                  : const Icon(Icons.play_arrow),
-              onPressed: () {
-                if (exec.isScanning) {
-                  exec.cancelRoutine();
-                } else {
-                  exec.runDailyRoutine(settings, portfolio, watchlist);
-                }
-              },
-              tooltip:
-                  exec.isScanning ? context.l10n.cancelScan : context.l10n.startScan,
-            );
-          }),
-          IconButton(
-            icon: const Icon(Icons.trending_up),
-            tooltip: context.l10n.topMoversScan,
-            onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const TopMoversScreen())),
+    return Consumer4<PortfolioService, BotSettingsService, TradeExecutionService, WatchlistService>(
+      builder: (context, portfolio, settings, exec, watchlist, child) {
+        return Scaffold(
+          backgroundColor: Colors.transparent, // Background is handled by DashboardScreen Stack
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              "AutoTrade",
+              style: TextStyle(
+                fontFamily: 'Outfit',
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.2,
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: exec.isScanning
+                    ? const Icon(Icons.stop_circle, color: Colors.redAccent, size: 30)
+                    : const Icon(Icons.play_circle_fill, color: Colors.greenAccent, size: 30),
+                onPressed: () {
+                  if (exec.isScanning) {
+                    exec.cancelRoutine();
+                  } else {
+                    exec.runDailyRoutine(settings, portfolio, watchlist);
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BotSettingsScreen())),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: context.l10n.botSettings,
-            onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => BotSettingsScreen())),
-          ),
-          IconButton(
-            icon: const Icon(Icons.list),
-            tooltip: context.l10n.editWatchlist,
-            onPressed: () => _showWatchlistDialog(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            tooltip: context.l10n.portfolioReset,
-            onPressed: () => _confirmReset(context),
-          ),
-        ],
-      ),
-      body: Consumer4<PortfolioService, BotSettingsService,
-          TradeExecutionService, WatchlistService>(
-        builder: (context, portfolio, settings, exec, watchlist, child) {
-          return SingleChildScrollView(
+          body: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // --- 0. Smart Progress Bar (Top) ---
-                  if (exec.isScanning) BotProgressWidget(exec: exec),
-                  
-                  // NEW: Live Scanner Recommendations (Top priority for user)
-                  if (exec.liveScanRecommendations.isNotEmpty)
+                  // HERO SECTION: Huge PnL Display
+                  _buildHeroPnL(context, portfolio),
+                  const SizedBox(height: 30),
+
+                  // LIVE SCANNER HUD
+                  if (exec.isScanning || exec.liveScanRecommendations.isNotEmpty)
                     BotLiveScannerWidget(exec: exec),
-                  const SizedBox(height: 12),
+                  
+                  const SizedBox(height: 30),
 
-                  // --- 1. Portfolio Value Graph ---
-                  BotPortfolioGraphWidget(bot: portfolio),
+                  // STATS GRID (Glassmorphism)
+                  _buildStatsGrid(context, portfolio),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 30),
 
-                  // --- 2. Summary Stats Cards ---
-                  BotSummaryStatsWidget(bot: portfolio),
-
-                  const SizedBox(height: 16),
-
-                  // --- 3. AutoBot Analyse Button ---
-                  ElevatedButton.icon(
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const AnalysisStatsScreen())),
-                    icon: const Icon(Icons.analytics),
-                    label: Text(context.l10n.openDetailedAnalysis),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // --- 4. Scanner Status Bar (Legacy / Bottom - removed or kept minimal?) ---
-
-                  const SizedBox(height: 16),
-                  Text(context.l10n.positionsByCategory,
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 8),
-
-                  // --- 5. Categorized Lists ---
-                  ..._buildCategorizedLists(portfolio, watchlist),
-
-                  const SizedBox(height: 16),
-
-                  // --- 6. All Positions (Expandable) ---
-                  Card(
-                    color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: Colors.white.withOpacity(0.05)),
-                    ),
-                    child: ExpansionTile(
-                      title: Text(context.l10n.allPositionsRaw,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(context.l10n.tradesTotal(portfolio.trades.length)),
-                      initiallyExpanded: false,
-                      children: [
-                      // Filter Bar inside
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          children: [
-                            _buildFilterChip(context.l10n.filterAll, "all"),
-                            _buildFilterChip(context.l10n.filterOpen, "open"),
-                            _buildFilterChip(context.l10n.filterOpenPositive, "openPos"),
-                            _buildFilterChip(context.l10n.filterOpenNegative, "openNeg"),
-                            _buildFilterChip(context.l10n.filterPending, "pending"),
-                            _buildFilterChip(context.l10n.filterClosed, "closed"),
-                            _buildFilterChip(context.l10n.filterClosedPositive, "closedPos"),
-                            _buildFilterChip(context.l10n.filterClosedNegative, "closedNeg"),
-                          ],
-                        ),
+                  // ACTIVE TRADES SECTION
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Offene Positionen",
+                        style: TextStyle(fontFamily: 'Outfit', fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      const Divider(),
-                      // List items
-                      if (portfolio.trades.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(context.l10n.noTrades),
-                        )
-                      else
-                        ...portfolio.trades.reversed.map((trade) {
-                          // Apply Filter
-                          if (_filter == "open" &&
-                              trade.status != TradeStatus.open)
-                            return const SizedBox.shrink();
-                          if (_filter == "openPos" &&
-                              (trade.status != TradeStatus.open ||
-                                  trade.calcUnrealizedPnL(trade.lastPrice ??
-                                          trade.entryPrice) <=
-                                      0)) return const SizedBox.shrink();
-                          if (_filter == "openNeg" &&
-                              (trade.status != TradeStatus.open ||
-                                  trade.calcUnrealizedPnL(trade.lastPrice ??
-                                          trade.entryPrice) >=
-                                      0)) return const SizedBox.shrink();
-                          if (_filter == "pending" &&
-                              trade.status != TradeStatus.pending)
-                            return const SizedBox.shrink();
-                          if (_filter == "closed" &&
-                              (trade.status == TradeStatus.open ||
-                                  trade.status == TradeStatus.pending))
-                            return const SizedBox.shrink();
-                          if (_filter == "closedPos") {
-                            if (trade.status == TradeStatus.open ||
-                                trade.status == TradeStatus.pending ||
-                                trade.realizedPnL <= 0)
-                              return const SizedBox.shrink();
-                          }
-                          if (_filter == "closedNeg") {
-                            if (trade.status == TradeStatus.open ||
-                                trade.status == TradeStatus.pending ||
-                                trade.realizedPnL >= 0)
-                              return const SizedBox.shrink();
-                          }
-                          return TradeCardWidget(
-                              trade: trade, portfolio: portfolio);
-                        }).toList(),
-                      ],
-                    ),
+                      TextButton(
+                        onPressed: () => _confirmReset(context),
+                        child: const Text("Reset", style: TextStyle(color: Colors.redAccent)),
+                      )
+                    ],
                   ),
+                  const SizedBox(height: 12),
+                  ...portfolio.trades
+                      .where((t) => t.status == TradeStatus.open || t.status == TradeStatus.pending)
+                      .map((t) => _buildModernTradeCard(context, t, portfolio)),
 
-                  const SizedBox(height: 40),
+                  if (portfolio.trades.where((t) => t.status == TradeStatus.open || t.status == TradeStatus.pending).isEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Text("Keine aktiven Trades", style: TextStyle(color: Colors.white54)),
+                      ),
+                    ),
                 ],
               ),
             ),
-          );
-        },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeroPnL(BuildContext context, PortfolioService portfolio) {
+    final totalPnL = portfolio.totalRealizedPnL + portfolio.totalUnrealizedPnL;
+    final isPositive = totalPnL >= 0;
+    
+    return Column(
+      children: [
+        Text(
+          "TOTAL P&L",
+          style: TextStyle(
+            color: Colors.white54,
+            letterSpacing: 2,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          context.l10n.currencyValue(totalPnL.toStringAsFixed(2)),
+          style: TextStyle(
+            fontFamily: 'Outfit',
+            fontSize: 56,
+            fontWeight: FontWeight.w900,
+            color: isPositive ? Colors.greenAccent : Colors.redAccent,
+            shadows: [
+              Shadow(
+                color: (isPositive ? Colors.greenAccent : Colors.redAccent).withOpacity(0.5),
+                blurRadius: 20,
+              )
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.1)),
+          ),
+          child: Text(
+            "Investiert: ${context.l10n.currencyValue(portfolio.totalInvested.toStringAsFixed(2))}",
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid(BuildContext context, PortfolioService portfolio) {
+    return Row(
+      children: [
+        Expanded(child: _buildGlassStatCard(context, "Win Rate", "${_calcWinRate(portfolio)}%", Icons.pie_chart)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildGlassStatCard(context, "Trades", "${portfolio.closedTradesCount}", Icons.history)),
+      ],
+    );
+  }
+  
+  String _calcWinRate(PortfolioService p) {
+    if (p.closedTradesCount == 0) return "0";
+    return ((p.closedTradesPositive / p.closedTradesCount) * 100).toStringAsFixed(1);
+  }
+
+  Widget _buildGlassStatCard(BuildContext context, String title, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white54, size: 20),
+          const SizedBox(height: 12),
+          Text(value, style: TextStyle(fontFamily: 'Outfit', fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text(title, style: TextStyle(color: Colors.white54, fontSize: 12)),
+        ],
       ),
     );
   }
 
-  // --- Graph Section ---
+  Widget _buildModernTradeCard(BuildContext context, TradeRecord trade, PortfolioService portfolio) {
+    final isOpen = trade.status == TradeStatus.open;
+    final color = isOpen ? Colors.blueAccent : Colors.orangeAccent;
+    final currentPrice = trade.lastPrice ?? trade.entryPrice;
+    final pnl = trade.calcUnrealizedPnL(currentPrice);
+    final pnlColor = pnl >= 0 ? Colors.greenAccent : Colors.redAccent;
 
-  List<Widget> _buildCategorizedLists(
-      PortfolioService portfolio, WatchlistService watchlist) {
-    // 1. Map defaults
-    final categories = watchlist.defaultWatchlistByCategory;
-
-    // 2. Identify trades that belong to categories
-    Map<String, List<TradeRecord>> groupedTrades = {};
-    List<TradeRecord> otherTrades = [];
-
-    // Init keys
-    for (var key in categories.keys) {
-      groupedTrades[key] = [];
-    }
-
-    for (var trade in portfolio.trades) {
-      bool found = false;
-      for (var entry in categories.entries) {
-        // Check if symbol is in this list
-        if (entry.value.contains(trade.symbol)) {
-          groupedTrades[entry.key]!.add(trade);
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        otherTrades.add(trade);
-      }
-    }
-
-    // 3. Build Widgets
-    List<Widget> widgets = [];
-
-    // Sort logic? Show active categories first?
-    groupedTrades.forEach((category, trades) {
-      if (trades.isNotEmpty) {
-        // Only show categories with activity? Or all? User said "diese kann man aufklappen"
-        widgets.add(_buildCategoryTile(context, category, trades, portfolio));
-      }
-    });
-
-    if (otherTrades.isNotEmpty) {
-      widgets
-          .add(_buildCategoryTile(context, context.l10n.otherCategory, otherTrades, portfolio));
-    }
-
-    if (widgets.isEmpty) {
-      return [
-        Center(
-            child: Text(context.l10n.noCategorizedTrades,
-                style: const TextStyle(color: Colors.grey)))
-      ];
-    }
-
-    return widgets;
-  }
-
-  Widget _buildCategoryTile(BuildContext context, String title,
-      List<TradeRecord> trades, PortfolioService bot) {
-    // Calc Aggregates
-    double invested = 0;
-    double pnl = 0; // both real and unreal mixed? Or separate?
-    // User said: "Eigene insgesamt +- € und%"
-    // Let's sum Realized + Unrealized for the "Net Value" of this bucket
-
-    for (var t in trades) {
-      double unreal = (t.status == TradeStatus.open)
-          ? t.calcUnrealizedPnL(t.lastPrice ?? t.entryPrice)
-          : 0;
-      pnl += t.realizedPnL + unreal;
-      if (t.status == TradeStatus.open) {
-        invested += t.entryPrice * t.quantity;
-      }
-    }
-
-    // Percent... difficult for mixed Real/Unreal.
-    // Maybe simple sum of %? or Weighted?
-    // Lets stick to absolute sum for header or implied ROI based on Invested (which is tricky if closed trades involved)
-    // Just show Absolute PnL.
-
-    final color = pnl >= 0 ? Colors.green : Colors.red;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.white.withOpacity(0.05)),
+    return Dismissible(
+      key: Key(trade.id),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => portfolio.deleteTrade(trade.id),
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(20)),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete, color: Colors.white),
       ),
-      child: ExpansionTile(
-        title: Text(title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-        subtitle: Row(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.03),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("${trades.length} Pos.",
-                style: const TextStyle(fontSize: 11, color: Colors.grey)),
-            const SizedBox(width: 8),
-            // Text("Invest: ${invested.toStringAsFixed(0)}€", style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Center(
+                    child: Text(
+                      trade.symbol.substring(0, min(2, trade.symbol.length)),
+                      style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(trade.symbol, style: TextStyle(fontFamily: 'Outfit', fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(isOpen ? "OPEN" : "PENDING", style: TextStyle(color: color, fontSize: 10, letterSpacing: 1)),
+                  ],
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  context.l10n.currencyValue(pnl.toStringAsFixed(2)),
+                  style: TextStyle(fontFamily: 'Outfit', fontSize: 16, fontWeight: FontWeight.bold, color: pnlColor),
+                ),
+                Text(
+                  "Entry: ${trade.entryPrice.toStringAsFixed(2)}",
+                  style: TextStyle(color: Colors.white54, fontSize: 11),
+                ),
+              ],
+            ),
           ],
         ),
-        trailing: SizedBox(
-          width: 100,
-          child: Text("${pnl > 0 ? '+' : ''}${pnl.toStringAsFixed(2)} €",
-              textAlign: TextAlign.end,
-              style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-        ),
-        children: trades.reversed
-            .map((t) => TradeCardWidget(trade: t, portfolio: bot))
-            .toList(),
-      ),
-    );
-  }
-
-  // Reuse existing card logic with minor tweaks
-
-  /// Kleiner farbiger Chip für das Kerzenmuster
-
-  Widget _buildFilterChip(String label, String key) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: ChoiceChip(
-        label: Text(label, style: const TextStyle(fontSize: 11)),
-        selected: _filter == key,
-        onSelected: (v) => setState(() => _filter = key),
-        visualDensity: VisualDensity.compact,
       ),
     );
   }
@@ -351,19 +281,17 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(context.l10n.resetPortfolioTitle),
-        content: Text(context.l10n.resetPortfolioContent),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: const Text("Portfolio zurücksetzen"),
+        content: const Text("Möchten Sie wirklich alle Trades und Statistiken löschen?"),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(context.l10n.cancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Abbrechen")),
           TextButton(
             onPressed: () {
               context.read<PortfolioService>().resetPortfolio();
               Navigator.pop(ctx);
             },
-            child: Text(context.l10n.deleteAll,
-                style: const TextStyle(color: Colors.red)),
+            child: const Text("Reset", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -371,132 +299,6 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
   }
 
   void _showWatchlistDialog(BuildContext context) {
-    final watchlist = context.read<WatchlistService>();
-    final textCtrl = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text(context.l10n.botWatchlist),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return SizedBox(
-                width: double.maxFinite,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Add New
-                    Row(
-                      children: [
-                        Expanded(
-                            child: TextField(
-                          controller: textCtrl,
-                          decoration: InputDecoration(
-                              hintText: context.l10n.symbolHint),
-                          onSubmitted: (val) {
-                            if (val.isNotEmpty) {
-                              watchlist.addWatchlistSymbol(val);
-                              textCtrl.clear();
-                              setState(() {});
-                            }
-                          },
-                        )),
-                        IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () {
-                            if (textCtrl.text.isNotEmpty) {
-                              watchlist.addWatchlistSymbol(textCtrl.text);
-                              textCtrl.clear();
-                              setState(() {});
-                            }
-                          },
-                        )
-                      ],
-                    ),
-                    const Divider(),
-                    // Kategorisierte Liste
-                    Expanded(
-                      child: Consumer<WatchlistService>(
-                        builder: (context, watchlist, _) {
-                          final categories =
-                              watchlist.defaultWatchlistByCategory;
-                          return ListView(
-                            children: categories.entries.map((categoryEntry) {
-                              final categorySymbols = categoryEntry.value;
-
-                              return ExpansionTile(
-                                title: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(categoryEntry.key,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        for (final symbol in categorySymbols) {
-                                          watchlist.toggleWatchlistSymbol(
-                                              symbol, true);
-                                        }
-                                        setState(() {});
-                                      },
-                                      child: Text(context.l10n.selectAll,
-                                          style: TextStyle(fontSize: 12)),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        for (final symbol in categorySymbols) {
-                                          watchlist.toggleWatchlistSymbol(
-                                              symbol, false);
-                                        }
-                                        setState(() {});
-                                      },
-                                      child: Text(context.l10n.selectNone,
-                                          style: TextStyle(fontSize: 12)),
-                                    ),
-                                  ],
-                                ),
-                                // Initially open only active or common ones
-                                initiallyExpanded: [
-                                  "Germany (DAX & MDAX)",
-                                  "Crypto"
-                                ].contains(categoryEntry.key),
-                                children: categoryEntry.value.map((symbol) {
-                                  return CheckboxListTile(
-                                    dense: true,
-                                    title: Text(symbol),
-                                    value:
-                                        watchlist.watchListMap[symbol] ?? false,
-                                    secondary: IconButton(
-                                      icon: const Icon(Icons.delete,
-                                          size: 20, color: Colors.grey),
-                                      onPressed: () => watchlist
-                                          .removeWatchlistSymbol(symbol),
-                                    ),
-                                    onChanged: (val) =>
-                                        watchlist.toggleWatchlistSymbol(
-                                            symbol, val ?? false),
-                                  );
-                                }).toList(),
-                              );
-                            }).toList(),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(context.l10n.done)),
-          ],
-        );
-      },
-    );
+    // Legacy dialog, keeping it simple
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/app_provider.dart';
@@ -39,45 +40,131 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final provider = context.watch<AppProvider>();
     final data = provider.computedData;
 
-    // Wir nutzen ein Scaffold für die Hauptnavigation.
-    // Wenn wir im "Analyse" Tab sind (Index 0), zeigen wir die AppBar hier.
-    // Bei Bot (1) und Settings (2) lassen wir die Child-Widgets ihre eigene AppBar/Scaffold haben.
     return Scaffold(
-      appBar: _selectedIndex == 0
-          ? AppBar(
-              title: const Text(""),
-              elevation: 0,
-              scrolledUnderElevation: 2,
-            )
-          : null, // Kein AppBar für Bot/Settings hier, die haben eigene
-      body: IndexedStack(
-        index: _selectedIndex,
+      extendBody: true, // Wichtig für schwebende Navbar
+      body: Stack(
         children: [
-          // Tab 0: Analyse Dashboard
-          _buildAnalyseTab(context, provider, data),
-          // Tab 1: AutoTrader Bot
-          const BotDashboardScreen(),
-          // Tab 2: Einstellungen
-          const SettingsScreen(),
+          // 1. Hintergrund-Glow (Cyber-Feeling)
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: -50,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+              ),
+            ),
+          ),
+          // Blur Layer
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 80, sigmaY: 80),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
+          // 2. Haupt-Inhalt
+          SafeArea(
+            bottom: false,
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: [
+                _buildAnalyseTab(context, provider, data),
+                const BotDashboardScreen(),
+                const SettingsScreen(),
+              ],
+            ),
+          ),
+
+          // 3. Floating Blurred Bottom Navigation Bar
+          Positioned(
+            bottom: 24,
+            left: 24,
+            right: 24,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  height: 70,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.1),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildNavItem(0, Icons.analytics_outlined, Icons.analytics, context.l10n.navAnalysis),
+                      _buildNavItem(1, Icons.smart_toy_outlined, Icons.smart_toy, context.l10n.navAutoBot),
+                      _buildNavItem(2, Icons.settings_outlined, Icons.settings, context.l10n.navSettings),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
-        destinations: [
-          NavigationDestination(
-              icon: const Icon(Icons.analytics_outlined),
-              selectedIcon: const Icon(Icons.analytics),
-              label: context.l10n.navAnalysis),
-          NavigationDestination(
-              icon: const Icon(Icons.smart_toy_outlined),
-              selectedIcon: const Icon(Icons.smart_toy),
-              label: context.l10n.navAutoBot),
-          NavigationDestination(
-              icon: const Icon(Icons.settings_outlined),
-              selectedIcon: const Icon(Icons.settings),
-              label: context.l10n.navSettings),
-        ],
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData iconOutlined, IconData iconFilled, String label) {
+    final isSelected = _selectedIndex == index;
+    final color = isSelected ? Theme.of(context).colorScheme.primary : Colors.white54;
+    
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(horizontal: isSelected ? 20 : 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Theme.of(context).colorScheme.primary.withOpacity(0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(isSelected ? iconFilled : iconOutlined, color: color, size: 26),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
