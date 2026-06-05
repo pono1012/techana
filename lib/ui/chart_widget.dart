@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../l10n/l10n_extension.dart';
+import '../utils/data_sampler.dart';
 
 class ChartWidget extends StatelessWidget {
   const ChartWidget({super.key});
@@ -10,7 +11,8 @@ class ChartWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final data = provider.computedData;
+    final rawData = provider.computedData;
+    final data = rawData != null ? DataSampler.sampleComputedData(rawData, maxPoints: 300) : null;
 
     if (provider.isLoading)
       return const Center(child: CircularProgressIndicator());

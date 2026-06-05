@@ -11,7 +11,7 @@ import 'ui/dashboard_screen.dart';
 import 'dart:ui';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
-
+import 'ui/theme/app_theme.dart';
 void main() {
   runApp(
     MultiProvider(
@@ -50,18 +50,9 @@ class MyApp extends StatelessWidget {
         'en' => const Locale('en'),
         _ => null,
       },
-      themeMode: themeMode,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue, brightness: Brightness.light),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue, brightness: Brightness.dark),
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        useMaterial3: true,
-      ),
+      themeMode: ThemeMode.dark, // Force premium dark theme for the new level UI
+      theme: AppTheme.premiumDarkTheme,
+      darkTheme: AppTheme.premiumDarkTheme,
       home: const UpdateWrapper(child: DashboardScreen()),
     );
   }

@@ -91,11 +91,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).appBarTheme.backgroundColor ??
-                  Theme.of(context).scaffoldBackgroundColor,
+              color: Theme.of(context).colorScheme.surface.withOpacity(0.4),
               border: Border(
                   bottom: BorderSide(
-                      color: Theme.of(context).dividerColor.withOpacity(0.1))),
+                      color: Colors.white.withOpacity(0.05))),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,16 +312,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
+                  color: Theme.of(context).colorScheme.surface.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4))
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8))
                   ],
                   border: Border.all(
-                      color: Theme.of(context).dividerColor.withOpacity(0.1)),
+                      color: Colors.white.withOpacity(0.05)),
                 ),
                 child: data?.latestSignal == null
                     ? Center(child: Text(context.l10n.noAnalysis))
@@ -591,10 +590,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: mcColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      color: mcColor.withOpacity(0.15),
                       border: Border.all(
-                          color: mcColor.withOpacity(0.3), width: 0.5),
+                          color: mcColor.withOpacity(0.4), width: 1),
                     ),
                     child: Row(
                       children: [
@@ -666,10 +665,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: mtcColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    color: mtcColor.withOpacity(0.15),
                     border: Border.all(
-                        color: mtcColor.withOpacity(0.3), width: 0.5),
+                        color: mtcColor.withOpacity(0.4), width: 1),
                   ),
                   child: Row(
                     children: [

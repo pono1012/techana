@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import '../utils/app_logger.dart';
 import '../models/models.dart';
 import '../models/trade_record.dart';
 import 'data_service.dart';
@@ -31,6 +32,10 @@ class TradeExecutionService extends ChangeNotifier {
   String _scanStatusParam = "";
   String get scanStatusParam => _scanStatusParam;
   bool _cancelRequested = false;
+  final List<TradeSignal> _liveScanRecommendations = [];
+  List<TradeSignal> get liveScanRecommendations => _liveScanRecommendations;
+  String _currentlyScanningSymbol = "";
+  String get currentlyScanningSymbol => _currentlyScanningSymbol;
 
   int _scanCurrent = 0;
   int _scanTotal = 0;
@@ -105,6 +110,8 @@ class TradeExecutionService extends ChangeNotifier {
     _scanTotal = 1; // avoid div by zero
     _taskPhase = 0;
     _scanStartTime = DateTime.now();
+    _liveScanRecommendations.clear();
+    _currentlyScanningSymbol = "";
     notifyListeners();
 
     try {
@@ -140,7 +147,7 @@ class TradeExecutionService extends ChangeNotifier {
       _scanStatusKey = "statusError";
       _scanStatusParam = e.toString();
       _scanStatus = "Fehler: $e";
-      debugPrint("❌ [Bot] Critical Error: $e");
+      AppLogger.e("❌ [Bot] Critical Error: $e");
     } finally {
       if (_isScanning) {
         await Future.delayed(const Duration(milliseconds: 500));
@@ -439,7 +446,7 @@ class TradeExecutionService extends ChangeNotifier {
             portfolio.updateTrade(currentTrade);
           }
         } catch (e) {
-          debugPrint("❌ [Bot] Fehler bei Pending Order ${trade.symbol}: $e");
+          AppLogger.e("❌ [Bot] Fehler bei Pending Order ${trade.symbol}: $e");
         }
       }
     }
@@ -598,7 +605,7 @@ class TradeExecutionService extends ChangeNotifier {
             portfolio.updateTrade(currentTrade);
           }
         } catch (e) {
-          debugPrint("❌ [Bot] Fehler beim Check von ${trade.symbol}: $e");
+          AppLogger.e("❌ [Bot] Fehler beim Check von ${trade.symbol}: $e");
         }
       }
     }
@@ -685,6 +692,7 @@ class TradeExecutionService extends ChangeNotifier {
       }
 
       try {
+        _currentlyScanningSymbol = symbol;
         _scanStatus = "Analysiere $symbol ($_scanCurrent/$_scanTotal)...";
         notifyListeners();
 
@@ -737,7 +745,7 @@ class TradeExecutionService extends ChangeNotifier {
                 final daysToEarnings =
                     fmp.nextEarnings!.date.difference(DateTime.now()).inDays;
                 if (daysToEarnings >= 0 && daysToEarnings <= 3) {
-                  debugPrint(
+                  AppLogger.i(
                       "🚫 [Bot] Trade blockiert für $symbol: Earnings in $daysToEarnings Tagen.");
                   blockTrade = true;
                 }
@@ -843,14 +851,14 @@ class TradeExecutionService extends ChangeNotifier {
                 if (settings.kronosStrictMode) {
                   // Strict Mode: TP1 muss VOR SL getroffen werden
                   if (dayTp1 == null && daySl != null) {
-                    debugPrint("🚫 [Kronos Strict] $symbol: SL wird getroffen (Tag $daySl), aber TP1 nie → Trade blockiert.");
+                    AppLogger.i("🚫 [Kronos Strict] $symbol: SL wird getroffen (Tag $daySl), aber TP1 nie → Trade blockiert.");
                     continue;
                   }
                   if (dayTp1 != null && daySl != null && daySl <= dayTp1) {
-                    debugPrint("🚫 [Kronos Strict] $symbol: SL (Tag $daySl) vor TP1 (Tag $dayTp1) → Trade blockiert.");
+                    AppLogger.i("🚫 [Kronos Strict] $symbol: SL (Tag $daySl) vor TP1 (Tag $dayTp1) → Trade blockiert.");
                     continue;
                   }
-                  debugPrint("✅ [Kronos Strict] $symbol: TP1 wird zuerst erreicht (Tag ${dayTp1 ?? '?'}) → Trade erlaubt.");
+                  AppLogger.i("✅ [Kronos Strict] $symbol: TP1 wird zuerst erreicht (Tag ${dayTp1 ?? '?'}) → Trade erlaubt.");
                 }
 
                 finalSignal = finalSignal.copyWith(
@@ -862,9 +870,9 @@ class TradeExecutionService extends ChangeNotifier {
                 );
               }
             } catch (e) {
-              debugPrint("⚠️ [Kronos] Fehler für $symbol: $e");
+              AppLogger.e("⚠️ [Kronos] Fehler für $symbol: $e");
               if (settings.kronosStrictMode) {
-                debugPrint("🚫 [Kronos Strict] $symbol: Analyse fehlgeschlagen → Trade blockiert.");
+                AppLogger.i("🚫 [Kronos Strict] $symbol: Analyse fehlgeschlagen → Trade blockiert.");
                 continue;
               }
             }
@@ -884,7 +892,7 @@ class TradeExecutionService extends ChangeNotifier {
             _executeBuy(symbol, bars.last, finalSignal, executionPrice,
                 settings, portfolio);
           } else {
-            debugPrint("⏭️ [Bot] $symbol: Bereits offene Position, übersprungen.");
+            AppLogger.i("⏭️ [Bot] $symbol: Bereits offene Position, übersprungen.");
           }
         }
 

@@ -82,6 +82,11 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                 children: [
                   // --- 0. Smart Progress Bar (Top) ---
                   if (exec.isScanning) BotProgressWidget(exec: exec),
+                  
+                  // NEW: Live Scanner Recommendations (Top priority for user)
+                  if (exec.liveScanRecommendations.isNotEmpty)
+                    BotLiveScannerWidget(exec: exec),
+                  const SizedBox(height: 12),
 
                   // --- 1. Portfolio Value Graph ---
                   BotPortfolioGraphWidget(bot: portfolio),
@@ -122,12 +127,19 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                   const SizedBox(height: 16),
 
                   // --- 6. All Positions (Expandable) ---
-                  ExpansionTile(
-                    title: Text(context.l10n.allPositionsRaw,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(context.l10n.tradesTotal(portfolio.trades.length)),
-                    initiallyExpanded: false,
-                    children: [
+                  Card(
+                    color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(color: Colors.white.withOpacity(0.05)),
+                    ),
+                    child: ExpansionTile(
+                      title: Text(context.l10n.allPositionsRaw,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(context.l10n.tradesTotal(portfolio.trades.length)),
+                      initiallyExpanded: false,
+                      children: [
                       // Filter Bar inside
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -190,7 +202,8 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
                           return TradeCardWidget(
                               trade: trade, portfolio: portfolio);
                         }).toList(),
-                    ],
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 40),
@@ -287,8 +300,13 @@ class _BotDashboardScreenState extends State<BotDashboardScreen> {
     final color = pnl >= 0 ? Colors.green : Colors.red;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 12),
+      color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.white.withOpacity(0.05)),
+      ),
       child: ExpansionTile(
         title: Text(title,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
