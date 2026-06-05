@@ -165,9 +165,9 @@ Beiträge sind willkommen! Bitte lies unsere `CONTRIBUTING.md` (kommt bald), bev
 
 ---
 
-## 🚀 Neuestes Update (16.04.2026)
+## 🚀 Neuestes Update (05.06.2026)
 
-Mit diesem Update macht TechAna einen großen Schritt in Richtung globaler Zugänglichkeit, indem wir volle Unterstützung für die deutsche und englische Sprache einführen. Gleichzeitig haben wir die Präzision und Stabilität unserer KI-Modelle verbessert, um Ihnen noch zuverlässigere Marktanalysen zu liefern. Genießen Sie eine intuitivere Benutzererfahrung und noch schärfere Einsichten in die Finanzmärkte.
+Mit diesem Update macht TechAna einen großen Schritt in Richtung globaler Zugänglichkeit, indem wir volle Unterstützung für die deutsche und englische Sprache einführen. Gleichzeitig haben wir die Präzision und Stabilität unserer KI-Modelle verbessert, um Ihnen noch zuverlässigere Marktanalysen zu liefern. Genießen Sie eine intuitivere Benutzererfahrung, ein frisches Premium Dark Theme und Live-Einblicke direkt auf Ihrem Bot-Dashboard für noch schärfere Einsichten in die Finanzmärkte.
 
 👉 [**Komplette Update-Historie ansehen**](CHANGELOG.md)
 
