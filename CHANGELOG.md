@@ -1,3 +1,65 @@
+### 2026-06-05 - Update
+
+#### Wichtige Neuerungen & Optimierungen bei TechAna
+
+Wir freuen uns, ein weiteres bedeutendes Update für TechAna zu veröffentlichen. Dieses Release konzentriert sich auf die Verbesserung der globalen Zugänglichkeit, eine weitere Verfeinerung unserer Kernintelligenz und eine umfassende Überarbeitung der Benutzeroberfläche, um Ihnen eine noch intuitivere und leistungsfähigere Handelsumgebung zu bieten.
+
+#### Highlights
+
+*   **Umfassende Mehrsprachigkeit:** TechAna spricht jetzt fließend Deutsch und Englisch! Die gesamte Anwendung kann in beiden Sprachen genutzt werden, von der Navigation bis zu detaillierten Analysen.
+*   **Verbesserte KI-Modellpräzision:** Unsere zugrundeliegenden KI-Modelle wurden erneut optimiert, um eine höhere Präzision und Stabilität bei der Marktanalyse zu gewährleisten, was zu noch verlässlicheren Handelssignalen führt.
+*   **Neues Premium Dark Theme:** Eine komplett überarbeitete Benutzeroberfläche mit einem modernen, konsistenten Dark Theme für ein immersives und augenschonendes Nutzererlebnis.
+*   **Live Scanner Empfehlungen:** Sehen Sie jetzt die Top-Kaufempfehlungen Ihres Bots direkt im Dashboard, während der Scanner läuft.
+*   **Performance-Verbesserungen:** Die Chart-Darstellung wurde optimiert, um auch bei umfangreichen historischen Daten eine flüssigere und reaktionsschnellere Anzeige zu ermöglichen.
+
+#### Neue Features
+
+*   **Internationale Benutzererfahrung (I18n):**
+    *   **Nutzen für den User:** Die Anwendung kann nun vollständig auf Deutsch und Englisch genutzt werden. Dies eliminiert Sprachbarrieren und ermöglicht eine komfortablere und verständlichere Interaktion mit TechAna in der bevorzugten Sprache. Die gesamten UI-Texte, von Navigationspunkten bis hin zu komplexen Strategiebeschreibungen und Indikatoren-Erklärungen, wurden übersetzt und sind umschaltbar.
+    *   **Technische Details:** Einführung der Localization-Framework-Konfiguration (`l10n.yaml`) und Bereitstellung umfangreicher Sprachressourcen für Deutsch (`app_de.arb`) und Englisch (`app_en.arb`). Dies legt den Grundstein für eine einfache Erweiterung um weitere Sprachen in der Zukunft.
+*   **Live Scanner Empfehlungen im Bot Dashboard:**
+    *   **Nutzen für den User:** Während Ihr Bot den Markt scannt, sehen Sie jetzt die Top-Kaufempfehlungen direkt auf dem Bot-Dashboard. Dies liefert Ihnen sofortige, umsetzbare Einblicke in potenzielle Handelsmöglichkeiten und macht den Scan-Prozess transparenter und interaktiver.
+
+#### Verbesserungen & Fixes
+
+*   **Kernoptimierungen der KI-Modelle:**
+    *   **Nutzen für den User:** Die Präzision und Stabilität der KI-gesteuerten Marktanalyse wurde durch tiefgreifende Optimierungen signifikant verbessert. Dies führt zu zuverlässigeren Prognosen, einem genaueren Trading Score und fundierteren Handelssignalen, die Ihnen helfen, bessere Entscheidungen zu treffen.
+    *   **Nutzen für den Entwickler:** Die Infrastruktur wurde robuster gestaltet, was die Wartung vereinfacht und die Leistung der KI-Services verbessert. Dies ermöglicht schnellere und effizientere Modell-Updates in der Zukunft.
+    *   **Referenz:** Dieser Fix entspricht dem Patch vom 12.04.2026.
+*   **Optimierte Chart-Rendering-Performance:**
+    *   **Nutzen für den User:** Große Datensätze werden nun effizienter dargestellt. Charts laden schneller und reagieren flüssiger auf Interaktionen, was die Analyse historischer Kurse spürbar angenehmer macht.
+    *   **Technische Details:** Implementierung eines intelligenten `DataSampler`, der die angezeigten Datenpunkte dynamisch reduziert, ohne die visuelle Integrität der Charts zu beeinträchtigen.
+*   **Unified Premium Dark Theme & UI Refinements:**
+    *   **Nutzen für den User:** Das gesamte Design von TechAna wurde auf ein kohärentes, augenschonendes Premium Dark Theme umgestellt. Alle UI-Elemente, von Cards bis zu Buttons, sind jetzt harmonisch aufeinander abgestimmt und bieten eine moderne, intuitive Ästhetik.
+    *   **Technische Details:** Einführung eines zentralen `AppTheme`-Dienstes zur einheitlichen Verwaltung von Farben, Typografie und Widget-Stilen.
+*   **Verbessertes internes Logging-System:**
+    *   **Nutzen für den Entwickler:** Durch die Integration einer professionellen Logger-Bibliothek erhalten Entwickler detailliertere und strukturiertere Informationen über den Anwendungsablauf. Dies erleichtert die Fehlerdiagnose und trägt maßgeblich zur Stabilität und Wartbarkeit der Anwendung bei.
+
+#### Sonstiges
+
+*   **Interne Systemaktualisierungen:** Der `ai_state.json` wurde aktualisiert, um den neuesten Stand unserer KI-Entwicklung zu reflektieren. Dokumentationsanpassungen in `current_patch_notes.md` und `CHANGELOG.md` wurden vorgenommen.
+*   **Erweiterte Testabdeckung:** Neue Unit-Tests für den `PortfolioService` erhöhen die Code-Qualität und Zuverlässigkeit kritischer Funktionalitäten.
+*   **Claude Lokale Einstellungen:** Ergänzung einer `.claude/settings.local.json` für spezifische Entwicklungs- und Automatisierungszwecke.
+
+### 📂 Geänderte Dateien
+- `.claude/settings.local.json`
+- `lib/main.dart`
+- `lib/services/data_service.dart`
+- `lib/services/trade_execution_service.dart`
+- `lib/ui/bot_dashboard_screen.dart`
+- `lib/ui/bot_dashboard_widgets.dart`
+- `lib/ui/chart_widget.dart`
+- `lib/ui/dashboard_screen.dart`
+- `lib/ui/theme/app_theme.dart`
+- `lib/utils/app_logger.dart`
+- `lib/utils/data_sampler.dart`
+- `pubspec.lock`
+- `pubspec.yaml`
+- `test/services/portfolio_service_test.dart`
+- `test/services/ta_indicators_test.dart`
+
+---
+
 ### 2026-04-16 - Update
 
 #### Wichtige Neuerungen & Optimierungen bei TechAna
